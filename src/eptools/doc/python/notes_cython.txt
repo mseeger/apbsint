@@ -1,0 +1,223 @@
+NOTES ON CYTHON
+---------------
+
+Documentation: Locally at html/docs.cython.org/index.html
+
+
+(1) Getting started:
+
+- Python code compiled into module (fast C code)
+- Simple integrating of existing C/C++ code
+- Cython creates a C source which is then compiled: Portable
+- Extends Python by static C typing of variables and functions:
+  Speed up critical Python code without having to write C
+
+Source: .pyx file (instead of .py)
+
+Typing variables:
+
+- Define variables before use, give them C types
+- Expressions computed directly in C, converted back/forth
+
+def f(double x):
+    return x**2-x
+
+def integrate_f(double a, double b, int N):
+    cdef int i
+    cdef double s, dx
+    s = 0
+    ...
+
+- cdef <type>: Declaration before use
+- Function argument: <type>
+
+Typing functions:
+
+cdef double f(double x) except? -2:
+    return x**2-x
+
+- Even much faster, because whole function is handled directy in C, no
+  conversions. Bit like inline.
+- Function not available in Python. Use cpdef
+
+Even faster: inline function:
+
+cdef inline double f(double x):
+    return x*x-x
+
+Use 'cython -a' in order to generate output to help deciding which part of
+the code to type (only type the dominating stuff).
+
+
+(2) Tutorials:
+
+(2.1) Basics:
+
+Build code: distutils, write setup.py (see docs).
+
+(2.2) Calling C functions:
+
+Functions from C standard libraries are wrapped: cimport
+
+---
+from libc.stdlib cimport atoi
+
+cdef parse_charptr_to_py_int(char* s):
+    assert s is not NULL, "byte string value is NULL"
+    return atoi(s)   # note: atoi() has no error detection!
+---
+- Standard cimport files: Cython/Includes/
+
+Math library:
+
+---
+from libc.math cimport sin
+
+cdef double f(double x):
+    return sin(x*x)
+---
+- Have to link against m library (see docs howto)
+
+External declarations: cdef extern from
+
+---
+cdef extern from "math.h":
+    double sin(double x)
+---
+- Have to link against the corresponding shared library (distutils: howto)
+
+(2.3) Using C libraries:
+
+C API declarations in cqueue.pxd:
+- Almost identical to C header
+- Only expose what is required in Python
+
+--- [cqueue.pxd]
+cdef extern from "path/queue.h":
+    ctypedef struct Queue:
+        pass
+    ctypedef void* QueueValue
+
+    Queue* queue_new()
+    void queue_free(Queue* queue)
+    QueueValue queue_peek_head(Queue* queue)
+    bint queue_is_empty(Queue* queue)
+---
+- Only wrap what is required in Python
+- Opaque handle: "ctypedef ...: pass". Python does not need to know type
+  (bit like void*)
+- "cdef struct" vs. "ctypedef struct": Difference "struct" vs.
+  "typedef struct" in C
+- bint: Cython type, bool in Python, int in C (so XXX.h has
+  "int queue_is_empty(Queue* queue)"
+
+Wrap C API in Python class: queue.pyx:
+- Calling C functions from cqueue would be immediate, no need to wrap in a
+  class!
+  But may be most convenient to wrap representations together with methods
+- Cannot be cqueue.pyx, as this is different code
+
+--- [queue.pyx]
+cimport cqueue
+
+cdef class Queue:
+    cdef cqueue.Queue* _c_queue
+    def __cinit__(self):
+        self._c_queue = cqueue.queue_new()
+        if self._c_queue is NULL:
+            raise MemoryError()
+    def __dealloc__(self):
+        if self._c_queue is not NULL:
+            cqueue.queue_free(self._c_queue)
+---
+- __cinit__: Always called at construction, while __init__ may not.
+  Use this to create cdef fields (nothing else)
+- __dealloc__: Destructor, called by the garbage collector
+
+Methods:
+---
+    cdef append(self, int value):
+        if not cqueue.queue_push_tail(self._c_queue,
+                                      <void*>value):
+            raise MemoryError()
+
+    cdef extend(self, int* values, size_t count):
+        cdef size_t i
+        for i in range(count):
+            if not cqueue.queue_push_tail(
+                    self._c_queue, <void*>values[i]):
+                raise MemoryError()
+    
+    cdef int peek(self):
+        return <int>cqueue.queue_peek_head(self._c_queue)
+    
+    cdef int pop(self):
+        return <int>cqueue.queue_pop_head(self._c_queue)
+---
+- <type>expr: Convert value of 'expr' to type 'type' (static cast). Here,
+  the queue stores void*, cast int -> void*
+- size_t: C type for sizes and index values
+
+Checking for errors:
+---
+    cdef int peek(self) except? -1:
+        value = <int>cqueue.queue_peek_head(self._c_queue)
+        if value == 0:
+            # this may mean that the queue is empty, or
+            # that it happens to contain a 0 value
+            if cqueue.queue_is_empty(self._c_queue):
+                raise IndexError("Queue is empty")
+        return value
+
+    cdef int pop(self) except? -1:
+        if cqueue.queue_is_empty(self._c_queue):
+            raise IndexError("Queue is empty")
+        return <int>cqueue.queue_pop_head(self._c_queue)
+---
+- Queue empty: cast int <--> void* is problem now.
+  Have to check if queue is empty (NULL -> 0)
+  NOTE: Artefact of cast decision!
+- Why "except? -1"?
+  - Python returns NULL object to signal exception, but pop is cdef with
+    int return type
+  - Calling code has to check whether an exception occurred. To avoid checks
+    after each call: Return -1 if exception, and calling code only has to
+    check if -1 is returned (check is still required, because -1 is a valid
+    value!)
+    NOTE: Can one cast -1 to void* and get it back? Seems so
+  ==> Choose "unlikely" value. If there is an impossible value, can drop the
+  ? and write "except -1"
+
+Making methods visible as Python objects: Use cpdef instead of cdef.
+Can only be used if the signature is of Python type (f.ex.: NOT for
+'extend' above).
+
+(2.4) Extension types (cdef classes):
+
+- Like class, but restricted
+- Stored directly in C struct: More efficient
+- See documentation
+
+(2.5) pxd files:
+
+- Work like C header files, while pyx files are code files
+- External C declarations (above)
+- Inline functions:
+
+---
+cdef inline int int_min(int a, int b):
+    return b if b < a else a
+---
+
+(2.7) Profiling:
+
+- Add "# cython: profile=True"
+- Can remove certain functions by special directive (see docs)
+
+See worked through example in docs. Boils down to "cdef inline" inner
+functions. Caveat of profiler discussed there.
+
+(2.8) Passing strings:
+
+- 'bytes' (byte string), 'unicode' (unicode string)
+- 'str' == 'bytes' in 2.X, == 'unicode' in 3.X

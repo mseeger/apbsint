@@ -1,0 +1,73 @@
+# -------------------------------------------------------------------
+# ApBsInT: Approximate Bayesian Inference Toolkit
+# -------------------------------------------------------------------
+# Makefile for Matlab interface (MEX functions)
+# Template for system-dependent part
+# Author: Matthias Seeger
+# -------------------------------------------------------------------
+
+# -------------------------------------------------------------------
+# This file contains system-dependent variables, it is included by
+# the main Makefile.
+#
+# You need to specialize this template to your system. The default
+# way is:
+# - Copy this file to make.inc.def
+# - Edit make.inc.def, specializing it to your system
+#
+# If you repeatedly compile the LHOTSE sources on different systems,
+# the following alternative may be useful:
+# - For a system, pick a novel identifier $$$ (lower-case; replace
+#   $$$ by the identifier in what follows), such that make.inc.$$$
+#   does not already exist
+# - Copy this file to make.inc.$$$, edit it to specialize it to the
+#   system
+# - When calling "make", append the option "where=$$$"
+# -------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------
+# ROOTDIR: Main directory
+# Absolute path of the source root directory.
+# The current Makefile is in ROOTDIR/src/eptools/matlab
+# -------------------------------------------------------------------
+ROOTDIR=/home/seeger/lhotse
+
+# -------------------------------------------------------------------
+# C/C++/Fortran Compiler:
+#   CXXINCS, CXXLDOPTS, CC, CXX, FC
+# On most systems, these variables do not have to be specified, since
+# the C++ compiler is configured appropriately. You may want to
+# specify it if you run into problems without, or if you want to use
+# a compiler different from the standard one on your system. The
+# variable value consists of a sequence of "-I<path>" parts.
+# For GCC, the C++ headers are typically found in
+# /usr/include/c++/<version> and
+# /usr/include/c++/<version>/<system>, and the C headers in
+# /usr/lib/gcc-lib/<system>/<version>/include.
+# The libraries are typically in
+# /usr/lib/gcc-lib/<system>/<version>.
+# NOTE: On some systems, the C++ headers have to be specified, while
+# the C headers and libraries are found automatically.
+# -------------------------------------------------------------------
+#CXXINCS=
+#CXXLDOPTS=
+CC=		/usr/bin/gcc
+CXX=		/usr/bin/g++
+FC=		/usr/bin/gfortran
+
+# -------------------------------------------------------------------
+# Matlab MEX Files:
+#   EXINCS_MATLAB, EXLDOPTS_MATLAB, MEXCMD
+# If EXINCS_MATLAB contains "-I<path>", the MATLAB MEX headers must
+# be found in <path>.
+# EXLDOPTS_MATLAB are additional linker options passed to the "mex"
+# command.
+# MEXCMD is the syntax for calling the "mex" command
+# MEXSUFFIX is the suffix of MEX library files on your system
+# (e.g., mexa64 or mexglx on Linux)
+# -------------------------------------------------------------------
+EXINCS_MATLAB=	-I/usr/local/matlab8/extern/include
+#EXLDOPTS_MATLAB=
+#MEXCMD=
+MEXSUFFIX=	mexa64

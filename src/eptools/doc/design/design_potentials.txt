@@ -1,0 +1,146 @@
+NOTES ON DESIGN OF SCALAR POTENTIALS HIERARCHY
+----------------------------------------------
+
+(1) Potential hierarchy:
+
+- Basic definitions of potential:
+  - Hyperparameters: Number, get, set, isvalid
+  - Construction parameters
+  - Information about potential: isLogConcave, ...
+- EP update services:
+  - suppFractional
+  - compMoments
+
+Problem: Both very basic and high-level services (EP update) are collected
+at the same place. The user implementation for a potential must be at one
+place.
+Solution:
+- Base class EPScalPotentialBase for basic services
+- EPScalarPotential declares high-level services
+
+If EP updates for a potential are implemented by numerical quadrature, the
+user just implements basic services, as well as services required to drive
+quadrature (eval. of log t(s) and derivatives). This implementation inherits
+from EPScalPotentialBase, but NOT from EPScalarPotential.
+
+(1.1) Hyperparameters: Construction and normal:
+
+- Potential object configured by (hyper)parameters
+- Potential class exports a default constructor, which is called without
+  parameters. Typically also a constructor, where full parameters are passed
+- In some cases, even the def. constructor requires parameters. If so, these
+  are construction parameters
+- Construction parameters always form a prefix of the parameter vector. They
+  are also shared by all potentials in a block (see "Potential manager")
+- Construction parameters must be fixed at (default) construction, they cannot
+  be changed later on. For convenience, they are still part of the parameter
+  vector
+
+NOTE: For reasons explained in (3), we avoid any static methods. This means
+that information such as the number of parameters and even the number of
+construction parameters can only be requested given an object. The default
+constructor therefore plays an important role.
+
+(1.2) Potential factories:
+
+- Supported potentials are registered at EPPotentialNamedFactory and
+  EPPotentialFactory with a name and an (internal) ID
+- Factory classes are used to create potential objects, given a name/ID and
+  a parameter vector
+- EPPotentialFactory supports default construction. A parameter vector must
+  be passed, but is ignored if the class does not have construction parameters
+- NOTE: Basic information about a potential (number of pars, ...) can only be
+  obtained after an object is created
+
+TODO:
+- Good solution for users of the toolbox. They want to extend the potential
+  hierarchy without interfering with officially supported potentials. Need
+  some sort of user-defined subclass of the factories in order to manage that
+  ==> I am the only user right now: Later!
+
+
+(2) Potential managers:
+
+- Maintains set of potentials along with parameters, which can be (partly) 
+  shared
+- Set of blocks. Each block has a potential of fixed type. Each of its
+  parameter arguments can either be shared by all block entries, or be
+  different for each.
+  Parameters of potentials cannot be shared across blocks
+- Right now: No services for changing parameters after construction
+  But since PMs are created on demand from an internal representation for
+  every call from Matlab or Python, this is not a problem
+- Base class: PotentialManager
+- For most purposes: Can use ContainerPotManager, each block represented
+  by DefaultPotManager
+- ContainerPotManager of DefaultPotManager created from internal representation
+  by PotManagerFactory. This is very lightweight, no copying, since PMs are
+  created on demand with every call.
+  Also services for checking validity of internal representation
+
+
+(3) EP updates by numerical quadrature:
+
+- User implements basic services for potential (evaluation, ...). These are
+  NOT derived from EPScalarPotential
+- EP update services in EPScalarPotential are done by numerical quadrature
+  code
+
+Basic design:
+- QuadraturePotential: Subclass of EPScalPotentialBase. Defines services
+  required by quadrature code:
+  - Eval. of log t(s), 1st and 2nd derivs
+  - Proximal map
+- Subclass QuadPotProximalNewton:
+  - Implements proximal map by 1D Newton
+
+For a user:
+- If proximal map can be solved easily by specific code: Derive from
+  QuadraturePotential, implement proximal map
+- Otherwise, if log t(s) is smooth and ideally concave: Derive from
+  QuadPotProximalNewton
+
+Quadrature implementation of EPScalarPotential:
+- EPPotQuadrature: Base class of quadrature implementations of EPScalarPotential
+  - HasA: QuadraturePotential
+  - Exports EPScalPotentialBase methods by calling its methods
+- EPPotQuadLaplaceApprox: Implements the generic method described in the TR
+  - HasA: Object for quadrature services (so different types of quadrature can
+    be used)
+  - Implements EP update services:
+    - Proximal map -> Laplace transformation. Check whether mu is at critical
+      point
+    - Call quadrature code, passing in transformed log integrand. The critical
+      points are simply passed to the quadrature code, may or may not use it
+
+NOTE: The fact that EPPotQuadrature implements EPScalPotentialBase methods by
+calling them for its member, means that we cannot rely on static methods in
+EPScalarPotential.
+
+(3.1) Quadrature services:
+
+GSL defines the type gsl_function, fields:
+- function: double (*TYPE) (double,void*)
+    double f(double x,void* params) { ... }
+- params: void*
+  Pass additional parameters to the function
+
+Moreover, routines are configured by:
+- maxiv: Maximum number of intervals
+- epsabs: Absolute error tolerance
+- epsrel: Relative error tolerance
+They need some workspace, whose size depends on maxiv.
+
+We define a base class for quadrature services. It exports a service 'quad'.
+Input:
+- gsl_function f: Integrand function
+- Limits a,b (also flags aInf, bInf)
+- Waypoints (can be empty)
+Return:
+- Result
+- Estimate of absolute error (only if supported -> bool method!)
+- Return status (0: OK)
+- Error message (if ret. status !=0)
+
+This is directly taylored to GSL, to keep it simple, but could be changed
+easily if GSL were to be phased out.

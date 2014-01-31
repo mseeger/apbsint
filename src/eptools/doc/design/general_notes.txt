@@ -1,0 +1,122 @@
+NOTES ON IMPLEMENTATION
+-----------------------
+
+(0) General design principles
+
+- C++ part: Optimized for fast setup on the fly of every data structure
+  that is required. This is because (a) MEX commands require new setup
+  every time they are called, and (b) the same code should work with
+  Matlab and Python
+  - No reliance on higher LHOTSE functions (in particular, stuff which
+    requires BLAS, LAPACK). Right now, basic GSL is used, but can be
+    phased out.
+    GOAL: Use LHOTSE for now to speed up the implementation, but make it
+    fairly easy to phase it out.
+  - No reliance on Matlab or Python data types. Only use scalars and basic
+    flat arrays. Overwrite arrays and pass back.
+    NOTE: This means that both C++ classes and low-level C++ interface
+    (MEX functions) can be tough to call (optimized for speed of setup, not
+    ease of use). But user never sees that: internal representations are
+    compiled by Matlab/Python code, from higher-level data structures
+
+- Interface to Matlab:
+  - Use double and int32 as basic datatypes. Use int32 only for internal
+    representation or large indexes, use double otherwise
+  - Array indexing:
+    C++ uses 0-floor indexing, MEX files as well (all internal
+    representations anyway).
+    Matlab code visible to user uses 1-floor indexing. Code calling MEX
+    files has to convert.
+    NOTE: Have to see how awkward this ends up! In the worst case, we
+    require 0-floor indexing in the user-visible Matlab code as well.
+  - Use package .ept for all Matlab code (to be called as ept.XXX), but not
+    for MEX commands. MEX commands still carry the prefix 'eptools_'. This
+    is because we want MEX executables not to be located in the .ept path.
+    NOTE: This may change in the future. Right now, MEX commands are called
+    'eptools_XXX', Matlab commands 'ept.YYY', which is a bit weird.
+
+
+(1) Compile and run the thing
+
+Right now: KISS.
+Implement C++ in LHOTSE, but avoid all higher classes, in particular all
+matrix/vector stuff!
+- No linking against heavy libraries (BLAS, LAPACK). GSL requires right now,
+  but could be phased out
+- Simplifies pulling the code out entirely
+
+This makes compiling C++ code a bit tricky:
+- Compile MEX file:
+    make XXX mex=yes blas=no
+  In particular, "blas=no" sets HAVE_NO_BLAS. This is used to comment out
+  code (even basic library!) which would require BLAS/LAPACK.
+  ATTENTION: Done only for classes in ESSMINIMUMOBJS.
+- Make target:
+  - Use ESSMINIMUMOBJS in place of ESSENTIALOBJS. Objects in ESSMINIMUMOBJS
+    constitute the bare minimum of library classes, and this code may use
+    HAVE_NO_BLAS
+
+
+(2) Debugging MEX files
+
+www.mathworks.ch/ch/help/matlab/matlab_external/debugging-c-c-language-mex-files.html
+
+- Compile with -g:
+
+    linux> mex -g yprime.c
+
+- Start GDB:
+
+    linux> matlab -Dgdb
+
+- Start MATLAB without JVM:
+
+    <gdb> run -nojvm
+
+- In MATLAB, enable debugging with the dbmex function:
+
+    >> dbmex on
+    >> yprime(1,1:4)
+
+    At this point, you are ready to start debugging.
+
+- Set breakpoint at mexFunction:
+
+    <gdb> break mexFunction
+    <gdb> continue
+
+- To proceed from a breakpoint, type:
+
+    <gdb> continue
+
+- After stopping at the last breakpoint, type:
+
+    <gdb> continue
+
+- From the MATLAB prompt you can return control to the debugger by typing:
+
+    >> dbmex stop
+
+ - When you are finished with the debugger, type:
+
+    <gdb> quit
+
+
+(3) Issues with Matlab and MEX
+
+(3.1) mexErrMsgTxt raises exception and crashes Matlab:
+
+Happened at one point with eptools_fact_sequpdates.cc on Laptop (but not
+with other MEX functions!), see eptb5).
+
+http://www.mathworks.com/matlabcentral/answers/94804:
+
+- Incompat. between Matlab's C shared libs and that of the system
+- Workaround:
+    cd $MATLAB
+    cd sys/os/glnx86
+    mkdir old
+    mv libstdc++.* libg2c.* libgcc_s* old
+  Forces Matlab to use the system libraries.
+
+With this, it seems to work.

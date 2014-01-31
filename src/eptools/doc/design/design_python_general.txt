@@ -1,0 +1,220 @@
+DESIGN OF PYTHON PART OF EP TOOLBOX
+-----------------------------------
+
+
+(0) General principles
+
+- Simplicity:
+  - I am new to Python! This is an exercise
+  - Use an object-oriented design, certainly for the B factors in coupled mode
+  - Try to translate the Matlab code. Simplifies debugging
+  - Go through Python datatypes and decide what to use (notes from book,
+    Python tutorial)
+- Start with interface to C++:
+  - Cython is simplest in the end, best supported. It works out fine
+  - Common wrapper code, called from both Matlab MEX and Cython
+  - Special difficulty: BLAS functions in chol{up|dn}rk1
+
+
+(1) Interface to C++
+
+NOTE: It seems that people use Cython for this kind of extensions:
+
+----- [discussion with Armando Sole (he could help further)]
+I do not know why you are so much against using cython except if you want to know exactly what you are doing. You can write pure C code and then use Cython just to wrap it. The generated code does not need Cython anymore but you will be in a better position for the coming numpy 2.x Now I am using array->data to access the data buffer but that changes in numpy 2.x and then those will be things to be changed by hand :(
+-----
+Just a word of caution: SWIG is the slowest of the wrappers around.
+
+I have to tell you that I am a beginner with Cython. I am currently writing a C++ library that I want to be used "as is" and wrapping it with Cython for its use via Python. You do not need to touch the C++ library at all and cython automatically catches C++ exceptions and translate them into python exceptions, converts from standard C++ containers to python equivalents and so on. Since my library heavily uses std::map and std::vector, it is really nice not to have to code a complete wrapping by hand :-)
+-----
+http://mail.scipy.org/pipermail/numpy-discussion/2013-February/065576.html
+
+That is all what I have at hand. In that example he is coding directly under cython the call while what you want is that piece of code to be implemented in your library.
+
+In your case you need to have a C or C++ function performing the call: a function receiving the BLAS pointer and pointers to the relevant arguments. The (piece of) example on that thread (please read the complete thread) already shows you how to get the pointers to the BLAS function, and pointers to the data area of numpy arrays.
+
+When you compare to my example, Cython is replacing xpcs_autocorrelation_wrapper.
+
+For more info about Cython and C++ :
+
+http://docs.cython.org/src/userguide/wrapping_CPlusPlus.html
+-----
+Other links:
+- https://github.com/cython/cython/wiki/tutorials-NumpyPointerToC
+  Need numpy.pyx
+  ==> Gives complete example. This looks fairly simple! But does not show how
+      to create result array. Maybe pass that in from numpy?
+-  http://scipy-lectures.github.io/advanced/interfacing_with_c/interfacing_with_c.html
+  Compares different approaches, also Cython and SWIG.
+  Recommends to use Cython
+
+
+Links from browsing around:
+- NumPi <--> C++:
+  docs.scipy.org/doc/numpy/reference/swig.interface-file.html
+  wiki.scipy.org/Cookbook/SWIG_NumPy_examples
+- Another option: weave (has other dependencies on "blitz"), or CXX ?
+  docs.scipy.org/doc/scipy/reference/tutorial/weave.html
+- Overview:
+  intermediate-and-advanced-software-carpentry.readthedocs.org/en/latest/c++-wrapping.html
+- web.archive.org/web/20090604182721/http://www.suttoncourtenay.org.uk/duncan/accu/integratingpython.html
+- SWIG: See http://www.dabeaz.com/SwigMaster/index.html
+  - Does not support C++ so well
+  - May have to write more extra code
+  - May be easiest for a small amount of C++ code
+- Boost::Python
+  - Needs all of Boost
+  - Slow to compile. Bit bloated and complicated
+- pygccxml:
+  sourceforge.net/projects/pygccxml/
+  [??]
+
+OK: In the end, Cython works out fine, see python/cython
+
+
+(3) Towards a Design
+
+TODO:
+- Go over Matlab code, list what kind of things are required to know about,
+  and what would be elements of a simple design
+- Get familiar with relevant aspects of Python, numpy and scipy
+- Try to stay as close as possible to the Matlab code
+  ==> In fact: Try to do a direct translation first!
+- Browse over scikit-learn. How do they do things?
+
+What we need:
+- A sensible way to package everything into a module, possibly with submodules,
+  without having to write everything into one file [OK]
+  ==> TODO: Modules
+- Coupling factor class hierarchy: [OK]
+  Mirror @Mat. No operator overloading for now
+  ==> TODO: Classes, inheritance
+  ==> scipy sparse matrices for one subclass
+- Potential manager:
+  Elementary PM is struct (class). PM can be list of elementary PMs
+- Internal representation of PM: Struct (class)
+- Model (coupled mode):
+  Class. Method to compute internal PM representation (f.ex.)
+- Representation (coupled mode): Class
+- Driver (inference, prediction):
+  Class hierarchy. Use same methods for different modes
+- Options struct, etc.: Dictionaries (key-value), simpler than a class
+
+(3.1) Package and modules
+
+OK: Make sure to really understand this!
+- Read Python book about modules and packages
+- Read Python book about classes
+
+The following structure is simple:
+- /eptools
+  - __init__.py:
+      from eptools.module1 import *
+      from eptools.module2 import *
+      # ...
+  - module1.py:
+      __all__ = ['Class1', 'function1', ...]
+
+This would make eptools a package with a number of modules, whose public
+symbols (listed in __all__) are exposed as eptools.XXX
+
+(3.2) Coupling factor class hierarchy: [OK]
+
+- Put base class and all standard derived ones into one module: coup_fact
+- Base class and simple subclasses in coup_fact.py
+- Bigger subclasses could be in different files and imported in coup_fact.py
+
+(3.3) PotManager: [OK]
+
+Module: utilities
+
+- Elementary component ElemPotManager:
+  - Attributes name, size, pars
+  - Basic type checks
+- PotManager:
+  - Method: Compute internal representation. Check whether ElemPotManager
+    have changed since last time
+
+(3.4) Representation in coupled mode:
+
+Module: utilities
+
+- Attributes as in Matlab
+- Subclasses for parallel/sequential
+- Methods for updating representation, recomputing from scratch
+
+
+(4) Python Facts
+
+(4.1) Modules:
+
+- Single file modname.py
+- Can import symbols from other modules:
+    from other_module import ...
+  This is how can use several files. Everything in a module:
+    from other_module import *
+- Executable code at end of module file:
+    if __name__ == "__main__":
+       # Code
+- Package: System of subdirectories.
+  Has to have __init__.py at each level.
+- Import all modules of a package:
+    from pack_name import *
+  Works only if pack_name/__init__.py defines
+    __all__ = ['mod1', 'mod2', ...]
+  Otherwise, pack_name/__init__.py can also just import or define things.
+
+(4.2) Classes:
+
+class MyClass:
+    i = 123
+    def f(self):
+        return 'Hello'
+
+- Typically everything is public
+- First argument to method is self
+
+class MyClass:
+    # Constructor:
+    def __init__(self):
+        self.data = []
+
+- Data attributes (members) of object: Can just be assigned at any time.
+  Maybe best by constructor
+- Method attributes: Have to be defined in class definition
+- No way to hide attributes: can be accessed, defined and even removed by
+  anybody
+- Within method, attributes have to be addressed as self.attr_name, other
+  methods as self.meth_name(...)
+
+class SubClass(BaseClass):
+   # SubClass inherits from BaseClass
+
+- All methods are "virtual"
+- Call superclass method:
+    # Overrides meth_name in base class:
+    def math_name(args):
+        BaseClass.meth_name(self,args)
+	# Do more
+- Type test:
+    isinstance(obj, type)
+  True if obj has type type or derived from type
+- Multiple inheritance: No problem
+  Search order is depth-first, then left to right
+  ==> New style classes are better for multiple inheritance!
+- There are no really private members. But some business with __*** (??)
+
+class MyStruct:
+    pass
+x = MyStruct()
+x.name = 'John'
+x.salary = 100
+
+- Anyway, anybody can add data attribute to an object. Could be safer to
+  have access methods?
+
+More topics (Python tutorial, Section 9):
+- Exception classes
+- Iterators
+- Generators
+- Generator expressions

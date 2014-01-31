@@ -1,0 +1,92 @@
+WRAPPING C CODE BY WAY OF CYTHON
+--------------------------------
+
+(0) What to do
+
+- Create Python wrappers for wrap/eptwrap_XXX.cc
+- Data types:
+  - Standard Python
+  - String
+  - numpy 1D (double, int): Both I and I/O.
+    Do not create return arrays in C code, but maybe in Cython wrapper
+- Compile complete code (wrapper is C, but other code is C++) with distutils,
+  also link against external libs (m, gsl)
+- Advanced: Calling BLAS functions in C code, exposed by numpy/scipy
+
+(1) Links and comments:
+
+- Cython docs: Locally at html/docs.cython.org/index.html
+- github.com/cython/cython/wiki/tutorials-NumpyPointerToC
+  Complete example (I/O, double array)
+- scipy-lectures.github.io/advanced/interfacing_with_c/interfacing_with_c.html
+  Compares different approaches (Cython, SWIG)
+
+The following is about "Calling BLAS as exposed by scipy":
+
+----- [discussion with Armando Sole (he could help further)]
+I do not know why you are so much against using cython except if you want to know exactly what you are doing. You can write pure C code and then use Cython just to wrap it. The generated code does not need Cython anymore but you will be in a better position for the coming numpy 2.x Now I am using array->data to access the data buffer but that changes in numpy 2.x and then those will be things to be changed by hand :(
+-----
+Just a word of caution: SWIG is the slowest of the wrappers around.
+
+I have to tell you that I am a beginner with Cython. I am currently writing a C++ library that I want to be used "as is" and wrapping it with Cython for its use via Python. You do not need to touch the C++ library at all and cython automatically catches C++ exceptions and translate them into python exceptions, converts from standard C++ containers to python equivalents and so on. Since my library heavily uses std::map and std::vector, it is really nice not to have to code a complete wrapping by hand :-)
+-----
+http://mail.scipy.org/pipermail/numpy-discussion/2013-February/065576.html
+
+That is all what I have at hand. In that example he is coding directly under cython the call while what you want is that piece of code to be implemented in your library.
+
+In your case you need to have a C or C++ function performing the call: a function receiving the BLAS pointer and pointers to the relevant arguments. The (piece of) example on that thread (please read the complete thread) already shows you how to get the pointers to the BLAS function, and pointers to the data area of numpy arrays.
+
+When you compare to my example, Cython is replacing xpcs_autocorrelation_wrapper.
+
+For more info about Cython and C++ :
+
+http://docs.cython.org/src/userguide/wrapping_CPlusPlus.html
+-----
+
+(2) First step: Wrap eptwrap_epupdate_parallel
+
+TODO:
+- Variable number of input arguments:
+  Use "x=v", use None for nothing. Can test with "x is None"
+- String buffer for errstr: OK
+- Return arguments: How many are expected (like nlhs)?
+- Own exception class
+
+Distutils: setup.py
+HIER:
+- Compile MEX file and note .cc files and libraries
+- Anything special concerning .cc files?
+  ==> language = "c++"
+
+----- [MEX compilation]
+mex -o /home/seeger/lhotse/eptools_epupdate_parallel.mexa64 /home/seeger/lhotse/lhotse/global.o /home/seeger/lhotse/lhotse/StandardException.o /home/seeger/lhotse/lhotse/FileUtils.o /home/seeger/lhotse/lhotse/MachDep.o /home/seeger/lhotse/lhotse/IntVal.o /home/seeger/lhotse/lhotse/Interval.o /home/seeger/lhotse/lhotse/TypeCode.o /home/seeger/lhotse/lhotse/FileUtilsMachDep.o /home/seeger/lhotse/lhotse/specfun/Specfun.o /home/seeger/lhotse/src/eptools/potentials/DefaultPotManager.o /home/seeger/lhotse/src/eptools/potentials/EPPotentialFactory.o /home/seeger/lhotse/src/eptools/potentials/EPPotentialNamedFactory.o /home/seeger/lhotse/src/eptools/potentials/PotManagerFactory.o /home/seeger/lhotse/src/eptools/FactorizedEPRepresentation.o /home/seeger/lhotse/src/eptools/FactorizedEPDriver.o /home/seeger/lhotse/src/eptools/wrap/eptools_helper.o /home/seeger/lhotse/src/eptools/matlab/mex/mex_helper.o /home/seeger/lhotse/src/eptools/wrap/eptwrap_epupdate_parallel.o /home/seeger/lhotse/src/eptools/matlab/mex/eptools_epupdate_parallel.o -L/home/seeger/lhotse/lhotse -L/home/seeger/lhotse/src -L/usr/lib64  -cxx -lgsl -lm
+-----
+
+- libraries: gsl, m
+- library paths: /usr/lib64
+- include paths: /home/seeger/lhotse
+- cc files:
+"lhotse/global.cc", "lhotse/StandardException.cc", "lhotse/FileUtils.cc", "lhotse/MachDep.cc", "lhotse/IntVal.cc", "lhotse/Interval.cc", "lhotse/TypeCode.cc", "lhotse/FileUtilsMachDep.cc", "lhotse/specfun/Specfun.cc", "src/eptools/potentials/DefaultPotManager.cc", "src/eptools/potentials/EPPotentialFactory.cc", "src/eptools/potentials/EPPotentialNamedFactory.cc", "src/eptools/potentials/PotManagerFactory.cc", "src/eptools/FactorizedEPRepresentation.cc", "src/eptools/FactorizedEPDriver.cc", "src/eptools/wrap/eptools_helper.cc", "src/eptools/wrap/eptwrap_epupdate_parallel.cc"
+
+>> python setup.py build_ext --inplace
+
+- Have to give pathname to .cc files: -I is not used there!
+  ==> Workaround: symlink. Is there some distutils option??
+
+OK: Wrappers for all other functions seem to work fine as well. Unit testing
+    later.
+
+(3) Wrapping chol{up|dn}rk1:
+
+This is harder, because do not want to link against BLAS library. Have to
+get pointers to BLAS functions from scipy (example code by A. Sole)
+
+TODO:
+- Write common wrapper code, which calls BLAS function by way of ptr_fun [OK]
+- Rewrite MEX files [OK]
+- Go through Sole code and cython link. Understand and code [OK]
+  ==> IT COMPILES!
+- Test by comparing against Matlab! [OK]
+  ==> This works great! COOL!
+
+tar cfz eptools_snapshot.tgz lhotse/src/eptools/python/cython/Makefile lhotse/src/eptools/python/cython/setup.py lhotse/src/eptools/python/cython/eptools_ext.pyx lhotse/src/eptools/python/cython/lhotse lhotse/src/eptools/python/test/basic/test_cholupdnrk1.py lhotse/src/eptools/python/test/basic/eptools_ext.so lhotse/lhotse/global.cc lhotse/lhotse/StandardException.cc lhotse/lhotse/FileUtils.cc lhotse/lhotse/MachDep.cc lhotse/lhotse/IntVal.cc lhotse/lhotse/Interval.cc lhotse/lhotse/TypeCode.cc lhotse/lhotse/FileUtilsMachDep.cc lhotse/lhotse/*.h lhotse/lhotse/matrix/*.h lhotse/lhotse/specfun/Specfun.cc lhotse/lhotse/specfun/*.h lhotse/src/*.h lhotse/src/eptools/potentials/DefaultPotManager.cc lhotse/src/eptools/potentials/EPPotentialFactory.cc lhotse/src/eptools/potentials/EPPotentialNamedFactory.cc lhotse/src/eptools/potentials/PotManagerFactory.cc lhotse/src/eptools/potentials/*.h lhotse/src/eptools/FactorizedEPRepresentation.cc lhotse/src/eptools/FactorizedEPDriver.cc lhotse/src/eptools/*.h lhotse/src/eptools/wrap/eptools_helper_basic.cc lhotse/src/eptools/wrap/eptools_helper.cc lhotse/src/eptools/wrap/eptwrap_choldnrk1.cc lhotse/src/eptools/wrap/eptwrap_choluprk1.cc lhotse/src/eptools/wrap/eptwrap_epupdate_parallel.cc lhotse/src/eptools/wrap/eptwrap_epupdate_single.cc lhotse/src/eptools/wrap/eptwrap_fact_compmarginals.cc lhotse/src/eptools/wrap/eptwrap_fact_compmaxpi.cc lhotse/src/eptools/wrap/eptwrap_fact_sequpdates.cc lhotse/src/eptools/wrap/eptwrap_getpotid.cc lhotse/src/eptools/wrap/eptwrap_getpotname.cc lhotse/src/eptools/wrap/eptwrap_potmanager_isvalid.cc lhotse/src/eptools/wrap/*.h

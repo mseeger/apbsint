@@ -1,0 +1,36 @@
+/* -------------------------------------------------------------------
+ * EPTWRAP_XXX
+ *
+ * Template for C++ wrapper definition
+ * -------------------------------------------------------------------
+ * Author:
+ * ------------------------------------------------------------------- */
+
+#include "src/main.h"
+#include "src/eptools/wrap/eptools_helper.h"
+#include "src/eptools/wrap/eptwrap_XXX.h"
+
+char errMsg[512];
+
+char* eptwrap_XXX_errmsgbuff()
+{
+  return errMsg;
+}
+
+void eptwrap_XXX(...,W_ERRORARGS)
+{
+  W_INITERROR(errMsg);
+  try {
+    /* Read arguments */
+    if (ain<.. || ain>..)
+      W_RETERROR(2,"Wrong number of input arguments");
+    if (aout>..)
+      W_RETERROR(2,"Too many return arguments");
+    // ...
+    W_RETOK;
+  } catch (StandardException ex) {
+    W_RETERROR_ARGS(1,"Caught LHOTSE exception: %s", ex.msg());
+  } catch (...) {
+    W_RETERROR(1,"Caught unspecified exception");
+  }
+}

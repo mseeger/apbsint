@@ -1,0 +1,238 @@
+.. -*- rest -*-
+.. vim:syntax=rest
+.. NB! Keep this document a valid restructured document.
+
+Building and installing the Approximate Bayesian Inference Toolkit (ApBsInT)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+:Authors: Matthias Seeger <mseeger@gmail.com>
+
+.. Contents::
+
+Introduction
+============
+
+The Approximate Bayesian Inference Toolkit (ApBsInT) is a lightweight
+implementation of a number of algorithms for approximate Bayesian inference,
+applicable to a range of probabilistic models. The range of approximations,
+algorithms and supported models is set to grow. At present, the main focus
+is as follows.
+
+1) *Probabilistic models*: Factor graphs of continuous variables. Each factor
+   is a univariate potential of a linear combination of the variables.
+
+   * Generalized linear models
+     - Linear regression: Gaussian noise, double exponential noise
+     - Binary classification: probit and logistic regression
+     - Count data: Poisson and negative binomial regression
+     - Quantile regression
+
+   * Sparse (generalized) linear models
+     - Laplace prior
+     - Mixture of Gaussian prior
+     - Spike and slab prior
+
+2) *Bayesian inference approximations*: At present, the focus is on variational
+   (deterministic) approximations. The posterior distribution over latent
+   variables is approximated by a Gaussian distribution (called the
+   *backbone*), which can either be unconstrained or fully factorized (all
+   variables are pairwise independent).
+
+   * Expectation propagation
+
+3) *Algorithms*
+
+   * General (fully coupled) Gaussian backbone. Parallel (synchronous) updates
+     on all potentials
+
+   * General (fully coupled) Gaussian backbone. Sequential updates on
+     potentials, random or actively chosen schedule. The backbone is updated
+     by way of rank one updates of a Cholesky decomposition
+
+   * Fully factorized Gaussian backbone. Sequential updates on potentials,
+     random or user-defined schedule. This is a generalization of loopy
+     belief propagation to non-Gaussian models.
+
+ApBsInT is written in Python. A number of core routines are implemented in
+C++, both for efficiency and to interface with numerical libraries. A part
+of the functionality is duplicated in Matlab, mainly for the purpose of
+testing.
+
+This toolbox is in an early alpha stage. At present, it appeals to users with
+a certain degree of knowledge about probabilistic modelling and the abilities
+to get their hands dirty. The build system is only partly automated, and apart
+from test examples, there are no general-purpose applications implemented at
+present.
+
+On the other hand, the implemented techniques are well documented, and great
+care is taken to ensure numerically robust behaviour. Unit test code is
+supplied on a case-by-case basis. Contributions on all levels are highly
+welcome.
+
+Prerequisites
+=============
+
+ApBsInT consists of Python code, Matlab code, and C++ code. The latter exports
+APIs both towards Python and Matlab. These APIs can be built seperately. The
+Python (Matlab) code works only together with its successfully built C++ API
+(respectively).
+
+1) Prerequisites for C++ code (apart from APIs)
+
+   The C++ code is written under Linux, it compiles with GNU gcc/g++ 4.7.2.
+   It may compile with other gcc versions as well. At present, the code does
+   not compile under Windows or Mac. Having said that, the code is basic,
+   porting it should not be difficult (please contribute a port if you did
+   one).
+
+2) Prerequisites for Python code and Python API to C++ code
+
+   The Python code is written in Python 2.7, it may work for earlier Python
+   2.x versions as well. It does not run in Python 3.x.
+
+   You also need recent versions of NumPy (code written with version 1.7.1)
+   and SciPy (code written with version 0.12.0).
+   The API requires Cython (code written with version 0.19) and the distutils
+   module.
+
+3) Prerequisites for Matlab code and Matlab API to C++ code
+
+   The Matlab code is written in Matlab 8, it may work for earlier versions
+   of Matlab as well. It does not run in Octave.
+
+   The Matlab API is a set of MEX functions. The MEX interface is a part of
+   any Matlab installation. Unfortunately, it is not a portable API. The
+   present code is tested under Linux. It does not compile under Windows or
+   Mac. Again, a port should not be difficult to do (please contribute a port
+   if you did one).
+
+Building the Python API
+=======================
+
+The Python API interfaces C++ code by way of Cython.
+Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
+
+* Configure setup.py
+
+  Make sure that both Cython and distutils are present.
+
+  Go to [APBROOT]/python/cython. Copy setup.py.basic to setup.py.
+  You have to insert '[ROOT]' in 'include_dirs', replacing the fixed entry
+  there.
+
+  You may have to configure 'library_dirs' so that libraries in 'libraries'
+  are found. If these come with header files in non-standard places, you
+  have to configure 'include_dirs'.
+
+* Build
+
+  $ cd [APBROOT]/python/cython
+  $ make
+
+  This should produce a shared library eptools_ext.so. If the name is
+  different (the suffix '.so' may be different in your system), do the
+  following:
+
+  $ cd [APBROOT]/python/apbsint
+  $ rm eptools_ext.so
+  $ ln -s ../cython/eptools_ext.[SUFFIX] eptools_ext.[SUFFIX]
+
+  Here, eptools_ext.[SUFFIX] is the shared library.
+
+* Modify Python sys.path
+
+  Insert [APBROOT]/python into the module search path sys.path. If
+  you use IPython, you can do the following. Locate your profile:
+
+  $ ipython locate profile
+
+  Go there and edit the file ipython_config.py. Look for sys.path, or just
+  append the following to the end::
+
+    import sys
+    sys.path.append('[APBROOT]/python')
+
+* Test
+
+  There is some test code in [APBROOT]/python/test/. For example:
+
+  $ cd [APBROOT]/python/test/binclass
+  $ ipython eptest_binclass.py
+
+  This should run some simple binary classification example. You can edit
+  eptest_binclass.py and thereby test different aspects.
+
+Building the Matlab API
+=======================
+
+Note: The main focus of ApBsInT is on Python development. The Matlab API should
+be regarded as add-on, which we mainly use to debug and test the Python code.
+Also, while Cython and distutils are portable across different platforms, this
+is not the case for the Matlab MEX API. If you are working on Windows or Mac,
+you may have to do some serious porting (please contribute a port if you did
+one).
+
+Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
+
+* Prerequisites
+
+  Make sure you have a fairly recent version of Matlab, and ensure that you
+  can compile MEX files (Matlab mex command).
+
+* Configure make.inc.def
+
+  $ cd [APBROOT]/matlab
+  $ cp make.inc.example make.inc.def
+
+  Edit make.inc.def. You have to set::
+
+    ROOTDIR=[ROOT]
+
+  Also, check the other variables and make sure this makes sense for your
+  system. In particular, set EXINCS_MATLAB to the XXX/extern/include
+  directory for your Matlab installation (it has to contain mex.h).
+
+  Matlab MEX creates shared libraries, whose filenames have a specific
+  suffix (.mexglx or .mexa64 in Linux). Find out what this is for you, and
+  set MEXSUFFIX accordingly.
+
+* Build
+
+  $ cd [APBROOT]/matlab
+  $ make
+
+  This should produce MEX shared libraries in [APBROOT]/matlab/bin.
+
+* Modify Matlab path
+
+  The directory [APBROOT]/matlab and its subdirectories must be in the
+  Matlab path. The Matlab script [APBROOT]/matlab/startup.m adds them.
+  In order to do this automatically when starting Matlab, add the following
+  to your ~/matlab/startup.m file::
+
+    s=pwd;
+    cd(strcat(getenv('HOME'),'[APBROOT]/matlab'));
+    startup;
+    cd(s); clear('s');
+
+* Test
+
+  There is some test code in [APBROOT]/matlab/test/. For example, try to run
+  [APBROOT]/matlab/test/binclass/eptest_binclass.m. This should run some
+  simple binary classification example. You can edit the code and thereby
+  test different aspects.
+
+Documentation
+=============
+
+A bit patchy for now. In particular, there is not much user documentation
+right now. Look into [APBROOT]/doc.
+
+* [APBROOT]/doc/techreps/ep_toolbox.pdf: Technical report with details about
+  the Expectation Propagation (EP) part of ApBsInT
+
+* [APBROOT]/doc/design: Some files describing design aspects
+
+Apart from that, example and test code for the Matlab API are in
+[APBROOT]/matlab/test/, for the Python API in [APBROOT]/python/test/. Also,
+the code is well documented.

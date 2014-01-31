@@ -1,0 +1,346 @@
+NOTES ON NUMPY AND SCIPY
+------------------------
+
+
+(1) Main differences Matlab vs. NumPy
+
+- Matlab indexing 1-based
+- numpy copies references. Use a.copy() to draw a real copy
+  ATTENTION:
+    a.copy(order='F')
+  to enforce column-major. Otherwise row-major, even if a is
+  column-major
+- Slicing in numpy gives a view, not a copy
+    x = a[:,1]
+    # Changing x changes a!
+- numpy: Views (slicing) use striding, so arrays/vectors can be
+  non-contiguous
+- numpy: On array type, all operators are element-wise, also *
+  dot is for matrix multiplication
+- numpy: Rank-1 arrays are column or row vectors, whatever is required.
+  No need to transpose
+
+Maybe most important difference:
+
+In numpy,
+  a = ***(b)
+typically gives a view on b, not a copy. Holds for assignment, slicing,
+transpose, ... Outcome may not be contiguous in memory and have different
+flags.
+
+Also (general for Python), take care of this point: If a is an existing
+numpy array of correct size, then
+  a = b
+does NOT copy b's content into a. It rather reassigns the a reference to
+the object b refers to. To force a copy, write
+  a[:] = b
+or if b is just a part:
+  a[i:j] = b
+This works because a[:] or a[i:j] create a numpy view into the object ref.
+to by a, for which '=' then does the right thing.
+
+Translations for some expressions:
+
+Matlab	     	        numpy			Notes
+----------------------------------------------------------------------
+size(a)			shape(a)
+			a.shape
+a(end)			a[-1]
+a(:,1)			a[:,0]			View in Python!
+a = b(:)		a = b.copy()
+a(1:5,:)		a[:5]			: is default
+a(1:5)			a[0:5]
+a'			a.conj().transpose()	Does not make copy, but
+						a view!
+a*b		        dot(a,b)
+a.*b			a*b
+a.^3			a**3
+find(a>0)		nonzero(a>0)
+y = x(:)		y = x.flatten(1)	Forces copy
+1:10			arange(1,11)
+zeros(3,4)		zeros((3,4))
+rand(3,4)		random.rand(3,4)
+repmat(a,m,n)		tile(a,(m,n))
+[a b]			hstack((a,b))
+[a; b]			vstack((a,b))
+max(max(a))		a.max()
+max(a)			a.max(0)		Max. for each column
+			a.max(1)		Max. for each row
+norm(v)			linalg.norm(v)
+a\b			linalg.solve(a,b)
+chol(a,'lower')		linalg.cholesky(a)	Lower triangular
+						NOTE: Always column-major!
+a = a + 1		a += 1
+z = reshape(x,3,4)	z = x.reshape(3,4,order='F').copy()
+
+
+(2) From NumPy Tutorial:
+
+(2.1) Basics
+
+ndarray (array): Multidim. array
+- ndim:  Number dimensions (rank)
+- flags: Some flags (contiguous, ...)
+- shape: Dimensions
+- size:  Number of elements
+- dtype: Element type (np.int32, np.float64, np.bool)
+
+arange: Python range (xrange) -> ndarray
+
+Creation:
+
+  a = array([[1 2 3],[4 5 6]])  # Type is int32
+  a = array([1. 2. 3.])         # Type is float64
+
+  a = zeros((m,n))              # Type is float64
+  a = ones((m,n))
+  a = zeros((m,n), dtype=int32)
+
+  b = zeros_like(a)             # Same shape as a
+  b = ones_like(a)
+
+  a = empty((m,n))              # Undef. entries (float64)
+  b = empty_like(a)
+
+  rng = linspace(a,b,n)	        # As in Matlab
+
+  a = rand((m,n))
+  a = randn((m,n))
+
+  a = eye(n)
+
+Reshape:
+
+  a = arange(12).reshape(4,3)   # Row-major!
+  a = arange(12)
+  b = reshape(4,3,order='F')	# Column-major like Matlab
+
+  a = arange(12).reshape(4,-1)  # -1 -> Whatever is required
+
+Operations:
+
+Applied element-wise, also scalar functions.
+
+  c = a*b                       # Element-wise!
+  c = dot(a,b)                  # Matrix multiplic.
+
+  a.sum()
+  a.min()
+  a.max()
+
+  a.sum(0)                      # Sum of rows (run over dim. 0)
+  a.sum(1)			# Sum of cols (run over dim. 1)
+
+Universal functions (ufuncs):
+Basic functions (sin, cos, exp, ...), apply element-wise.
+
+Convert Python function into ufunc:
+  frompyfunc(py_fun,nin,nout)
+
+fromfunction:
+  fromfunction(f,(m,n),dtype=...)
+
+Creates [f(i,j)], i=0:m-1, j=0:n-1, element type dtype
+
+Slicing:
+- Usual Python rules
+- Default is : (all)
+    b[-1]                        # Last row
+
+Iteration:
+
+  for row in b:                  # Over rows
+      # ...
+
+  for x in b.flat:               # Over elements
+      # ...
+
+(2.2) Shape Manipulation
+
+Stacking:
+- vstack: Vertical
+- hstack: Horizontal
+- column_stack: Columns next to each other
+- row_stack: Rows on top of each other
+
+Make column vector (2D): newaxis
+  a = arange(6)
+  b = a[:,newaxis]
+
+(2.3) Copies, Views
+
+View = shallow copy: Look at same data (like mask in LHOTSE):
+- Slicing
+- Transpose
+
+NOTE: Not always clear when numpy creates a view, this also can be different
+for older versions!
+
+Deep copy: Use a.copy()
+The copy is contiguous and C-style (row-major)
+
+  b = a.copy(order='F')          # Column-major
+
+More basic things:
+- Transpose:
+  a.transpose()                  # Just a view!
+  a.T
+- Flat vector (copy if array not contiguous):
+  a.ravel()
+- Questions:
+  all(a>0)
+  any(a>0)
+  nonzero(a>0)
+- Ordering:
+  argmax, argmin, argsort, max, min, sort
+- Operations:
+  cumprod, cumsum, fill, prod, sum
+  a.fill(value)
+  a.fill(value,n)
+- Basic linalg:
+  inner, dot, outer
+- Basic stats
+  cov, mean, std, var
+
+(2.4) Broadcasting rules
+
+Bit like bsxfun in Matlab?
+Rules to deal with inputs not a same shape:
+- Not same ndim? Append 1 to smaller ndim
+- Dimensions of size 1 are extended by replicating entries
+
+  a = arange(12).reshape(4,3)
+
+  a + arange(4).reshape(4,1)	# Add vector to each column
+  a + arange(3)			# Add vector to each row
+This is really neat, allows for simple expressions!
+
+(2.5) Fancy indexing
+
+See tutorial.
+
+(2.6) Basic linear algebra
+
+Module is numpy.linalg
+
+In numpy:
+- dot(a,b)
+  - 2D, 2D: Matrix multiplication
+  - 1D, 2D; 2D, 1D: Matrix-vector
+  - 1D, 1D: Inner product
+  General: dot(a,b)[i,j,k,m] = sum(a[i,j,:] * b[k,:,m])
+  - Last axis a, 2nd-to-last b
+- inner, outer: Inner, outer product
+- kron(a,b): Kronecker product
+- trace: Trace
+
+In numpy.linalg:
+- cholesky(a): Cholesky decomp., lower tri. (Fortran order)
+- qr(a): QR decomp.
+- svd(a): SV decomp.
+- eig(a): Eigendecomp. general matrix
+- eigh(a): Eigendecomp. of Hermitian matrix
+- det(a): Determinant
+- slogdet(a): Sign of log determinant
+
+- solve(a,b): Like Matlab a\b
+- lstsq(a,b): Least squares
+
+- Exception: LinAlgError
+
+NOTE: Call routines for several matrices at once (without for loop). Supported
+in general, see docs.
+
+
+(3) Own findings (numpy, scipy.linalg)
+
+(3.1) scipy.linalg: Alternative to numpy
+
+- Wraps BLAS functions
+- More functionality. Supposed to be faster if linked against optimized
+  BLAS/LAPACK
+
+- cholesky, cho_solve: Solve A x = b, A X = B, where A pos. def.
+- solve_triangular: Back substitution
+
+NOTE: Both of cho_solve, solve_triangular do not overwrite the r.h.s., but
+create a new matrix/vector for the result
+
+(3.2) Avoid temporary copies
+
+Works mainly via views. This works fine for submatrices, but setting the
+diagonal is a bit tricky. The following seems to work (right now):
+
+# Set a equal to diag(dgvec)
+# a 2D array of correct (square) size, contiguous (both C, F work)
+if not (a.flags['C_CONTIGUOUS'] or a.flags['F_CONTIGUOUS']):
+   raise ...
+aflat = a.ravel()   # Flat buffer of 'a' (no copy!)
+if aflat.flags['OWNDATA']:
+   raise ...  # 'ravel' did a copy (it must not!)
+aflat.fill(0.)  # Remove this line to just set diag(a) to dgvec
+n = a.shape[0]
+aflat[0::n+1] = dgvec
+
+NOTE: Setting the diagonal to a constant value:
+  # Set amat to I
+  amat.fill(0.)
+  np.fill_diagonal(amat,1.)
+
+(3.3) Random observations:
+
+Resizing a matrix buffer is done by
+  a.resize((m,n),refcheck=False)
+Without 'refcheck=False', this throws an exception by default, even if 'a'
+is not tied to anything.
+
+Observation about subvector: In the statement
+  x = x[ind]
+the full-length vector remains in existence and 'x' becomes a view. If this
+is not intended, use
+  x = x[ind].copy()
+
+Complement of an index (more general: set difference):
+For whatever reason, the following is **very** slow:
+  [x for x in range(n) if x not in set(ind)]
+In particular if the result is small. Use a bool array if possible:
+  tarr = np.ones(n,dtype=np.bool)
+  tarr[ind] = False
+  ind_comp = np.nonzero(tarr)[0]
+
+Loading Matlab files in Python:
+http://stackoverflow.com/questions/874461/read-mat-files-in-python
+  import scipy.io
+  mat = scipy.io.loadmat('file.mat')
+  # mat is dict with name as key, variable as value
+NOTE: Does not work for recent Matlab V7.3, so use (in Matlab):
+  save(...,'-v7')
+This forces Matlab to use the V7 format
+
+
+(4) Sparse Matrices in scipy
+
+import scipy.sparse
+
+- matrix_csc and matrix_csr for computations. matrix_csr seems to be a little
+  bit faster with 'dot'
+- Slicing gives back sparse vector, use
+    a[:,i].toarray().ravel()
+  In general, 'toarray' gives 2D numpy array
+- toarray can write directly into existing matrix, as long as it has exactly
+  the right size and is memory contiguous (C or F)
+    a.toarray(out=mat)  # Writes directly into 'mat'
+- The 'dot' method does matrix-vector and matrix-matrix multiplication, where
+  argument can be sparse or dense. The result is always dense, except if the
+  argument is sparse
+- The 'multiply' method is for element-wise multiplication.
+  BUT: It returns a dense matrix if the argument is dense! Pretty stupid:
+
+  c = ssp.csr_matrix(a.multiply(b))
+
+  Here, a sparse, b dense. But an intermediate dense matrix is created.
+- The operator * implements matrix multiplication, where both arguments are
+  sparse matrices
+- 'diags' creates a diagonal matrix as sparse matrix from a vector
+
+This whole class is not so well done, but it seems to work.

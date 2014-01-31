@@ -1,0 +1,189 @@
+DESIGN OF MATLAB PART OF EP TOOLBOX
+-----------------------------------
+
+
+(0) General principles
+
+- Simplicity:
+  - As easy to use as possible. Basic data structures. OO only if it adds
+    something (operators: glm-ie)
+  - MEX files: Efficient, generic (also work with Python). In particular,
+    all objects have to constructed from internal representations on the
+    fly, every time a MEX function is called: no copying or conversion of
+    data types
+  - Compile internal representations from Matlab objects or structs.
+    Internal representations compressed, tuned for fast setup
+  - Internal representations use double and int32 as basic datatypes, and
+    flat arrays. In particular, no Matlab-own data structures
+- Matlab peculiarities:
+  - Array indexing: 1-floor on Matlab side, but 0-floor in all C++ code and
+    internal representations.
+    Conversion when compiling representation, or when calling MEX function
+
+
+(1) Data structures, classes
+
+The OO interface of Matlab is a bit of an overkill, except for operators.
+In general, we can use structs to collect objects, and cell arrays for
+inhomogeneous lists. Internal representations can be part of these structs.
+
+A Model is described in terms of:
+- Potential manager
+- Coupling factor
+
+A Representation details the current posterior approximation. Model and
+Representation together represent the global state of affairs:
+- A Model remains constant, as long as hyperparameters do not change. It is
+  mainly input
+- A Representation is I/O to inference services
+- Prediction services receive (Model,Representation) input. The Representation
+  must contain all information for computing predictions rapidly
+
+NOTE: In factorized mode, the Representation right now contains the coupling
+factor, or at least a copy. This could be changed, let's see.
+
+The potential manager describes an ordered set t_j(s_j), j=1:M. All potentials
+are univariate. They come with parameters, which are maintained by the manager.
+There is an internal representation, which has to be recomputed when the
+parameters change. Doing this as a class hierarchy would allow to automatize
+this recomputation, but this is too complicated. Rely on the user, or
+recompute it before running inference (preferred).
+
+The coupling factor is B (M-by-N), where s = B x:
+- Coupled mode: B has to implement a number of services. We do this as a
+  class hierarchy, borrowing from glm-ie.
+- Factorized mode: B is a sparse matrix. It is compiled into an internal
+  representation, which also contains EP (message) parameters.
+
+The representation contains all information required to make predictions, and
+to drive the EP algorithm for approximate inference:
+- Coupled mode: See TR. The dominating part is a N-by-N Cholesky factor L
+- Factorized mode:
+  - Internal representation of B and EP parameters
+  - Gaussian marginals
+
+
+(2) Potential managers
+
+A PM is a struct or a cell arrays of structs (container object). In the latter
+case, the child PMs are simply concatenated. Each elementary PM collects
+potentials of the same type, but (possibly) different parameters:
+- name [string]: Potential name (registered at EPPotentialFactory)
+- size [int]: Number of potentials (>=1)
+- pars [cell of double vec]: Entry for each attribute of the potential type.
+  Either size-vector or scalar (shared)
+
+A PM is converted into an internal representation ('PotManagerFactory') by a
+Matlab function, which also calls a MEX file to check the validity of this
+internal representation (are all parameter values valid?).
+
+The same internal representation is used in all EP modes. It is specified in
+'potentials/PotManagerFactory.h'. Let K be the number of children (blocks):
+- potids [int32 vector, K]: Potential IDs
+- numpot [int32 vector, K]: Number N_k potentials for each block
+- parshrd [int32 vector]: Flat, K parts. Part k of size P_k, where
+  P_k number of pars. of potids(k) type. 1: Single value shared for all
+  potentials in block; 0: Different value for each potential in block
+- parvec [double vector]: Flat, K  parts. Part K has P_k subparts. Subpart
+  is scalar if parshrd entry 1, otherwise vector of size N_k
+
+
+(3) Coupled mode: Coupling factor
+
+B is an implicitly defined M-by-N matrix. A number of services have to be
+implemented. These are defined in an abstract base class, and some are
+given default implementations. We also implement a container class. This
+should be enough. No operator overloading, except maybe ctranspose.
+
+Members:
+- m,n:    Rows, cols
+- transp: If true, the transpose is done
+
+Methods:
+- size
+- ctranspose: Operator (.)', flips transp
+- mvm
+- getCol: Def. implem. via mvm
+- matBtDgB: v -> B^T (diag v) B. Def. implem. via mvm and getCol
+- diagBSymBt: M -> diag(B M B^T). Def. implem. via mvm and getCol
+
+Subclasses:
+- Container: Constructor gets vector of B objects
+- Full dense matrix
+- Sparse matrix
+- Identity (times scalar)
+- Diagonal matrix
+- Extract subindex
+==> More can be implemented later!
+
+NOTE: Could still implement something like in glm-ie later, if this proves
+useful.
+
+
+(4) Coupled mode: Representation and inference
+
+The Model is a struct:
+- potMan:      Potential manager
+- potManInt:   PM (internal representation for MEX commands)
+- potInd:      Index of potentials to update on (excludes Gaussian potentials
+               in coupled mode)
+- matB:        Coupling factor B (Mat type)
+
+The Representation is a struct:
+- epPi,epBeta: EP parameters
+- lFact:       Cholesky factor L
+- cVec:        Vector c
+- mMeans:      Marginal means h [*]
+- mVars:       Marginal variances [*]
+- qCov:        Posterior covariance matrix (L L^T)^-1 [**]
+
+Entries [*] are not used with sequential updating, marginals on demand. Entries
+[**] are only used with parallel updating.
+
+For the inference code, there will ultimately be a single interface towards
+the user (also for factorized mode), but this is a gateway to different code:
+- 'CoupParallel': Coupled mode, parallel updating
+- 'CoupSequential': Coupled mode, sequential updating, marginals on demand
+- 'CoupSeqMargsUp2Date': Coupled mode, sequential updating, marginals up-2-date
+- 'Factorized': Factorized mode
+
+General points about code:
+- EP updates are not done on Gaussian potentials. At present, we keep potInd
+  in the Model struct, which is determined by ept.potman_intrepres.
+- Statistic to quantify EP convergence:
+  Max over potentials of max of rel. diff. means, stddevs.
+
+
+(5) Factorized mode: Representation and inference
+
+In factorized mode, the coupling factor B is given by a sparse matrix. The
+internal representation consists of a row index, a column index and a flat
+array of B's nonzeros. It is optimized for row access (contiguous blocks).
+Details in 'FactorizedEPRepresentation' comments.
+
+The Model is a struct:
+- potMan:      Potential manager
+- potManInt:   PM (internal representation for MEX commands)
+- matB:        Coupling factor B (sparse matrix)
+- matBInt:     Internal representation of B
+
+matBInt is a struct (see 'FactorizedEPRepresentation'):
+- rowind
+- colind
+- bvals
+
+The Representation is a struct:
+- epPi, epBeta: EP message parameters (same flat array as matBInt.bvals)
+- mBeta, mPi:   Natural parameters for marginals
+
+If the selective damping mechanism is used, the Representation also contains:
+- sd_numk
+- sd_numvalid
+- sd_topind
+- sd_topval
+- sd_subind [optional]
+- sd_subexcl [optional]
+These fields are maintained internally. They are initialized by the MEX
+function EPTOOLS_FACT_COMPMAXPI. SD_NUMK and (optionally) SD_SUBIND,
+SD_SUBEXCL are parameters. The fields are overwritten by the MEX function
+EPTOOLS_FACT_SEQUPDATES.

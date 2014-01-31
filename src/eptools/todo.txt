@@ -1,0 +1,397 @@
+IMPLEMENTATION OF EP TOOLBOX
+----------------------------
+
+
+(1) General:
+
+- Design notes in project/adv_ep/ep_toolbox.tex
+- Handwritten notes about data structures
+
+
+(2) TODO:
+
+- C++ code for local EP updates: [OK]
+  Ignore aspects of how to call from Matlab/Python for now, but keep
+  interface as simple as possible (no higher LHOTSE classes)
+  - EPScalarPotential: Should be generically configurable by parameters
+  - Potential managers:
+    - Container class
+    - Generic manager for single pot. object with shared/individual parameter
+      values
+  Ignore concrete potential implementations for now: Can later copy code from
+  src/epscal/potentials
+
+- C++ code for EP in factorized mode:
+  Ignore aspects of how to call from Matlab/Python for now, but keep
+  interface as simple as possible (no higher LHOTSE classes)
+  - Class which manages data structure (masked arrays) [OK]
+  - Code for basic EP update (no selective damping measure) [OK]
+  - Selective damping for well-defined cavity marginals: [OK]
+    - Class to track maximum (see note). All based on masked arrays, so
+      very cheap to construct. Each MEX call will reconstruct the object,
+      then overwrite the buffers (all fixed length!)
+    - Put selective damping into EP update code
+
+- Local EP updates: Matlab interface:
+  - Factory class for EPScalarPotential, also maintain names [OK]
+  - Factory for standard PotentialManager (cannot hurt) [OK]
+  - Wrap code for some EPScalarPontential subclasses [OK]
+    Should maybe reimplement Laplace case from new notes?
+    Could debug against old code!
+  - MEX function for update on one or many potentials (parallel) [OK]
+  - Compile MEX function with LHOTSE basics (GSL for now, but no BLAS,
+    LAPACK) [OK]
+  - Test code in Matlab: GPML has Matlab code for Laplace and Probit! [OK]
+    - Also: Could try to shadow calls by computing the same under GPML,
+      compare results and output all pars. somewhere if they differ!
+  - TODO: alpha/nu does not work well for Laplace in extreme cases: [OK]
+    - Return [alpha, nu]. Work out special case for |nu|<(1e-10) or so
+
+- MEX function for EP updates in factorized mode: [OK]
+  Arrays will be overwritten (and thereby returned), both for EP parameters
+  and also buffers for selective damping mechanism.
+  NOTE: This will likely be different for the Python implementation, but
+  has to run with Matlab as well.
+  - Service for FactorizedEPRepresentation::compMarginals [OK]
+  - Service for FactEPMaximumPiValues::recompute [OK]
+
+- Matlab implementation
+  - Start design note: matlab/design.txt [OK]
+  - Potential manager:
+    - MEX file to check validity of internal representation [OK]
+    - Matlab function to create internal representation [OK]
+    - test_eptools_epupdate_parallel [OK]
+  - Class hierarchy for coupling factor B:
+    - Study glm-ie. Can I just use this? [OK]
+    - Basic implementations (e.g., dense matrix) [OK]
+    - Write test code [OK]
+    - Matlab OO: Tutorial by Murphy:
+      yagtom.googlecode.com/svn/trunk/html/objectOriented.html
+  - Coupled mode:
+    - Design notes: Representation, Model [OK]
+    - EP inference code:
+      NOTE: No selective damping stuff for now!
+      - Parallel updating [OK]
+      - MEX files choluprk1, choldnrk1: Import stuff from essential. How to
+        link this? [OK]
+      - Sequential updating, margs. on demand [OK]
+      - Sequential updating, margs. up-2-date [OK]
+      - Generic routine (not yet for factorized) [OK]
+    - Initialization code: [OK]
+      - Initialize from Gaussian potentials
+    - Predictions [OK]
+  - Use case for coupled mode: Probit regression
+    - Use same as glm-ie: a9a. Compare to glm-ie results.
+      First with Gaussian, then Laplace prior
+    - My converges much slower, for the same model!
+      - Code watching: What is different?
+      Gets better if delta only computed on margs for non-Gauss pots,
+      but still larger for ours:
+      - For same EP pars, pretty much same moments are computed
+      - EP pars oscillate a bit more for ours. Not clear why at this point
+    - Compare for Laplace prior as well:
+      Converges better. glm-ie crashes on this example, may need fractional
+      (we don't)
+    - Compare parallel and sequential: Must give same results
+      - Runs fine
+      - Results very close to glm-ie parallel
+    CONCLUSIONS SO FAR:
+    - Sequential updating works perfectly, but slow. Both for Laplace and
+      Gaussian prior
+    - Parallel updating works, gives same overall results, but there ARE
+      some differences in the final EP pars. and moments. More so for
+      Gaussian than for Laplace prior. But any single part seems to be doing
+      pretty much the same (?)
+      ==> Have to leave this for later!
+  - Factorized mode:
+    - Compile internal representation from sparse matrix B. [OK]
+      Specify initialization methods for a representation!
+    - EP inference code: First without selective damping, max-pi stuff. Also
+      visit potentials in random ordering for now [OK]
+    - Predictions [OK]
+    - Code watching:
+      - Derivation [OK]
+      - FactorizedEPRepresentation [OK]
+      - FactorizedEPDriver [OK]
+      - MEX functions [OK]
+      - bfact_intrepres.m [OK]
+  - Use case for factorized mode: Probit regression
+    - Initialization: [OK]
+      - Gaussian prior: EP parameters will never change!
+        - ADF initialization
+        - Skip Gaussian potentials
+      - Laplace prior:
+        - Init. as in coupled case (but all 0 for lh pots)
+        - May have to run over all lh pots first (init. ADF sweep)
+    - Compare to coupled mode (for sparse B)
+      - Gaussian prior: Works fine, same accuracy as coupled posterior
+      - Laplace prior: [OK]
+      If convergence problems: Try basic damping. If still an issue, first
+      implement selective damping.
+      Could also try different damping factors on diff. pot. types!
+  - Selective damping, max-pi data structure
+    - FactEPMaximumPiValues: Allow for max_k over subindex (optional) [OK]
+    - Code watching:
+      - FactEPMaximumPiValues [OK]
+      - FactorizedEPDriver [OK]
+      - eptools_fact_compmaxpi [OK]
+      - eptools_fact_sequpdates (insert subInd stuff) [OK]
+    - Write Matlab code [OK]
+    - Write test code to check that max-pi stuff works [OK]
+      ==> Run test! [OK]
+    NOTE: There could be issues at the beginning, due to ADF initialization.
+    - Gaussian prior: Exclude Gaussian pots in max-pi structure
+    - Laplace prior: Make sure that conditions are met in 1st sweep (see TR).
+      Watch for selective damping in 1st sweep (should not happen)
+  - Extensions (??): NOT FOR NOW!
+    ==> Write them into the design document as future work!!
+    - Skip pattern for EP sweeps: Gaussian potentials are always skipped in
+      coupled mode. In factorized, this should be optional and can change
+      between sweeps
+    - Damping constants for diff. pot. types
+    - Coupled mode: Measures to keep cavity marginals valid
+    - Mode 'CoupSeqMargsUp2Date': Optimized scheduling by forward scoring
+      of EP updates (Nickisch, Seeger). Can make a big difference
+
+- Python C++ bindings:
+  - Browse SWIG and numpy.i documentation [OK]
+    ==> python/design.txt, python/notes_swig.txt
+  - Get an example compiled and running [OK]
+    See python/notes_swig.txt, python/tmp
+
+- Need generic wrapper functions, called from all interfaces.
+  Guinea pig: eptools_epupdate_parallel
+  - Tools for generic wrappers: wrap/eptools_helper [OK]
+  - Generic wrapper: wrap/eptwrap_epupdate_parallel [OK]
+  - MEX wrapper (move to matlab/mex): eptools_epupdate_parallel [OK]
+  - Test this: Seems to work fine [OK]
+  - Generic wrappers for all MEX functions
+    - eptools_epupdate_single       [OK,OK]
+    - eptools_epupdate_parallel     [OK,OK]
+    - eptools_fact_compmarginals    [OK,OK]
+    - eptools_fact_compmaxpi        [OK,OK]
+    - eptools_getpotid		    [OK,OK]
+    - eptools_getpotname	    [OK,OK]
+    - eptools_potmanager_isvalid    [OK,OK]
+    - eptools_fact_sequpdates	    [OK,OK]
+    OK: Leave these out for now:
+    - eptools_choluprk1
+      ==> Incorporates BLAS function calls (dcopy, drot, drotg)
+    - eptools_choldnrk1
+      ==> Need BLAS (dcopy, dtrsv, ddot, drotg, drot, dscal, daxpy)
+  - MEX functions for these: [OK]
+  - Change startup.m and Makefile (but keep chol{up|dn}rk1 where they are
+    right now) [OK]
+    - Uups: Multiple def. of 'errMsg'. Pass buffer from C wrapper, allocate
+      there!
+  - Run test programs: Must be same as before [OK]
+
+- Python C++ bindings [I]:
+  - Get familiar with Cython (wrapping C libraries) [OK]
+  - Milestone: Wrapper for eptools_epupdate_parallel [OK]
+    - Write Cython code
+    - Get whole thing compiled with distutils
+  - Wrap the rest, except chol{up|dn}rk1 [OK]
+    eptools_getpotid
+    eptools_getpotname
+    eptools_fact_compmarginals
+    eptools_fact_compmaxpi
+    eptools_fact_sequpdates
+    eptools_potmanager_isvalid
+    eptools_epupdate_single
+
+  - Write test code: Compare everything to Matlab! [OK for now]
+    - Write out I/O during Matlab test code runs: Text format, one vector or
+      scalar per line
+      eptools_epupdate_parallel: inf_coup_parallel
+      eptools_epupdate_single: inf_coup_sequential
+      eptools_potmanager_isvalid: potman_intrepres
+      eptools_fact_compmarginals: refresh_repres
+      eptools_fact_sequpdates: inf_fact_sequential [!! I/O args]
+      eptools_fact_compmaxpi: ?? [compute somewhere in between]
+    ==> Leave this for now. Rather move on with Python implementation!
+
+  - For chol{up|dn}rk1: These are pure C functions, don't need LHOTSE at all
+    - How to call BLAS functions? [OK]
+      Tips by Armando Sole: python/tmp/xpcs_autocorrelation
+      OK: All req. BLAS functions are in scipy, except for dtrsv (choldnrk1)
+    - Write wrappers [OK]
+    - Test code: Compare against Matlab [OK]
+
+- Translate whole thing into Python:
+  - Aim for a proper object-oriented design! [OK]
+    Could have a look at scikitlearn, how they deal with options, etc.
+  - First milestone: Mode CoupParallel and CoupSequential
+    - Write code [OK]
+    - Write main code (dataset format?) [OK]
+    - Add verbosity (same as in Matlab code) [OK]
+    - Compare 1-1 against Matlab: [OK]
+      Works fine for parallel mode!
+    - Profiling: Found big issue in Python code. Recoded carefully
+      ==> Faster than Matlab now! [OK]
+    - Output accuracy and log lh, after every sweep [OK]
+    - Sequential updating: [OK]
+      - Check code for speed issues (in particular array creation)
+      - Compare against Matlab: Same results?
+      - Compare running times
+    - Also run tests for Gaussian prior. [OK]
+  - Change internal B format (factorized mode):
+    Use standard sparse matrix convention!
+    - FactorizedEPRepresentation [OK]
+    - Other C++ files [OK]
+    - wrap code [OK]
+    - Matlab files [OK]
+    - Cython wrappers [OK]
+  - Next milestone: Factorized mode
+    - utilities [OK]
+    - inference [OK]
+    - Main code [OK]
+    - Compare to Matlab (this could include plots as well) [OK]
+      ==> Prediction after each sweep in Matlab as well (optional)
+    - Point-to-point comparison between Matlab, Python [OK]
+      ==> Exactly the same intermed. results
+
+- Fix of specification of potential manager:
+  For potentials such as MoG (and others), cannot default-construct object
+  without parameters (e.g., number of mixture components), and cannot determine
+  the number of parameters either (variable!)
+  ==> A part of the parameters (prefix) must be given for construction, even
+      the default one
+  - Design fix:
+    - Each EPScalarPotential class has number of construction pars (def.: 0)
+    - Construction pars are prefix of param. vector, and constant in the block
+    - Param. vector is passed to static method for determining the overall
+      number of pars -> can use construction pars if any
+    - Param. vector is passed to new method EPPotentialFactory::createDefault,
+      while EPPotentialFactory::create does not allow for def. constructor
+      anymore
+  - Change code:
+    - EPScalarPotential [OK]
+    - All EPScalarPontential subclasses (new methods) [OK]
+    - EPPotentialFactory [OK]
+    - EPPotentialNamedFactory [OK]
+    - PotManagerFactory [OK]
+    - DefaultPotManager [OK]
+    ==> Wrappers should be unchanged
+    OK: Matlab testcode still runs the same, Python as well
+
+- New potentials: MoG and S&S
+  - Parse and simplify ep_fastconv [OK]
+  - Construction parameters for potentials: Change design [OK]
+  - Transfer code for MoG and S&S [OK]
+  - Some toy test cases, where exact results can be determined [OK]
+
+- Isolate any GPL-licensed code (right now only GSL): [OK]
+  Otherwise, the presence of calls to GSL would make the whole project GPL if
+  published!
+  Workaround:
+  - I don't want to **really** deal with this right now (these are sensitive
+    parts of the code!), but can easily do so later
+  - Isolate all GSL calls in one class with static methods [OK]
+    Do this so that one implementation can be replaced by another, say by just
+    passing a compiler flag (keep the name GSL out of it)
+    ==> Can use HAVE_LIBGSL here, but any kind of GSL calls cannot be in there
+    - lhotse/MachDep.h
+      ==> Not really needed. Throw out!
+    - lhotse/specfun/Specfun.{h|cc}
+      ==> Throw out!
+    - src/eptools/
+      potentials/EPPotProbit.h (logCdfNormal, derivLogCdfNormal)
+      potentials/EPPotQuantileRegress.h (logCdfNormal)
+      potentials/EPPotGaussian.h
+      potentials/EPPotSpikeSlab.h
+      potentials/EPPotGaussMixture.h
+      potentials/QuadratureServices.h
+      potentials/EPPotQuadLaplaceApprox.h
+      potentials/EPPotQuadLaplaceApprox.cc
+      ==> Take the quadrature code out of the open source part for now,
+          until this is done properly. Extension anyway
+  - Change copy script, Makefile and setup.py: Remove all GSL stuff [OK]
+  - Build and test in svn repository (which implements the workaround) [OK]
+  - Keep part of the implementation which depends on GSL private [OK]
+    (requires changing scripts/copy_lhotse_files.py)
+    Write script to set symlinks for these files:
+      src/eptools/potentials/SpecfunServices_workaround.h
+      src/eptools/potentials/quad
+      src/eptools/python/cython/setup.py symlink to
+        setup.py.workaround
+      src/eptools/matlab/make.inc.def symlink to
+        make.inc.workaround
+      lhotse/specfun
+    ==> Test build before writing script
+  - Test build and run tests on this copy (with symlinks) [OK]
+    - Python: Works (careful: Python module path!)
+    - Matlab: Works (careful: Matlab path!)
+  OK: Once this is done, it could go online (with a bit of docs)
+
+- Numerical quadrature for EP updates:
+  - Look up tricks for avoiding underflow and transforming the integration [OK]
+  - Design hierarchy: Have to decouple services supporting quadrature from
+    EP updates in the potential hierarchy [OK]
+  - Remove static methods in EPScalarPotential. Also remove
+    EPPotentialFactory::getNumPars, EPPotentialFactory::getNumConstPars. This
+    information can only be requested from an existing object [OK]
+  - Abstract classes of new hierarchy [OK]
+  - Isolate lhotse/optimize/OneDimSolver from other LHOTSE code
+    ==> Is already isolated! [OK]
+  - Implement QuadPotProximalNewton [OK]
+  - Implementations for Poisson potentials [OK]
+  - Familiarize with GSL quadrature code, also repos/vbmf/code_seeger. Plan [OK]
+  - Base class for quadrature routines [OK]
+  - Implement EPPotQuadLaplaceApprox [OK]
+    ==> Need specification of waypoints in QuadPotProximal, or in
+        QuadraturePotential itself!
+  - Quadrature implementation for GSL adaptive quadrature [HIER!]
+  - How to do unit tests? Can we get exact results in some cases?
+  - Test for piecewise defined potential, e.g. Laplace. Check what happens
+    if proxmap lands on critical point. Can compare to EPPotLaplace results
+  - Negative binomial potential (see notes) (?)
+    Could be done when needed
+
+
+- Create some meaningful exception classes, and use them [HIER!]
+
+- Documentation of source code:
+  - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto
+    standard
+
+- Test case for sparse linear reconstruction with S&S, could compare
+  to Laplace
+  ==> Would also be a good test for damping (in particular, the selective
+      damping in factorized mode)
+- Come up with another test example, maybe a bit larger and more difficult
+
+- Small things:
+  - Factorized mode: In models with Gaussian potentials of different support
+    sizes, we want to skip EP updates for those with SS 1, but not for the
+    others. Support that automatically (is this true, or do we also need
+    B = I?)
+
+- Dig deeper into factorized EP:
+  - Shaky convergence behaviour
+  - eptb6: With Laplace prior, there is 1 skip per iteration. Is this always
+    the same potential? This is due to SD, so what happens there?
+
+- Important extensions ("next steps"):
+  - Integrating out hyperparameters:
+    - Work out how to deal with variance hyperparameter in Gaussian potential:
+      Requires quadrature [OK]
+    - Code it up, using GSL adaptive quadrature without any lookup table
+      tricks for now
+    - Create simple test example, maybe even something where exact inference
+      is tractable, and see what it does
+  - Coupled mode, sequential updating: Active selection of next update (as in
+    ICML paper)
+  - Computation of EP free energy: Useful for monitoring and model selection
+    ==> Do I understand this in factorized mode?
+
+- Practice matplotlib: Same rel. diff. plots in Python as in Matlab
+  (factorized mode)
+
+- Wrap up test code (both Matlab and Python):
+  - Write demo for binary classification, where ROC curves are computed
+    based on predictive probs
+  - Another, more difficult problem(?)
+  - Multi-class example, using multivariate probit
+
+- Practice matplotlib: EP update demo(?)

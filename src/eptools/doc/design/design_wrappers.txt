@@ -1,0 +1,67 @@
+WRAPPER FUNCTIONS FOR C++ CODE
+------------------------------
+
+
+(0) General principles
+
+- Write common wrapper functions for all interfaces (Matlab, Python):
+  Ensures that size and content checking, object creation and compilation
+  of results is done only once
+- Has to be very simple: Called from C wrapper function
+
+   [Scripting Language] <--> [C wrapper] <--> [C++ wrapper] <--> [C++ code]
+
+- C wrapper is specific to scripting language:
+  - Created by SWIG for Python
+  - MEX function (created by hand) for Matlab
+
+
+(1) Structure of C++ and C wrapper functions
+
+Responsibility of C wrapper:
+- Get I or I/O args into simple C datatypes:
+  - double or int scalars: double, int (no bool)
+  - strings: (char*,int) [or 0-terminated?]
+  - double or int vectors: (double*,int), (int*,int) (no bool or other types)
+- Basic type and length checking:
+  SWIG does that for us. For MEX, have to check things like int vector
+  passed as double, etc. (not converted, just checked)
+- Create O arguments of correct size (may be deduced from others, but
+  cannot run any code (worst case: length has to be passed)
+- Call C++ wrapper, also communicating number of I (I/O counts as I there)
+  and O arguments, and return error flag and message
+- Upon return: May have to convert O arguments into target datatype
+- If error flag: Create return error, passing error message string
+
+Responsibility of C++ wrapper:
+- Buffer for error message string
+- I and I/O arguments:
+  - Size and content checking
+  - Default arguments
+- O arguments:
+  - Check that size is correct. Return with internal error if not
+- Create objects, run service
+- Write back results into O and I/O arguments
+- Catch all exceptions, return error flag and message accordingly
+
+Signature of C++ wrapper function:
+- Number of I, I/O arguments [ain]
+- I, I/O arguments: Complete list. Those beyond ain are undefined (pointers
+  are 0). Arrays are pairs (TYPE*,int), TYPE in {double,int}. Strings are
+  char* (0-terminated). DOES THIS WORK? Otherwise (char*,int).
+- Number of O arguments [aout]
+- O arguments: Same
+- Error status (int*). 0: No error
+- Error message (char**). 0-terminated
+
+Error message buffer:
+- Each C++ wrapper function code file defines their own errMsg buffer. This
+  is returned by the C++ wrapper function to the C wrapper function
+- The C wrapper function requests the errMsg pointer before calling the
+  C++ wrapper. It uses the buffer for its own error messages, which can be
+  created before the C++ wrapper is called
+
+NOTE: This is awkward. Have to define a 2nd function for each C++ wrapper.
+Also, support code for C wrappers becomes ugly, since the message buffer
+always has to be passed.
+==> Nothing better right now

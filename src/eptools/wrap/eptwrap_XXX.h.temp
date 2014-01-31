@@ -1,0 +1,25 @@
+/* -------------------------------------------------------------------
+ * EPTWRAP_XXX
+ * -------------------------------------------------------------------
+ * Declaration wrapper function
+ * Author:
+ * ------------------------------------------------------------------- */
+
+#ifndef EPTWRAP_XXX_H
+#define EPTWRAP_XXX_H
+
+#include "src/eptools/wrap/eptools_helper_macros.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  void eptwrap_XXX(...,W_ERRORARGS);
+
+  char* eptwrap_XXX_errmsgbuff();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
