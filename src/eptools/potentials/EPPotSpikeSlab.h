@@ -132,7 +132,7 @@
     cpi=1.0/crho; cbeta=cmu/crho;
     if (ret=compMomentsInt(cbeta,cpi,alpha,nu,logz)) {
       if (logz!=0)
-	*logz-=0.5*(cbeta*cmu+log(crho)+SpecfunServices::M_LN2PI);
+	*logz-=0.5*(cbeta*cmu+log(crho)+SpecfunServices::m_ln2pi);
     }
 
     return ret;

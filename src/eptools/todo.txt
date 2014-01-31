@@ -328,8 +328,15 @@ IMPLEMENTATION OF EP TOOLBOX
   ==> Move logCdfNormal, derivLogCdfNormal out of workaround
   - Work out and implement [HIER!]
   - Write transfer test code, comparing against workaround code
+    ==> Write Cython API to SpecfunServices. Test code can then be written
+        in Python (much simpler)
   - Change corr. LHOTSE Specfun methods as well (keep old code in there)
   - Change workaround setup files, test the whole thing again
+
+- Keeping workaround files in LHOTSE is recipe for desaster:
+  Move them into a new repository, hosted on bitbucket
+  - Mirror apbstint repo directory structure: Makes symlinking simpler
+  - Move potentials/quad files into bithup repo, keep workaround code out
 
 - Numerical quadrature for EP updates:
   - Look up tricks for avoiding underflow and transforming the integration [OK]

@@ -41,6 +41,24 @@ ext_modules = [
         libraries = ['m'],
         library_dirs = ['/usr/lib64'],
         language = 'c++'
+    ),
+    Extension(
+        'apbtest_ext',
+        sources = [
+            'apbtest_ext.pyx',
+            'base/lhotse/global.cc',
+            'base/lhotse/StandardException.cc',
+            'base/lhotse/FileUtils.cc',
+            'base/lhotse/IntVal.cc',
+            'base/lhotse/Interval.cc',
+            'base/lhotse/Range.cc',
+            'base/src/eptools/potentials/SpecfunServices.cc'
+        ],
+        include_dirs = [numpy.get_include(), '/home/seeger/lhotse'],
+        define_macros = [('HAVE_NO_BLAS', None), ('HAVE_FORTRAN', None)],
+        libraries = ['m'],
+        library_dirs = ['/usr/lib64'],
+        language = 'c++'
     )
 ]
 )

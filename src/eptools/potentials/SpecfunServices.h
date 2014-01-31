@@ -29,10 +29,10 @@
   public:
     // Constants
 
-    static const double M_LN2PI  = 1.83787706640934533908193770913;
-    static const double M_LN2    = 0.69314718055994530941723212146;
-    static const double M_SQRTPI = 1.77245385090551602729816748334;
-    static const double M_SQRT2  = 1.41421356237309504880168872421;
+    static const double m_ln2pi  = 1.83787706640934533908193770913;
+    static const double m_ln2    = 0.69314718055994530941723212146;
+    static const double m_sqrtpi = 1.77245385090551602729816748334;
+    static const double m_sqrt2  = 1.41421356237309504880168872421;
 
     // Static methods
 
@@ -84,7 +84,7 @@
      * We compute Q(x) according to
      *   Cody
      *   Rational Chebyshev approximation to the error function
-     * This done differently for x >= ERF_CODY_LIMIT2 and
+     * This is done differently for x >= ERF_CODY_LIMIT2 and
      * ERF_CODY_LIMIT1 <= x < ERF_CODY_LIMIT2.
      * NOTE: Q(x) -> 1 for x->infty.
      */
@@ -92,7 +92,9 @@
 
     /**
      * Implements rational function R_3(y),  y = x^2/2,
-     * which is used if 0 <= x < ERF_CODY_LIMIT1. See
+     * which is used if 0 <= x < ERF_CODY_LIMIT1. In this range:
+     *   Phi(x) approx (1 + (x/sqrt(2)) R_3(x^2/2))/2
+     * See
      *   Cody
      *   Rational Chebyshev approximation to the error function
      */
@@ -103,7 +105,7 @@
 
   inline double SpecfunServices::logPdfNormal(double z)
   {
-    return -0.5*(M_LN2PI+z*z);
+    return -0.5*(m_ln2pi+z*z);
   }
 
   inline double SpecfunServices::logCdfNormal(double z)
@@ -113,9 +115,10 @@
     if (fabs(z)<ERF_CODY_LIMIT1) {
       // Part 3 approximation:
       // Phi(z) approx (1 + y R_3(y^2))/2, y = z/sqrt(2)
-      res=log1p((z/M_SQRT2)*erfRationalHelperR3(0.5*z*z))-M_LN2;
+      res=log1p((z/m_sqrt2)*erfRationalHelperR3(0.5*z*z))-m_ln2;
     } else {
-      // Part 1 or 2
+      // Part 1 or 2 approximation:
+      // Phi(z) approx N(z) Q(-z)/(-z), z<0
       // NOTE: The case z >= ERF_CODY_LIMIT1 is uncritical, we could even use
       // a cheaper approximation then
       if (z<0.0)
@@ -135,9 +138,10 @@
       // Part 3 approximation:
       // Phi(z) approx (1 + y R_3(y^2))/2, y = z/sqrt(2)
       res=2.0*exp(logPdfNormal(z))/
-	(1.0 + (z/M_SQRT2)*erfRationalHelperR3(0.5*z*z));
+	(1.0 + (z/m_sqrt2)*erfRationalHelperR3(0.5*z*z));
     } else {
-      // Part 1 or 2
+      // Part 1 or 2:
+      // Phi(z) approx N(z) Q(-z)/(-z), z<0
       // NOTE: The case z >= ERF_CODY_LIMIT1 is uncritical, we could even use
       // a cheaper approximation then
       if (z<0.0)
@@ -175,7 +179,7 @@
 	res=(res+p[i])*y; den=(den+q[i])*y;
       }
       // Minus, because p[j] values have to be negated
-      res=1.0-M_SQRTPI*y*(res+p[4])/(den+q[4]);
+      res=1.0-m_sqrtpi*y*(res+p[4])/(den+q[4]);
     } else {
       // x/sqrt(2) < 4, x/sqrt(2) >= 0.469
       // Q(x)   = sqrt(pi) y R_2(y),
@@ -190,12 +194,12 @@
 		  5.37181101862009858e+2, 1.62138957456669019e+3,
 		  3.29079923573345963e+3, 4.36261909014324716e+3,
 		  3.43936767414372164e+3, 1.23033935480374942e+3};
-      y=x/M_SQRT2;
+      y=x/m_sqrt2;
       res=y*p[8]; den=y;
       for (i=0; i<7; i++) {
 	res=(res+p[i])*y; den=(den+q[i])*y;
       }
-      res=M_SQRTPI*y*(res+p[7])/(den+q[7]);
+      res=m_sqrtpi*y*(res+p[7])/(den+q[7]);
     }
 
     return res;
@@ -215,11 +219,11 @@
     double q[] = {2.36012909523441209e+1, 2.44024637934444173e+2,
 		  1.28261652607737228e+3, 2.84423683343917062e+3};
     nom=y*p[4]; den=y;
-    for (i=0; i<4; i++) {
+    for (i=0; i<3; i++) {
       nom=(nom+p[i])*y; den=(den+q[i])*y;
     }
 
-    return nom/den;
+    return (nom+p[3])/(den+q[3]);
   }
 
 #ifndef HAVE_LIBGSL

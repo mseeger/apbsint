@@ -139,7 +139,7 @@
     }
     if (logz!=0) *logz=logi0;
     alpha = xi*(kappa-q);
-    nu = xi*xi*(exp(-0.5*(hh*hh/crho+SpecfunServices::M_LN2PI)-logi0)/sqrhor
+    nu = xi*xi*(exp(-0.5*(hh*hh/crho+SpecfunServices::m_ln2pi)-logi0)/sqrhor
 		- q*(1.0-q));
 
     return true;

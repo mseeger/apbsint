@@ -69,7 +69,7 @@ Thumbs.db
 # Things specific to this project #
 ###################################
 src/eptools/python/cython/build
-src/eptools/python/cython/eptools_ext.cpp
+src/eptools/python/cython/*.cpp
 src/eptools/python/cython/setup.py
 src/eptools/matlab/bin/*
 src/eptools/matlab/make.inc.def

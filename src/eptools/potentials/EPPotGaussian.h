@@ -75,7 +75,7 @@
       nu=1.0/(crho+ssq/eta);
       alpha=nu*(temp=yscal-cmu);
       if (logz!=0)
-	*logz=-0.5*(nu*temp*temp-log(nu)+SpecfunServices::M_LN2PI+log(eta));
+	*logz=-0.5*(nu*temp*temp-log(nu)+SpecfunServices::m_ln2pi+log(eta));
 
       return true;
     }

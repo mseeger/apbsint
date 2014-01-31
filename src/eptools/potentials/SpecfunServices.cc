@@ -11,8 +11,8 @@
 //BEGINNS(eptools)
   // Definition of constants
 
-  const double SpecfunServices::M_LN2PI;
-  const double SpecfunServices::M_LN2;
-  const double SpecfunServices::M_SQRTPI;
-  const double SpecfunServices::M_SQRT2;
+  const double SpecfunServices::m_ln2pi;
+  const double SpecfunServices::m_ln2;
+  const double SpecfunServices::m_sqrtpi;
+  const double SpecfunServices::m_sqrt2;
 //ENDNS
