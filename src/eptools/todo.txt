@@ -324,6 +324,13 @@ IMPLEMENTATION OF EP TOOLBOX
     - Matlab: Works (careful: Matlab path!)
   OK: Once this is done, it could go online (with a bit of docs)
 
+- Fully implement Cody's approximation to erfc
+  ==> Move logCdfNormal, derivLogCdfNormal out of workaround
+  - Work out and implement [HIER!]
+  - Write transfer test code, comparing against workaround code
+  - Change corr. LHOTSE Specfun methods as well (keep old code in there)
+  - Change workaround setup files, test the whole thing again
+
 - Numerical quadrature for EP updates:
   - Look up tricks for avoiding underflow and transforming the integration [OK]
   - Design hierarchy: Have to decouple services supporting quadrature from

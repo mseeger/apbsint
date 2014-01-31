@@ -12,4 +12,7 @@
   // Definition of constants
 
   const double SpecfunServices::M_LN2PI;
+  const double SpecfunServices::M_LN2;
+  const double SpecfunServices::M_SQRTPI;
+  const double SpecfunServices::M_SQRT2;
 //ENDNS
