@@ -31,7 +31,7 @@
 # Absolute path of the source root directory.
 # The current Makefile is in ROOTDIR/src/eptools/matlab
 # -------------------------------------------------------------------
-ROOTDIR=/home/seeger/lhotse
+ROOTDIR=/home/seeger/apbsint
 
 # -------------------------------------------------------------------
 # C/C++/Fortran Compiler:

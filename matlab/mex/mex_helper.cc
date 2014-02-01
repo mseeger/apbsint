@@ -5,7 +5,7 @@
  * Author: Matthias Seeger
  * ------------------------------------------------------------------- */
 
-#include "src/eptools/matlab/mex/mex_helper.h"
+#include "matlab/mex/mex_helper.h"
 
 /*
  * Exported functions

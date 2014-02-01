@@ -187,17 +187,17 @@ _EPTOOLSOBJS=	potentials/DefaultPotManager \
 		FactorizedEPDriver
 EPTOOLSOBJS=	$(_EPTOOLSOBJS:%=$(EPTOOLSDIR)/%.o)
 
-EPTOOLSMEXDIR=	$(EPTOOLSDIR)/matlab/mex
-_EPTOOLSMEXOBJS=	mex_helper
-EPTOOLSMEXOBJS=	$(_EPTOOLSMEXOBJS:%=$(EPTOOLSMEXDIR)/%.o)
-
 EPTOOLSWRAPDIR=	$(EPTOOLSDIR)/wrap
 _EPTOOLSWRAPOBJS=	eptools_helper \
 			eptools_helper_basic
 EPTOOLSWRAPOBJS=	$(_EPTOOLSWRAPOBJS:%=$(EPTOOLSWRAPDIR)/%.o)
 
+EPTOOLSMEXDIR=	$(ROOTDIR)/matlab/mex
+_EPTOOLSMEXOBJS=	mex_helper
+EPTOOLSMEXOBJS=	$(_EPTOOLSMEXOBJS:%=$(EPTOOLSMEXDIR)/%.o)
+
 # MEX library files are written here:
-EPTOOLSLIBDIR=	$(EPTOOLSDIR)/matlab/bin
+MEXLIBDIR=	$(ROOTDIR)/matlab/bin
 
 # -------------------------------------------------------------------
 # The make process:
@@ -348,34 +348,34 @@ make_mexyes_nomm:
 # -------------------------------------------------------------------
 
 eptools_getpotid_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_getpotid.o $(EPTOOLSMEXDIR)/eptools_getpotid.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_getpotid.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_getpotid.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_getpotname_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_getpotname.o $(EPTOOLSMEXDIR)/eptools_getpotname.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_getpotname.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_getpotname.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_epupdate_single_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_epupdate_single.o $(EPTOOLSMEXDIR)/eptools_epupdate_single.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_epupdate_single.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_epupdate_single.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_epupdate_parallel_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_epupdate_parallel.o $(EPTOOLSMEXDIR)/eptools_epupdate_parallel.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_epupdate_parallel.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_epupdate_parallel.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_fact_sequpdates_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_fact_sequpdates.o $(EPTOOLSMEXDIR)/eptools_fact_sequpdates.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_fact_sequpdates.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_fact_sequpdates.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_fact_compmarginals_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_fact_compmarginals.o $(EPTOOLSMEXDIR)/eptools_fact_compmarginals.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_fact_compmarginals.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_fact_compmarginals.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_fact_compmaxpi_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_fact_compmaxpi.o $(EPTOOLSMEXDIR)/eptools_fact_compmaxpi.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_fact_compmaxpi.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_fact_compmaxpi.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_potmanager_isvalid_int: $(ESSMINIMUMOBJS) $(EPTOOLSOBJS) $(EPTOOLSWRAPOBJS) $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptwrap_potmanager_isvalid.o $(EPTOOLSMEXDIR)/eptools_potmanager_isvalid.o
-	$(MEXCMD) -o $(EPTOOLSLIBDIR)/eptools_potmanager_isvalid.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
+	$(MEXCMD) -o $(MEXLIBDIR)/eptools_potmanager_isvalid.$(MEXSUFFIX) $^ $(LDFLAGS) $(LIBS)
 
 eptools_choluprk1_int: $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptools_helper_basic.o $(EPTOOLSWRAPDIR)/eptwrap_choluprk1.o $(EPTOOLSMEXDIR)/eptools_choluprk1.cc
-	$(MEXCMD) -v -largeArrayDims -o $(EPTOOLSLIBDIR)/eptools_choluprk1.$(MEXSUFFIX) $^ $(DEFINES) $(INCS) $(LDFLAGS) -lmwblas -lm
+	$(MEXCMD) -v -largeArrayDims -o $(MEXLIBDIR)/eptools_choluprk1.$(MEXSUFFIX) $^ $(DEFINES) $(INCS) $(LDFLAGS) -lmwblas -lm
 
 eptools_choldnrk1_int: $(EPTOOLSMEXOBJS) $(EPTOOLSWRAPDIR)/eptools_helper_basic.o $(EPTOOLSWRAPDIR)/eptwrap_choldnrk1.o $(EPTOOLSMEXDIR)/eptools_choldnrk1.cc
-	$(MEXCMD) -v -largeArrayDims -o $(EPTOOLSLIBDIR)/eptools_choldnrk1.$(MEXSUFFIX) $^ $(DEFINES) $(INCS) $(LDFLAGS) -lmwblas -lm
+	$(MEXCMD) -v -largeArrayDims -o $(MEXLIBDIR)/eptools_choldnrk1.$(MEXSUFFIX) $^ $(DEFINES) $(INCS) $(LDFLAGS) -lmwblas -lm
 
 # -------------------------------------------------------------------
 # Clean targets
@@ -387,7 +387,8 @@ clean:
 clean_all:
 	@$(MAKE) make_opt$(opt) TARGET=$@_int
 
-clean_int:	clean_global clean_specfun clean_src
+clean_int:	clean_global clean_specfun clean_src clean_doc \
+		clean_python clean_matlab
 
 clean_src:	clean_PROJECTMAIN clean_eptools
 
@@ -396,7 +397,7 @@ clean_all_int: clean_int clean_MEXLIBS
 CLEAN_FILES=	-f *.o *.flc *.rpo core errs *~ \#*
 
 clean_MEXLIBS:
-	@cd $(EPTOOLSLIBDIR); \
+	@cd $(MEXLIBDIR); \
 	rm $(CLEAN_FILES); \
 	rm *.$(MEXSUFFIX); \
 	cd $(ROOTDIR)
@@ -425,7 +426,10 @@ clean_eptools:
 	rm $(CLEAN_FILES); \
 	cd $(EPTOOLSDIR)/wrap; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/scripts; \
+	cd $(ROOTDIR)
+
+clean_doc:
+	@cd $(EPTOOLSDIR)/scripts; \
 	rm $(CLEAN_FILES); \
 	cd $(EPTOOLSDIR)/doc; \
 	rm $(CLEAN_FILES); \
@@ -433,42 +437,49 @@ clean_eptools:
 	rm $(CLEAN_FILES); \
 	cd $(EPTOOLSDIR)/doc/python; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab; \
+	cd $(ROOTDIR)
+
+
+clean_python:
+	@cd $(ROOTDIR)/python; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/+ept; \
+	cd $(ROOTDIR)/python/cython; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/+ept/@Mat; \
+	cd $(ROOTDIR)/python/apbsint; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/+ept/@MatContainer; \
+	cd $(ROOTDIR)/python/test; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/+ept/@MatDef; \
+	cd $(ROOTDIR)/python/test/basic; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/+ept/@MatDiag; \
+	cd $(ROOTDIR)/python/test/binclass; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/+ept/@MatEye; \
+	cd $(ROOTDIR)/python/test/potentials; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/+ept/@MatSub; \
+	cd $(ROOTDIR)
+
+clean_matlab:
+	@cd $(ROOTDIR)/matlab; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/mex; \
+	cd $(ROOTDIR)/matlab/+ept; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/test; \
+	cd $(ROOTDIR)/matlab/+ept/@Mat; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/test/basic; \
+	cd $(ROOTDIR)/matlab/+ept/@MatContainer; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/matlab/test/binclass; \
+	cd $(ROOTDIR)/matlab/+ept/@MatDef; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/python; \
+	cd $(ROOTDIR)/matlab/+ept/@MatDiag; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/python/cython; \
+	cd $(ROOTDIR)/matlab/+ept/@MatEye; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/python/apbsint; \
+	cd $(ROOTDIR)/matlab/+ept/@MatSub; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/python/test; \
+	cd $(ROOTDIR)/matlab/mex; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/python/test/basic; \
+	cd $(ROOTDIR)/matlab/test; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/python/test/binclass; \
+	cd $(ROOTDIR)/matlab/test/basic; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/python/test/potentials; \
+	cd $(ROOTDIR)/matlab/test/binclass; \
 	rm $(CLEAN_FILES); \
 	cd $(ROOTDIR)

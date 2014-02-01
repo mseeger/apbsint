@@ -17,7 +17,7 @@ debug_pydeb = 0;
 debug_pydeb_iter = 0;
 
 % Load and split into train and test set
-load('/home/seeger/lhotse/src/eptools/matlab/test/binclass/classify.mat');
+load('classify.mat');
 nte = 30000;      % say how many test examples we wich to keep
 Bte = B(1:nte,:); B = B(nte+1:end,:); cte = c(1:nte);
 c = c(nte+1:end); % split

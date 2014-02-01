@@ -54,7 +54,7 @@
  * Author: Matthias Seeger
  * ------------------------------------------------------------------- */
 
-#include "src/eptools/matlab/mex/mex_helper.h"
+#include "matlab/mex/mex_helper.h"
 #include "src/eptools/wrap/eptwrap_choldnrk1.h"
 #include "blas.h"
 

@@ -68,16 +68,16 @@ Thumbs.db
 
 # Things specific to this project #
 ###################################
-src/eptools/python/cython/build
-src/eptools/python/cython/*.cpp
-src/eptools/matlab/bin/*
-src/eptools/matlab/make.inc.def
+python/cython/build
+python/cython/*.cpp
+matlab/bin/*
+matlab/make.inc.def
 
 # Things specific to the current workaround in this project #
 #############################################################
 src/eptools/potentials/SpecfunServices_workaround.h
 src/eptools/potentials/quad
 lhotse/specfun
-src/eptools/python/cython/apbtest_workaround_ext.pyx
-src/eptools/matlab/make.inc.workaround
-src/eptools/python/test/workaround
+python/cython/apbtest_workaround_ext.pyx
+matlab/make.inc.workaround
+python/test/workaround

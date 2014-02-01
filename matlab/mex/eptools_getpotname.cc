@@ -1,25 +1,25 @@
 /* -------------------------------------------------------------------
- * EPTOOLS_GETPOTID
+ * EPTOOLS_GETPOTNAME
  *
  * Potential names <--> IDs maintained in 'EPPotentialNamedFactory'
  *
  * Input:
- * - NAME:    Potential name
+ * - PID:     Potential ID
  *
  * Return:
- * - PID:     Potential ID, or -1 if NAME is not potential name
+ * - NAME:    Potential name, or "" if PID is not valid ID
  * -------------------------------------------------------------------
  * Matlab MEX Function
  * Author: Matthias Seeger
  * ------------------------------------------------------------------- */
 
 #include "src/main.h"
-#include "src/eptools/matlab/mex/mex_helper.h"
-#include "src/eptools/wrap/eptwrap_getpotid.h"
+#include "matlab/mex/mex_helper.h"
+#include "src/eptools/wrap/eptwrap_getpotname.h"
 
 char errMsg[512];
 
-/* Main function EPTOOLS_GETPOTID */
+/* Main function EPTOOLS_GETPOTNAME */
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
@@ -34,11 +34,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mexErrMsgTxt("Not enough input arguments");
   if (nlhs!=1)
     mexErrMsgTxt("Need 1 return argument");
-  name = (char*) getString(prhs[0],"NAME");
-  eptwrap_getpotid(1,1,name,&pid,&errcode,errstr);
-  mxFree((void*) name);
+  argidx = -1;
+  M_GETISCAL(pid,"PID");
+  eptwrap_getpotname(1,1,pid,&name,&errcode,errstr);
   if (errcode!=0)
     mexErrMsgTxt(errstr);
-  argidx = -1;
-  M_SETISCAL(pid);
+  plhs[0] = mxCreateString(name);
 }

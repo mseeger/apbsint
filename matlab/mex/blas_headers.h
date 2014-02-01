@@ -7,7 +7,7 @@
 #ifndef BLAS_HEADER_H
 #define BLAS_HEADER_H
 
-#include "src/eptools/matlab/mex/mex_helper.h"
+#include "matlab/mex/mex_helper.h"
 
 extern void BLASFUNC(dswap) (int* n,double* x,int* incx,double* y,int* incy);
 

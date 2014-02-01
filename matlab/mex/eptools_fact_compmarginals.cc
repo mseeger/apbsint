@@ -26,7 +26,7 @@
  * ------------------------------------------------------------------- */
 
 #include "src/main.h"
-#include "src/eptools/matlab/mex/mex_helper.h"
+#include "matlab/mex/mex_helper.h"
 #include "src/eptools/wrap/eptwrap_fact_compmarginals.h"
 
 char errMsg[512];
