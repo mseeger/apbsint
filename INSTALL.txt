@@ -116,30 +116,24 @@ Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
 
   Make sure that both Cython and distutils are present.
 
-  Go to [APBROOT]/python/cython. Copy setup.py.basic to setup.py.
-  You have to insert '[ROOT]' in 'include_dirs', replacing the fixed entry
-  there.
+  Edit [APBROOT]/python/cython/setup.py. Search for 'df_include_dirs'.
+  Replace the repo root there by [ROOT].
 
-  You may have to configure 'library_dirs' so that libraries in 'libraries'
-  are found. If these come with header files in non-standard places, you
-  have to configure 'include_dirs'.
+  You may have to configure 'df_library_dirs' so that libraries in
+  'df_libraries' are found. If these come with header files in non-standard
+  places, you may have to configure 'df_include_dirs'.
 
 * Build
 
   $ cd [APBROOT]/python/cython
   $ make
 
-  This should produce a shared library eptools_ext.so. If the name is
-  different (the suffix '.so' may be different in your system), do the
-  following:
+  This should produce a number of shared libraries, most important
+  [APBROOT]/python/apbsint/eptools_ext.so (all shared libraries are moved
+  to [APBROOT]/python/apbsint). The suffix may be different from '.so' for
+  your system.
 
-  $ cd [APBROOT]/python/apbsint
-  $ rm eptools_ext.so
-  $ ln -s ../cython/eptools_ext.[SUFFIX] eptools_ext.[SUFFIX]
-
-  Here, eptools_ext.[SUFFIX] is the shared library.
-
-* Modify Python sys.path
+* Extend Python sys.path
 
   Insert [APBROOT]/python into the module search path sys.path. If
   you use IPython, you can do the following. Locate your profile:
@@ -176,8 +170,8 @@ Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
 
 * Prerequisites
 
-  Make sure you have a fairly recent version of Matlab, and ensure that you
-  can compile MEX files (Matlab mex command).
+  Make sure you have a fairly recent version of Matlab, and that you can
+  compile MEX files (Matlab mex command).
 
 * Configure make.inc.def
 
@@ -207,8 +201,8 @@ Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
 
   The directory [APBROOT]/matlab and its subdirectories must be in the
   Matlab path. The Matlab script [APBROOT]/matlab/startup.m adds them.
-  In order to do this automatically when starting Matlab, add the following
-  to your ~/matlab/startup.m file::
+  In order to run this script automatically when starting Matlab, add the
+  following to your ~/matlab/startup.m file::
 
     s=pwd;
     cd(strcat(getenv('HOME'),'[APBROOT]/matlab'));

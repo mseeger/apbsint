@@ -80,3 +80,4 @@ src/eptools/potentials/quad
 lhotse/specfun
 src/eptools/python/cython/apbtest_workaround_ext.pyx
 src/eptools/matlab/make.inc.workaround
+src/eptools/python/test/workaround

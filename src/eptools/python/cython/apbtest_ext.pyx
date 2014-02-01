@@ -24,12 +24,11 @@ cdef extern from "src/eptools/potentials/SpecfunServices.h" namespace "SpecfunSe
 def specfun_logcdfnormal(np.ndarray[np.double_t,ndim=1] z not None,
                          np.ndarray[np.double_t,ndim=1] res not None):
     cdef int i, sz
-    # Ensure that input/output arguments are contiguous
+    # Check input/output
     sz = z.shape[0]
-    if not (res.flags.c_contiguous and res.shape[0]==sz):
+    if not res.shape[0]==sz:
         # HIER: Define own exception, say EptwrapError
-        raise TypeError('RES must be contiguous array of size of Z')
-    z = np.ascontiguousarray(z)
+        raise TypeError('RES must be same size as Z')
     # Loop: Compute function values
     for i in range(sz):
         res[i] = logCdfNormal(z[i])
@@ -39,12 +38,11 @@ def specfun_logcdfnormal(np.ndarray[np.double_t,ndim=1] z not None,
 def specfun_derivlogcdfnormal(np.ndarray[np.double_t,ndim=1] z not None,
                               np.ndarray[np.double_t,ndim=1] res not None):
     cdef int i, sz
-    # Ensure that input/output arguments are contiguous
+    # Check  input/output
     sz = z.shape[0]
-    if not (res.flags.c_contiguous and res.shape[0]==sz):
+    if not res.shape[0]==sz:
         # HIER: Define own exception, say EptwrapError
-        raise TypeError('RES must be contiguous array of size of Z')
-    z = np.ascontiguousarray(z)
+        raise TypeError('RES must be same size as Z')
     # Loop: Compute function values
     for i in range(sz):
         res[i] = derivLogCdfNormal(z[i])

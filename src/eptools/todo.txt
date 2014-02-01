@@ -327,11 +327,15 @@ IMPLEMENTATION OF EP TOOLBOX
 - Fully implement Cody's approximation to erfc
   ==> Move logCdfNormal, derivLogCdfNormal out of workaround
   - Work out and implement [OK]
-  - Write transfer test code, comparing against workaround code [HIER!]
+  - Write transfer test code, comparing against workaround code [OK]
     ==> Write Cython API to SpecfunServices. Test code can then be written
         in Python (much simpler)
+    OK: Minimal rel. diffs. Max. 5e-9 for logcdfnormal, only for z>=6
+    (where numerics uncritical), max. 2e-15 for derivlogcdfnormal, also z>0
+    ==> Transfer is safe
   - Change corr. LHOTSE Specfun methods as well (keep old code in there)
-  - Change workaround setup files, test the whole thing again
+    [HIER!]
+  - Change workaround setup files, test the whole thing again [OK]
 
 - Keeping workaround files in LHOTSE is recipe for desaster:
   Move them into a new repository, hosted on bitbucket
