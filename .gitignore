@@ -76,7 +76,6 @@ matlab/make.inc.def
 # Things specific to the current workaround in this project #
 #############################################################
 src/eptools/potentials/SpecfunServices_workaround.h
-src/eptools/potentials/quad
 lhotse/specfun
 python/cython/apbtest_workaround_ext.pyx
 matlab/make.inc.workaround
