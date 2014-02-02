@@ -334,9 +334,9 @@ IMPLEMENTATION OF EP TOOLBOX
     (where numerics uncritical), max. 2e-15 for derivlogcdfnormal, also z>0
     ==> Transfer is safe
   - Change corr. LHOTSE Specfun methods as well (keep old code in there)
-    [HIER!]
+    [OK]
   - Change workaround setup files, test the whole thing again
-    ==> Also test build in new repo
+    ==> Also test build in new repo [HIER!]
 
 - Keeping workaround files in LHOTSE is recipe for desaster: [OK]
   Move them into a new repository, hosted on bitbucket

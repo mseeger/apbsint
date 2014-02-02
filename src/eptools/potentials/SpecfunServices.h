@@ -43,6 +43,12 @@
     static double logPdfNormal(double z);
 
     /**
+     * @param z Argument
+     * @return  Phi(z), c.d.f. of N(0,1)
+     */
+    static double cdfNormal(double z);
+
+    /**
      * If Phi(z) denotes the c.d.f. of N(0,1), this method computes
      * log Phi(z).
      * NOTE: The technical report defines
@@ -106,6 +112,28 @@
   inline double SpecfunServices::logPdfNormal(double z)
   {
     return -0.5*(m_ln2pi+z*z);
+  }
+
+  inline double SpecfunServices::cdfNormal(double x)
+  {
+    double res;
+
+    if (fabs(z)<ERF_CODY_LIMIT1) {
+      // Part 3 approximation:
+      // Phi(z) approx (1 + y R_3(y^2))/2, y = z/sqrt(2)
+      res=0.5*(1.0 + (z/M_SQRT2)*erfRationalHelperR3(0.5*z*z));
+    } else {
+      // Part 1 or 2 approximation:
+      // Phi(z) approx N(z) Q(-z)/(-z), z<0
+      // NOTE: The case z >= ERF_CODY_LIMIT1 is uncritical, we could even use
+      // a cheaper approximation then
+      if (z<0.0)
+	res=pdfNormal(z)*erfRationalHelper(-z)/(-z);
+      else
+	res=1.0-pdfNormal(z)*erfRationalHelper(z)/z;
+    }
+
+    return res;
   }
 
   inline double SpecfunServices::logCdfNormal(double z)
