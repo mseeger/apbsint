@@ -362,7 +362,10 @@ IMPLEMENTATION OF EP TOOLBOX
   - Implement EPPotQuadLaplaceApprox [OK]
     ==> Need specification of waypoints in QuadPotProximal, or in
         QuadraturePotential itself!
-  - Quadrature implementation for GSL adaptive quadrature [HIER!]
+  - TODO: Move potentials/quad code into apbsint repo. Factor out GSL code
+    in a sensible way (in part.: types) [HIER!]
+    ==> Avoid development in apbsint_addon
+  - Quadrature implementation for GSL adaptive quadrature
   - How to do unit tests? Can we get exact results in some cases?
   - Test for piecewise defined potential, e.g. Laplace. Check what happens
     if proxmap lands on critical point. Can compare to EPPotLaplace results
@@ -397,6 +400,7 @@ IMPLEMENTATION OF EP TOOLBOX
   - Integrating out hyperparameters:
     - Work out how to deal with variance hyperparameter in Gaussian potential:
       Requires quadrature [OK]
+      NOTE: Infer.NET is doing quadrature as well
     - Code it up, using GSL adaptive quadrature without any lookup table
       tricks for now
     - Create simple test example, maybe even something where exact inference
