@@ -110,13 +110,13 @@ Building the Python API
 =======================
 
 The Python API interfaces C++ code by way of Cython.
-Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
+Denote the repository root by [ROOT].
 
 * Configure setup.py
 
   Make sure that both Cython and distutils are present.
 
-  Edit [APBROOT]/python/cython/setup.py. Search for 'df_include_dirs'.
+  Edit [ROOT]/python/cython/setup.py. Search for 'df_include_dirs'.
   Replace the repo root there by [ROOT].
 
   You may have to configure 'df_library_dirs' so that libraries in
@@ -125,17 +125,17 @@ Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
 
 * Build
 
-  $ cd [APBROOT]/python/cython
+  $ cd [ROOT]/python/cython
   $ make
 
   This should produce a number of shared libraries, most important
-  [APBROOT]/python/apbsint/eptools_ext.so (all shared libraries are moved
-  to [APBROOT]/python/apbsint). The suffix may be different from '.so' for
+  [ROOT]/python/apbsint/eptools_ext.so (all shared libraries are moved
+  to [ROOT]/python/apbsint). The suffix may be different from '.so' for
   your system.
 
 * Extend Python sys.path
 
-  Insert [APBROOT]/python into the module search path sys.path. If
+  Insert [ROOT]/python into the module search path sys.path. If
   you use IPython, you can do the following. Locate your profile:
 
   $ ipython locate profile
@@ -144,13 +144,13 @@ Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
   append the following to the end::
 
     import sys
-    sys.path.append('[APBROOT]/python')
+    sys.path.append('[ROOT]/python')
 
 * Test
 
-  There is some test code in [APBROOT]/python/test/. For example:
+  There is some test code in [ROOT]/python/test/. For example:
 
-  $ cd [APBROOT]/python/test/binclass
+  $ cd [ROOT]/python/test/binclass
   $ ipython eptest_binclass.py
 
   This should run some simple binary classification example. You can edit
@@ -166,7 +166,7 @@ is not the case for the Matlab MEX API. If you are working on Windows or Mac,
 you may have to do some serious porting (please contribute a port if you did
 one).
 
-Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
+Denote the repository root by [ROOT].
 
 * Prerequisites
 
@@ -175,7 +175,7 @@ Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
 
 * Configure make.inc.def
 
-  $ cd [APBROOT]/matlab
+  $ cd [ROOT]/matlab
   $ cp make.inc.example make.inc.def
 
   Edit make.inc.def. You have to set::
@@ -192,27 +192,27 @@ Denote the repository root by [ROOT], and [ROOT]/src/eptools by [APBROOT].
 
 * Build
 
-  $ cd [APBROOT]/matlab
+  $ cd [ROOT]/matlab
   $ make
 
-  This should produce MEX shared libraries in [APBROOT]/matlab/bin.
+  This should produce MEX shared libraries in [ROOT]/matlab/bin.
 
 * Modify Matlab path
 
-  The directory [APBROOT]/matlab and its subdirectories must be in the
-  Matlab path. The Matlab script [APBROOT]/matlab/startup.m adds them.
+  The directory [ROOT]/matlab and its subdirectories must be in the
+  Matlab path. The Matlab script [ROOT]/matlab/startup.m adds them.
   In order to run this script automatically when starting Matlab, add the
   following to your ~/matlab/startup.m file::
 
     s=pwd;
-    cd(strcat(getenv('HOME'),'[APBROOT]/matlab'));
+    cd(strcat(getenv('HOME'),'[ROOT]/matlab'));
     startup;
     cd(s); clear('s');
 
 * Test
 
-  There is some test code in [APBROOT]/matlab/test/. For example, try to run
-  [APBROOT]/matlab/test/binclass/eptest_binclass.m. This should run some
+  There is some test code in [ROOT]/matlab/test/. For example, try to run
+  [ROOT]/matlab/test/binclass/eptest_binclass.m. This should run some
   simple binary classification example. You can edit the code and thereby
   test different aspects.
 
@@ -220,13 +220,13 @@ Documentation
 =============
 
 A bit patchy for now. In particular, there is not much user documentation
-right now. Look into [APBROOT]/doc.
+right now. Look into [ROOT]/doc.
 
-* [APBROOT]/doc/techreps/ep_toolbox.pdf: Technical report with details about
+* [ROOT]/doc/techreps/ep_toolbox.pdf: Technical report with details about
   the Expectation Propagation (EP) part of ApBsInT
 
-* [APBROOT]/doc/design: Some files describing design aspects
+* [ROOT]/doc/design: Some files describing design aspects
 
 Apart from that, example and test code for the Matlab API are in
-[APBROOT]/matlab/test/, for the Python API in [APBROOT]/python/test/. Also,
+[ROOT]/matlab/test/, for the Python API in [ROOT]/python/test/. Also,
 the code is well documented.

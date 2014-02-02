@@ -335,12 +335,15 @@ IMPLEMENTATION OF EP TOOLBOX
     ==> Transfer is safe
   - Change corr. LHOTSE Specfun methods as well (keep old code in there)
     [HIER!]
-  - Change workaround setup files, test the whole thing again [OK]
+  - Change workaround setup files, test the whole thing again
+    ==> Also test build in new repo
 
-- Keeping workaround files in LHOTSE is recipe for desaster:
+- Keeping workaround files in LHOTSE is recipe for desaster: [OK]
   Move them into a new repository, hosted on bitbucket
   - Mirror apbsint repo directory structure: Makes symlinking simpler
+    ==> apbsint_addon on bitbucket
   - Move potentials/quad files into bithup repo, keep workaround code out
+  - Simplify directory structure (must not be LHOTSE compatible)
 
 - Numerical quadrature for EP updates:
   - Look up tricks for avoiding underflow and transforming the integration [OK]
