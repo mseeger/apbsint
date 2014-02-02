@@ -114,7 +114,7 @@
     return -0.5*(m_ln2pi+z*z);
   }
 
-  inline double SpecfunServices::cdfNormal(double x)
+  inline double SpecfunServices::cdfNormal(double z)
   {
     double res;
 
@@ -128,9 +128,9 @@
       // NOTE: The case z >= ERF_CODY_LIMIT1 is uncritical, we could even use
       // a cheaper approximation then
       if (z<0.0)
-	res=pdfNormal(z)*erfRationalHelper(-z)/(-z);
+	res=exp(logPdfNormal(z))*erfRationalHelper(-z)/(-z);
       else
-	res=1.0-pdfNormal(z)*erfRationalHelper(z)/z;
+	res=1.0-exp(logPdfNormal(z))*erfRationalHelper(z)/z;
     }
 
     return res;

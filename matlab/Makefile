@@ -429,13 +429,13 @@ clean_eptools:
 	cd $(ROOTDIR)
 
 clean_doc:
-	@cd $(EPTOOLSDIR)/scripts; \
+	@cd $(ROOTDIR)/scripts; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/doc; \
+	cd $(ROOTDIR)/doc; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/doc/design; \
+	cd $(ROOTDIR)/doc/design; \
 	rm $(CLEAN_FILES); \
-	cd $(EPTOOLSDIR)/doc/python; \
+	cd $(ROOTDIR)/doc/python; \
 	rm $(CLEAN_FILES); \
 	cd $(ROOTDIR)
 
