@@ -336,7 +336,7 @@ IMPLEMENTATION OF EP TOOLBOX
   - Change corr. LHOTSE Specfun methods as well (keep old code in there)
     [OK]
   - Change workaround setup files, test the whole thing again
-    ==> Also test build in new repo [HIER!]
+    ==> Also test build in new repo [OK]
 
 - Keeping workaround files in LHOTSE is recipe for desaster: [OK]
   Move them into a new repository, hosted on bitbucket
@@ -365,11 +365,16 @@ IMPLEMENTATION OF EP TOOLBOX
   - TODO: Move potentials/quad code into apbsint repo. Factor out GSL code
     in a sensible way (in part.: types) [OK]
     ==> Avoid development in apbsint_addon
-  - Quadrature implementation for GSL adaptive quadrature [HIER!]
+  - Quadrature implementation for GSL adaptive quadrature [OK]
     Has to be done in apbsint_addon
-  - How to do unit tests? Can we get exact results in some cases?
-  - Test for piecewise defined potential, e.g. Laplace. Check what happens
-    if proxmap lands on critical point. Can compare to EPPotLaplace results
+  - Add verbosity_debug outputs [HIER!]
+  - Code watching!
+  - For debugging purposes:
+    - Implement variant which uses waypoints if given: Also split inf.
+      intervals
+    - Test code for Laplace potentials. Compare (a) exact, (b) debug_split,
+      (c) normal ada_quad
+      ==> Also include case where proxmap lands on critical point
   - Negative binomial potential (see notes) (?)
     Could be done when needed
 
