@@ -72,6 +72,8 @@ python/cython/build
 python/cython/*.cpp
 matlab/bin/*
 matlab/make.inc.def
+matlab/make.inc.def.wa
+matlab/make.inc.def.nowa
 
 # Things specific to the current workaround in this project #
 #############################################################
