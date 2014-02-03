@@ -367,15 +367,23 @@ IMPLEMENTATION OF EP TOOLBOX
     ==> Avoid development in apbsint_addon
   - Quadrature implementation for GSL adaptive quadrature [OK]
     Has to be done in apbsint_addon
-  - Add verbosity_debug outputs [HIER!]
-  - Code watching!
   - For debugging purposes:
     - Implement variant which uses waypoints if given: Also split inf.
       intervals [OK]
     - Debug implementation for Laplace potential. Proximal map has analytical
-      solution
+      solution [OK]
+    - Quadrature requires C++ objects which remain persistent (f.ex. the
+      QuadratureService object, later maybe a lookup table). Find out how to
+      do that in Python (no Matlab for now) [HIER!]
+      The easiest is to wrap classes in question into a very simple Python
+      class (only has to have constructor and destructor).
+    - Hook new potential types in. Needs some means to pass additional
+      objects, which are not re-created each time a potential object is
+      required
     - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad
       ==> Also include case where proxmap lands on critical point
+  - Add verbosity_debug outputs
+  - Code watching!
   - Negative binomial potential (see notes) (?)
     Could be done when needed
 
