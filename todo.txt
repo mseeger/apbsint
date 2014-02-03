@@ -371,9 +371,10 @@ IMPLEMENTATION OF EP TOOLBOX
   - Code watching!
   - For debugging purposes:
     - Implement variant which uses waypoints if given: Also split inf.
-      intervals
-    - Test code for Laplace potentials. Compare (a) exact, (b) debug_split,
-      (c) normal ada_quad
+      intervals [OK]
+    - Debug implementation for Laplace potential. Proximal map has analytical
+      solution
+    - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad
       ==> Also include case where proxmap lands on critical point
   - Negative binomial potential (see notes) (?)
     Could be done when needed

@@ -18,7 +18,7 @@
     proxFun.changeRep(new QuadPotProximalNewton_Func1D(this));
   }
 
-  bool QuadPotProximalNewton::proximal(double h,double rho,double& sstar)
+  bool QuadPotProximalNewton::proximal(double h,double rho,double& sstar) const
   {
     proxFun->setPars(h,rho);
     try {

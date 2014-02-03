@@ -91,8 +91,8 @@
   protected:
     // Members
 
-    Handle<QuadPotProximalNewton_Func1D> proxFun; // Function f'(s)
-    double acc,facc;                              // See 'OneDimSolver'
+    mutable Handle<QuadPotProximalNewton_Func1D> proxFun; // Function f'(s)
+    double acc,facc;  // See 'OneDimSolver'
 
   public:
     // Public methods
@@ -105,7 +105,7 @@
      */
     QuadPotProximalNewton(double pacc,double pfacc);
 
-    bool proximal(double h,double rho,double& sstar);
+    bool proximal(double h,double rho,double& sstar) const;
 
     /**
      * See header comment. The initial bracket is [L,R]. L has to be supplied,

@@ -72,7 +72,7 @@
     // Members
 
     double acc,facc;
-    Handle<EPPotPoissonExpRate_Func1D> proxFun;
+    mutable Handle<EPPotPoissonExpRate_Func1D> proxFun;
 
   public:
     // Public methods
@@ -108,7 +108,7 @@
       return temp-s*yscal;
     }
 
-    bool proximal(double h,double rho,double& sstar);
+    bool proximal(double h,double rho,double& sstar) const;
   };
 //ENDNS
 

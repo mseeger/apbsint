@@ -42,7 +42,7 @@
      * @param sstar Result s_* ret. here
      * @return      Successful?
      */
-    virtual bool proximal(double h,double rho,double& sstar) = 0;
+    virtual bool proximal(double h,double rho,double& sstar) const = 0;
   };
 //ENDNS
 

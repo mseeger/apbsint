@@ -70,6 +70,10 @@
       return (i>=0 && ((double) i)==py);
     }
 
+    bool hasWayPoints() const {
+      return true;
+    }
+
     /**
      * The integration interval is all of R, and l(s) is smooth everywhere.
      */
