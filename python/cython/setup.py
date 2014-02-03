@@ -40,6 +40,7 @@ eptools_ext_sources = [
     'base/lhotse/IntVal.cc',
     'base/lhotse/Interval.cc',
     'base/lhotse/Range.cc',
+    'base/lhotse/optimize/OneDimSolver.cc',
     'base/src/eptools/potentials/DefaultPotManager.cc',
     'base/src/eptools/potentials/EPPotentialFactory.cc',
     'base/src/eptools/potentials/EPPotentialNamedFactory.cc',
@@ -74,6 +75,7 @@ apbtest_ext_sources = [
     'base/lhotse/IntVal.cc',
     'base/lhotse/Interval.cc',
     'base/lhotse/Range.cc',
+    'base/lhotse/optimize/OneDimSolver.cc',
     'base/src/eptools/potentials/SpecfunServices.cc'
 ]
 

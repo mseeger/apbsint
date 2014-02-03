@@ -156,6 +156,8 @@ LIBS=		-lm
 
 GLOBALDIR=	$(LHOTSELIBDIR)
 
+OPTIMIZEDIR=	$(LHOTSELIBDIR)/optimize
+
 SPECFUNDIR=	$(LHOTSELIBDIR)/specfun
 
 # Bare minimum for compiling basic code (f.ex. basic MEX files). In
@@ -166,7 +168,8 @@ ESSMINIMUMOBJS=	$(GLOBALDIR)/global.o \
 		$(GLOBALDIR)/FileUtils.o \
 		$(GLOBALDIR)/IntVal.o \
 		$(GLOBALDIR)/Interval.o \
-		$(GLOBALDIR)/Range.o
+		$(GLOBALDIR)/Range.o \
+		$(OPTIMIZEDIR)/OneDimSolver.o
 
 ESSMINIMUMOBJS_gslyes=	$(SPECFUNDIR)/Specfun.o
 
@@ -387,8 +390,8 @@ clean:
 clean_all:
 	@$(MAKE) make_opt$(opt) TARGET=$@_int
 
-clean_int:	clean_global clean_specfun clean_src clean_doc \
-		clean_python clean_matlab
+clean_int:	clean_global clean_specfun clean_optimize clean_src \
+		clean_doc clean_python clean_matlab
 
 clean_src:	clean_PROJECTMAIN clean_eptools
 
@@ -404,6 +407,11 @@ clean_MEXLIBS:
 
 clean_global:
 	@cd $(GLOBALDIR); \
+	rm $(CLEAN_FILES); \
+	cd $(ROOTDIR)
+
+clean_optimize:
+	@cd $(OPTIMIZEDIR); \
 	rm $(CLEAN_FILES); \
 	cd $(ROOTDIR)
 
