@@ -70,7 +70,7 @@ Thumbs.db
 ###################################
 python/cython/build
 python/cython/*.cpp
-matlab/bin/*
+#matlab/bin/*
 matlab/make.inc.def
 
 # Things specific to the current workaround in this project #
