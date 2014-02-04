@@ -91,6 +91,20 @@ apbtest_workaround_ext_sources = [
     'base/lhotse/specfun/Specfun.cc'
 ]
 
+# ptannotate_ext: Potential annotation classes. Right now, they are all in
+#     the workaround
+ptannotate_ext_sources = [
+    'ptannotate_ext.pyx',
+    'base/lhotse/global.cc',
+    'base/lhotse/StandardException.cc',
+    'base/lhotse/FileUtils.cc',
+    'base/lhotse/IntVal.cc',
+    'base/lhotse/Interval.cc',
+    'base/lhotse/Range.cc',
+    'base/src/eptools/potentials/quad/AdaptiveQuadPackServices.cc',
+    'base/src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc'
+]
+
 df_ext_modules = [
     Extension(
         'eptools_ext',
@@ -126,8 +140,19 @@ if work_around:
             language = 'c++'
         )
     )
+    df_ext_modules.append(
+        Extension(
+            'ptannotate_ext',
+            sources = ptannotate_ext_sources,
+            include_dirs = df_include_dirs,
+            define_macros = df_define_macros,
+            libraries = df_libraries,
+            library_dirs = df_library_dirs,
+            language = 'c++'
+        )
+    )
 
 setup(
-cmdclass = {'build_ext': build_ext},
-ext_modules = df_ext_modules
+    cmdclass = {'build_ext': build_ext},
+    ext_modules = df_ext_modules
 )
