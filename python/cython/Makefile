@@ -8,6 +8,7 @@ wa:
 	mv eptools_ext.so ../apbsint/.
 	mv apbtest_ext.so ../apbsint/.
 	mv apbtest_workaround_ext.so ../apbsint/.
+	mv ptannotate_ext.so ../apbsint/.
 
 clean:
 	rm eptools_ext.cpp

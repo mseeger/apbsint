@@ -17,6 +17,9 @@ from ceptools_ext cimport *
 
 # We get pointers to BLAS functions from scipy:
 # See mail.scipy.org/pipermail/numpy-discussion/2013-February/065576.html
+# ATTENTION: According to Python 2.7.6 documentation, the CObject API is
+# deprecated from Python 2.7 on, and one should use Capsules.
+# But would this work in the specific SciPy context here?
 import scipy
 from cpython cimport PyCObject_AsVoidPtr
 __import__('scipy.linalg.blas')
