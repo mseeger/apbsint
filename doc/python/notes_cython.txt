@@ -221,3 +221,33 @@ functions. Caveat of profiler discussed there.
 
 - 'bytes' (byte string), 'unicode' (unicode string)
 - 'str' == 'bytes' in 2.X, == 'unicode' in 3.X
+
+
+(3) Wrapping C++ classes:
+
+Basics are described in the documentation. But there are C++ features which
+are not fully supported, or are different.
+
+- The '->' operator does not exist in Cython, it is always '.'
+    B* bobj;
+    bobj.f(); // Not bobj->f()
+
+- According to the GitHub wiki, methods which are inherited from a base
+  class and not overwritten, are not treated properly. If A is base of B,
+  A defines f(), B inherits f(), this does not work in Cython:
+    B* bobj;
+    // ...
+    bobj.f(); // No!
+  Instead, have to cast to (A*):
+    B* bobj;
+    // ...
+    ((A*) bobj).f() // OK
+
+More advanced example as in documentation:
+  https://github.com/cython/cython/wiki/WrappingSetOfCppClasses
+
+- Example shows pitfalls when A -> B hierarchy in C++ is mirrored by
+  pyA -> pyB wrapper classes.
+  In particular, in Cython all __cinit__ are called from the base class up.
+  This means that __cinit__ of a subclass may have to destroy a C++ object
+  already created by its parent (see example there).

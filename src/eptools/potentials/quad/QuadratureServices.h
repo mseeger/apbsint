@@ -43,6 +43,8 @@
   public:
     // Public methods
 
+    virtual ~QuadratureServices() {}
+
     /**
      * @return Does 'quad' return an estimate of the final absolute error?
      */
@@ -80,7 +82,7 @@
     virtual int quad(quad_function& fun,double a,bool aInf,double b,bool bInf,
 		     double& ival,const ArrayHandle<double>& wayPts=
 		     ArrayHandleZero<double>::get(),double* abserr=0,
-		     string* errmsg=0);
+		     string* errmsg=0) = 0;
   };
 //ENDNS
 
