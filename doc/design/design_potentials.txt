@@ -21,7 +21,7 @@ Solution:
 If EP updates for a potential are implemented by numerical quadrature, the
 user just implements basic services, as well as services required to drive
 quadrature (eval. of log t(s) and derivatives). This implementation inherits
-from EPScalPotentialBase, but NOT from EPScalarPotential.
+from EPScalPotentialBase, but not from EPScalarPotential.
 
 (1.1) Hyperparameters: Construction and normal:
 
@@ -41,7 +41,22 @@ that information such as the number of parameters and even the number of
 construction parameters can only be requested given an object. The default
 constructor therefore plays an important role.
 
-(1.2) Potential factories:
+(1.2) Annotations:
+
+Potential and potential manager objects are created on-demand,
+so to simplify interfacing with diverse environments (Matlab, Python). The
+corresponding objects must be light-weight and trivial to construct. This is
+not always the case:
+- QuadratureService member of quadrature potentials
+- Planned: Lookup table for speeding up quadrature
+
+We allow potential objects to be "annotated" by an object, whose type is
+determined by the potential class. These annotations are kept persistent by
+wrapping them in Python/Matlab objects. They are passed to C++ code as void*.
+There is one annotation (void*) per block, the default value is NULL (no
+annotation).
+
+(1.3) Potential factories:
 
 - Supported potentials are registered at EPPotentialNamedFactory and
   EPPotentialFactory with a name and an (internal) ID
@@ -82,7 +97,7 @@ TODO:
 (3) EP updates by numerical quadrature:
 
 - User implements basic services for potential (evaluation, ...). These are
-  NOT derived from EPScalarPotential
+  not derived from EPScalarPotential
 - EP update services in EPScalarPotential are done by numerical quadrature
   code
 
@@ -144,3 +159,6 @@ Return:
 
 This is directly taylored to GSL, to keep it simple, but could be changed
 easily if GSL were to be phased out.
+
+A QuadratureService object can serve several different potential objects. It
+is maintained as annotation (see (1.2)).

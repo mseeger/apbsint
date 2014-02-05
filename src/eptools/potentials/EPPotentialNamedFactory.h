@@ -67,29 +67,31 @@
       return potIDs[pid];
     }
 
-    static EPScalarPotential* create(int pid,const double* pv) {
-      return EPPotentialFactory::create(pid,pv);
+    static EPScalarPotential* create(int pid,const double* pv,void* annot=0) {
+      return EPPotentialFactory::create(pid,pv,annot);
     }
 
-    static EPScalarPotential* create(const string& name,const double* pv) {
+    static EPScalarPotential* create(const string& name,const double* pv,
+				     void* annot=0) {
       setup();
       int pid=getID4Name(name);
       if (pid==-1)
 	throw InvalidParameterException(EXCEPT_MSG(""));
-      return EPPotentialFactory::create(pid,pv);
+      return EPPotentialFactory::create(pid,pv,annot);
     }
 
-    static EPScalarPotential* createDefault(int pid,const double* pv=0) {
-      return EPPotentialFactory::createDefault(pid,pv);
+    static EPScalarPotential* createDefault(int pid,const double* pv=0,
+					    void* annot=0) {
+      return EPPotentialFactory::createDefault(pid,pv,annot);
     }
 
     static EPScalarPotential* createDefault(const string& name,
-					    const double* pv=0) {
+					    const double* pv=0,void* annot=0) {
       setup();
       int pid=getID4Name(name);
       if (pid==-1)
 	throw InvalidParameterException(EXCEPT_MSG(""));
-      return EPPotentialFactory::createDefault(pid,pv);
+      return EPPotentialFactory::createDefault(pid,pv,annot);
     }
 
   protected:

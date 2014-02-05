@@ -19,8 +19,8 @@ class PotentialManager;
 class FactorizedEPRepresentation;
 
 void createPotentialManager(W_IARRAY(potids),W_IARRAY(numpot),W_DARRAY(parvec),
-			    W_IARRAY(parshrd),Handle<PotentialManager>& potMan,
-			    W_ERRORARGS);
+			    W_IARRAY(parshrd),W_ARRAY(annobj,void*),
+			    Handle<PotentialManager>& potMan,W_ERRORARGS);
 
 void createFactEPRepres(int numN,int numM,W_IARRAY(rp_rowind),
 			W_IARRAY(rp_colind),W_DARRAY(rp_bvals),W_DARRAY(rp_pi),

@@ -14,20 +14,22 @@
  * manager.
  */
 void createPotentialManager(W_IARRAY(potids),W_IARRAY(numpot),W_DARRAY(parvec),
-			    W_IARRAY(parshrd),Handle<PotentialManager>& potMan,
-			    W_ERRORARGS)
+			    W_IARRAY(parshrd),W_ARRAY(annobj,void*),
+			    Handle<PotentialManager>& potMan,W_ERRORARGS)
 {
   ArrayHandle<int> potidsA,numpotA,parshrdA;
   ArrayHandle<double> parvecA;
+  ArrayHandle<void*> annobjA;
 
   W_CHKSIZE(numpot,npotids,"NUMPOT");
   W_MASKARRAY(potids);
   W_MASKARRAY(numpot);
   W_MASKARRAY(parvec);
   W_MASKARRAY(parshrd);
+  W_MASKARRAY(annobj);
   try {
     potMan.changeRep(PotManagerFactory::create(potidsA,numpotA,parvecA,
-					       parshrdA));
+					       parshrdA,annobjA));
   } catch (StandardException ex) {
     W_RETERROR_ARGS(1,"Cannot create potential manager:\n%s",ex.msg());
   } catch (...) {

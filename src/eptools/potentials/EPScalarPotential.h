@@ -41,6 +41,17 @@
    * since a constructor cannot be virtual.
    * This is required to break a chicken-and-egg situation: We need an
    * existing object in order to check a parameter setting via 'isValidPars'.
+   * <p>
+   * Annotations:
+   * A 'EPScalarPotential' type can be annotated (see 'EPPotentialFactory',
+   * 'PotManagerFactory'), meaning that it contains a member which is not
+   * created on-demand (and which may be shared).
+   * For an annotated type, all constructors must accept a void*, which is
+   * cast to the annotation type (depends on 'EPScalarPotential' subclass).
+   * In particular, if this argument is 0, an exception with a meaningful
+   * text must be raised.
+   * ATTENTION: This mechanism is unsafe. A non-zero value cannot be properly
+   * checked for validity.
    *
    * @author  Matthias Seeger
    * @version %I% %G%

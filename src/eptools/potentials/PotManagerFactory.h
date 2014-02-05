@@ -49,6 +49,11 @@
      * potentials per 'DefaultPotManager'. 'parVec' (double array) and
      * 'parShrd' (int array) are concatenations of the corr. arrays passed
      * to the 'DefaultPotManager' constructor.
+     * 'annObj' (size K) contains void* to annotation objects. Entries are
+     * ignored for types without annotations (should be 0 to be safe), but
+     * are mandatory for annotated types.
+     * ATTENTION: Unsafe! A non-zero pointer cannot be checked for validity.
+     * This could crash the program or worse.
      * <p>
      * NOTE: The K 'EPScalarPotential' objects created here are
      * default-constructed (see 'EPPotentialFactory::createDefault'). If the
@@ -71,12 +76,14 @@
      * @param numPot
      * @param parVec
      * @param parShrd
+     * @param annObj
      * @return           New potential manager
      */
     static PotentialManager* create(const ArrayHandle<int>& potIDs,
 				    const ArrayHandle<int>& numPot,
 				    const ArrayHandle<double>& parVec,
-				    const ArrayHandle<int>& parShrd);
+				    const ArrayHandle<int>& parShrd,
+				    const ArrayHandle<void*>& annObj);
 
     /**
      * Check representation (as passed to 'create') for validity. If an
@@ -97,12 +104,14 @@
      * @param numPot
      * @param parVec
      * @param parShrd
+     * @param annObj
      * @param posoff  S.a. Def.: 0
      */
     static void checkRepres(const ArrayHandle<int>& potIDs,
 			    const ArrayHandle<int>& numPot,
 			    const ArrayHandle<double>& parVec,
-			    const ArrayHandle<int>& parShrd,int posoff=0);
+			    const ArrayHandle<int>& parShrd,
+			    const ArrayHandle<void*>& annObj,int posoff=0);
   };
 //ENDNS
 

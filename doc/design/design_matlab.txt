@@ -87,6 +87,15 @@ The same internal representation is used in all EP modes. It is specified in
 - parvec [double vector]: Flat, K  parts. Part K has P_k subparts. Subpart
   is scalar if parshrd entry 1, otherwise vector of size N_k
 
+DESIGN CHANGE:
+
+Add annotation objects. New field:
+- annot [uint64 vector, K]: void* to annotations, converted to uint64. The
+  default value is 0 (NULL): no annotation.
+
+Right now, annotations are supported in Python only. It remains TODO for the
+Matlab interface.
+
 
 (3) Coupled mode: Coupling factor
 

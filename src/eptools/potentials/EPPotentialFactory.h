@@ -57,24 +57,39 @@
      * Creates 'EPScalarPotential' object of correct type, given ID.
      * In 'pv', a valid initial parameter vector has to be passed. Use
      * 'createDefault' for default construction.
+     * <p>
+     * In 'annot', a void* to an annotation can be passed. This is ignored
+     * by types which do not have annotations, but is mandatory for types
+     * which do.
+     * NOTE: The validity of a non-zero 'annot' is not checked. Passing
+     * an invalid can lead to a crash.
      *
-     * @param pid Potential ID
-     * @param pv  Initial parameter vector
-     * @return    New object
+     * @param pid   Potential ID
+     * @param pv    Initial parameter vector
+     * @param annot S.a. Def.: 0
+     * @return      New object
      */
-    static EPScalarPotential* create(int pid,const double* pv);
+    static EPScalarPotential* create(int pid,const double* pv,void* annot=0);
 
     /**
      * Creates 'EPScalarPotential' object of correct type, given ID. The
      * default constructor of the type is called. The type may require
      * construction parameters (see 'EPScalarPotential' header comments),
      * in which case 'pv' must point to these. Otherwise, 'pv' is ignored.
+     * <p>
+     * In 'annot', a void* to an annotation can be passed. This is ignored
+     * by types which do not have annotations, but is mandatory for types
+     * which do.
+     * NOTE: The validity of a non-zero 'annot' is not checked. Passing
+     * an invalid can lead to a crash.
      *
-     * @param pid Potential ID
-     * @param pv  Construction parameters. Def.: 0
-     * @return    New object
+     * @param pid   Potential ID
+     * @param pv    Construction parameters. Def.: 0
+     * @param annot S.a. Def.: 0
+     * @return      New object
      */
-    static EPScalarPotential* createDefault(int pid,const double* pv=0);
+    static EPScalarPotential* createDefault(int pid,const double* pv=0,
+					    void* annot=0);
   };
 //ENDNS
 

@@ -25,7 +25,8 @@
   const int EPPotentialFactory::potSpikeSlab;
   const int EPPotentialFactory::potLast;
 
-  EPScalarPotential* EPPotentialFactory::create(int pid,const double* pv)
+  EPScalarPotential* EPPotentialFactory::create(int pid,const double* pv,
+						void* annot)
   {
     int i;
     EPScalarPotential* rpot=0;
@@ -66,7 +67,8 @@
     return rpot;
   }
 
-  EPScalarPotential* EPPotentialFactory::createDefault(int pid,const double* pv)
+  EPScalarPotential* EPPotentialFactory::createDefault(int pid,const double* pv,
+						       void* annot)
   {
     int i;
     EPScalarPotential* rpot=0;

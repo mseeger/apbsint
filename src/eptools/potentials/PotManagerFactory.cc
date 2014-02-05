@@ -15,7 +15,8 @@
   PotentialManager* PotManagerFactory::create(const ArrayHandle<int>& potIDs,
 					      const ArrayHandle<int>& numPot,
 					      const ArrayHandle<double>& parVec,
-					      const ArrayHandle<int>& parShrd)
+					      const ArrayHandle<int>& parShrd,
+					      const ArrayHandle<void*>& annObj)
   {
     int i,j,k,numk=potIDs.size();
     ArrayHandle<Handle<PotentialManager> > parr;
@@ -24,7 +25,7 @@
     double* pvecP=parVec.p();
     int* shrdP=parShrd.p();
 
-    if (numPot.size()!=numk)
+    if (numPot.size()!=numk || annObj.size()!=numk)
       throw InvalidParameterException(EXCEPT_MSG(""));
     for (k=0; k<numk; k++)
       if (!EPPotentialFactory::isValidID(potIDs[k]) || numPot[k]<=0)
@@ -41,7 +42,7 @@
       // size. These parameters must form the prefix
       Handle<EPScalarPotential> epPot;
       try {
-	epPot.changeRep(EPPotentialFactory::createDefault(pid,pvecP));
+	epPot.changeRep(EPPotentialFactory::createDefault(pid,pvecP,annObj[k]));
       } catch (StandardException ex) {
 	throw InvalidParameterException(EXCEPT_MSG("Cannot create potential object"));
       }
@@ -82,6 +83,7 @@
 				      const ArrayHandle<int>& numPot,
 				      const ArrayHandle<double>& parVec,
 				      const ArrayHandle<int>& parShrd,
+				      const ArrayHandle<void*>& annObj,
 				      int posoff)
   {
     int k,numk=potIDs.size();
@@ -91,8 +93,8 @@
     int* shrdP=parShrd.p();
     char errStr[100];
 
-    if (numPot.size()!=numk)
-      throw InvalidParameterException("NUMPOT has wrong size");
+    if (numPot.size()!=numk || annObj.size()!=numk)
+      throw InvalidParameterException("NUMPOT or ANNOBJ have wrong size");
     for (k=0; k<numk; k++) {
       if (!EPPotentialFactory::isValidID(potIDs[k])) {
 	sprintf(errStr,"Block %d: POTIDS entry invalid",k+posoff);
@@ -108,7 +110,8 @@
       // Have to create instance in order to request number of parameters
       Handle<EPScalarPotential> epPot;
       try {
-	epPot.changeRep(EPPotentialFactory::createDefault(pid,pvecP));
+	epPot.changeRep(EPPotentialFactory::createDefault(pid,pvecP,
+							  annObj[k]));
       } catch (StandardException ex) {
 	sprintf(errStr,"Block %d: Cannot create potential object (%s)",
 		k+posoff,ex.msg());
