@@ -5,8 +5,9 @@
 # in the public repo).
 
 from distutils.core import setup
-from distutils.extension import Extension
+#from distutils.extension import Extension
 from Cython.Distutils import build_ext
+from Cython.Distutils.extension import Extension
 import sys
 import numpy
 
@@ -91,8 +92,7 @@ apbtest_workaround_ext_sources = [
     'base/lhotse/specfun/Specfun.cc'
 ]
 
-# ptannotate_ext: Potential annotation classes. Right now, they are all in
-#     the workaround
+# ptannotate_ext: Potential annotation classes
 ptannotate_ext_sources = [
     'ptannotate_ext.pyx',
     'base/lhotse/global.cc',
@@ -100,11 +100,17 @@ ptannotate_ext_sources = [
     'base/lhotse/FileUtils.cc',
     'base/lhotse/IntVal.cc',
     'base/lhotse/Interval.cc',
-    'base/lhotse/Range.cc',
-    'base/src/eptools/potentials/quad/AdaptiveQuadPackServices.cc',
-    'base/src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc'
+    'base/lhotse/Range.cc'
 ]
-
+if work_around:
+    ptannotate_ext_sources.extend([
+        'base/src/eptools/potentials/quad/AdaptiveQuadPackServices.cc',
+        'base/src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc'
+    ])
+    ptannotate_compile_time_env = {'INCLUDE_WORKAROUND' : True}
+else:
+    ptannotate_compile_time_env = {'INCLUDE_WORKAROUND' : False}
+    
 df_ext_modules = [
     Extension(
         'eptools_ext',
@@ -126,24 +132,26 @@ df_ext_modules = [
         libraries = nwa_libraries,
         library_dirs = nwa_library_dirs,
         language = 'c++'
+    ),
+    # The compile-time constant INCLUDE_WORKAROUND determines whether
+    # workaround code is included
+    Extension(
+        'ptannotate_ext',
+        sources = ptannotate_ext_sources,
+        include_dirs = df_include_dirs,
+        define_macros = df_define_macros,
+        libraries = df_libraries,
+        library_dirs = df_library_dirs,
+        language = 'c++',
+        cython_compile_time_env = ptannotate_compile_time_env
     )
 ]
+
 if work_around:
     df_ext_modules.append(
         Extension(
             'apbtest_workaround_ext',
             sources = apbtest_workaround_ext_sources,
-            include_dirs = df_include_dirs,
-            define_macros = df_define_macros,
-            libraries = df_libraries,
-            library_dirs = df_library_dirs,
-            language = 'c++'
-        )
-    )
-    df_ext_modules.append(
-        Extension(
-            'ptannotate_ext',
-            sources = ptannotate_ext_sources,
             include_dirs = df_include_dirs,
             define_macros = df_define_macros,
             libraries = df_libraries,

@@ -48,9 +48,9 @@ void eptwrap_potmanager_isvalid(int ain,int aout,W_IARRAY(potids),
 
   try {
     /* Read arguments */
-    if (ain==4)
+    if (ain==5)
       posoff=0;
-    else if (ain!=5)
+    else if (ain!=6)
       W_RETERROR(2,"Wrong number of input arguments");
     if (aout!=1)
       W_RETERROR(2,"Need 1 return argument");

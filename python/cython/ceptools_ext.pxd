@@ -44,6 +44,7 @@ cdef extern from "src/eptools/wrap/eptwrap_epupdate_parallel.h":
     void eptwrap_epupdate_parallel(int ain,int aout,int* potids,int npotids,
                                    int* numpot,int nnumpot,double* parvec,
                                    int nparvec,int* parshrd,int nparshrd,
+                                   void** annobj,int nannobj,
                                    double* cmu,int ncmu,double* crho,int ncrho,
                                    int* updind,int nupdind,int* rstat,
                                    int nrstat,double* alpha,int nalpha,
@@ -85,6 +86,7 @@ cdef extern from "src/eptools/wrap/eptwrap_fact_sequpdates.h":
 				 int* pm_numpot,int npm_numpot,
                                  double* pm_parvec,int npm_parvec,
                                  int* pm_parshrd,int npm_parshrd,
+                                 void** pm_annobj,int npm_annobj,
                                  int* rp_rowind,int nrp_rowind,int* rp_colind,
                                  int nrp_colind,double* rp_bvals,int nrp_bvals,
                                  double* rp_pi,int nrp_pi,double* rp_beta,
@@ -104,18 +106,21 @@ cdef extern from "src/eptools/wrap/eptwrap_potmanager_isvalid.h":
     void eptwrap_potmanager_isvalid(int ain,int aout,int* potids,int npotids,
                                     int* numpot,int nnumpot,double* parvec,
                                     int nparvec,int* parshrd,int nparshrd,
+                                    void** annobj,int nannobj,
                                     int posoff,char** retstr,int* errcode,
                                     char* errstr)
 
 cdef extern from "src/eptools/wrap/eptwrap_epupdate_single.h":
     void eptwrap_epupdate_single1(int ain,int aout,int pid,double* pars,
-                                  int npars,double cmu,double crho,int* rstat,
+                                  int npars,void* annobj,double cmu,
+                                  double crho,int* rstat,
                                   double* alpha,double* nu,double* logz,
                                   int* errcode,char* errstr)
 
 cdef extern from "src/eptools/wrap/eptwrap_epupdate_single.h":
     void eptwrap_epupdate_single2(int ain,int aout,char* pname,double* pars,
-                                  int npars,double cmu,double crho,int* rstat,
+                                  int npars,void* annobj,double cmu,
+                                  double crho,int* rstat,
                                   double* alpha,double* nu,double* logz,
                                   int* errcode,char* errstr)
 
@@ -123,6 +128,7 @@ cdef extern from "src/eptools/wrap/eptwrap_epupdate_single.h":
     void eptwrap_epupdate_single3(int ain,int aout,int* potids,int npotids,
                                   int* numpot,int nnumpot,double* parvec,
                                   int nparvec,int* parshrd,int nparshrd,
+                                  void** annobj,int nannobj,
                                   int pind,double cmu,double crho,int* rstat,
                                   double* alpha,double* nu,double* logz,
                                   int* errcode,char* errstr)

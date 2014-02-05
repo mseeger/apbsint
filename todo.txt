@@ -401,8 +401,22 @@ IMPLEMENTATION OF EP TOOLBOX
       - wrap/eptwrap_epupdate_single [OK]
       - wrap/eptwrap_fact_sequpdates [OK]
       - wrap/eptwrap_potmanager_isvalid [OK]
-    - Extend all code in eptools_ext [HIER!]
-    - Update Python code (module apbsint)
+    - Extend all code in eptools_ext [OK]
+    - Import ptannotate_ext into repo. We need conditional compilation then,
+      because the workaround has the code right now. [OK]
+      This is a bit tricky:
+        https://groups.google.com/forum/#!topic/cython-users/SOAVfEH7EBk
+        http://searchcode.com/codesearch/view/15578445
+      - Put workaround code in cptannotate_ext_workaround.pxi,
+        ptannotate_ext_workaround.pxi (symlinks)
+      - Use INCLUDE_WORKAROUND constant and conditionally include the .pxi
+        files
+      - cython_compile_time_env = {'INCLUDE_WORKAROUND' : True}
+        (according to setup.py example in link above)
+      ==> Works if Extension imported from Cython.Distutils.extension instead
+          of distutils.extension
+      OK: Seems to compile
+    - Update Python code (module apbsint) [HIER!]
     - Update Matlab code: Annotations not supported for now
     - Implement this for Laplace potential, based on EPPotDebugQuadLaplace
       and EPPotQuadLaplaceApprox
@@ -411,11 +425,6 @@ IMPLEMENTATION OF EP TOOLBOX
       intervals [OK]
     - Debug implementation for Laplace potential. Proximal map has analytical
       solution [OK]
-    - Quadrature requires C++ objects which remain persistent (f.ex. the
-      QuadratureService object, later maybe a lookup table). Find out how to
-      do that in Python (no Matlab for now) [HIER!]
-      The easiest is to wrap classes in question into a very simple Python
-      class (only has to have constructor and destructor).
     - Hook new potential types in. [HIER!]
       These must be annotated by quadrature service object (above)
     - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad

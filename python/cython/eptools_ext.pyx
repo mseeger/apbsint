@@ -13,6 +13,7 @@
 import cython
 import numpy as np
 cimport numpy as np
+from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from ceptools_ext cimport *
 
 # We get pointers to BLAS functions from scipy:
@@ -24,6 +25,17 @@ import scipy
 from cpython cimport PyCObject_AsVoidPtr
 __import__('scipy.linalg.blas')
 
+# Helper functions
+
+# Converts NumPy array with uint64 entries into Cython array with void*
+# entries. The returned array has to be deallocated with 'PyMem_Free'
+cdef void** make_voidptr_array(np.ndarray[np.uint64_t,ndim=1] arr):
+    cdef int i
+    cdef void** ret = <void**>PyMem_Malloc(arr.shape[0]*sizeof(void*))
+    for i in range(arr.shape[0]):
+        ret[i] = <void*>arr[i]
+    return ret
+
 # Cython functions
 
 # rstat, alpha, nu, logz (optional) are return arguments (contiguous vectors
@@ -34,6 +46,7 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
                       np.ndarray[int,ndim=1] numpot not None,
                       np.ndarray[np.double_t,ndim=1] parvec not None,
                       np.ndarray[int,ndim=1] parshrd not None,
+                      np.ndarray[np.uint64_t,ndim=1] annobj not None,
                       np.ndarray[np.double_t,ndim=1] cmu not None,
                       np.ndarray[np.double_t,ndim=1] crho not None,
                       np.ndarray[int,ndim=1] rstat not None,
@@ -43,6 +56,7 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
                       np.ndarray[int,ndim=1] updind = None):
     cdef int rsz, errcode
     cdef char errstr[512]
+    cdef void** annobj_p
     # Ensure that input/output arguments are contiguous
     rsz = cmu.shape[0]
     if not (rstat.flags.c_contiguous and rstat.shape[0]==rsz):
@@ -63,6 +77,7 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
     parshrd = np.ascontiguousarray(parshrd)
     cmu = np.ascontiguousarray(cmu)
     crho = np.ascontiguousarray(crho)
+    annobj_p = make_voidptr_array(annobj)  # Convert to void* array
     # Create return arguments
     # NOTE: They are now passed as arguments (more efficient)
     #rsz = cmu.shape[0]
@@ -73,18 +88,20 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
     # Call C function
     if updind is None:
         if logz is None:
-            eptwrap_epupdate_parallel(6,3,&potids[0],potids.shape[0],&numpot[0],
+            eptwrap_epupdate_parallel(7,3,&potids[0],potids.shape[0],&numpot[0],
                                       numpot.shape[0],&parvec[0],
                                       parvec.shape[0],&parshrd[0],
-                                      parshrd.shape[0],&cmu[0],cmu.shape[0],
-                                      &crho[0],crho.shape[0],NULL,0,&rstat[0],
+                                      parshrd.shape[0],annobj_p,annobj.shape[0],
+                                      &cmu[0],cmu.shape[0],&crho[0],
+                                      crho.shape[0],NULL,0,&rstat[0],
                                       rstat.shape[0],&alpha[0],alpha.shape[0],
                                       &nu[0],nu.shape[0],NULL,0,&errcode,errstr)
         else:
-            eptwrap_epupdate_parallel(6,4,&potids[0],potids.shape[0],&numpot[0],
+            eptwrap_epupdate_parallel(7,4,&potids[0],potids.shape[0],&numpot[0],
                                       numpot.shape[0],&parvec[0],
                                       parvec.shape[0],&parshrd[0],
-                                      parshrd.shape[0],&cmu[0],cmu.shape[0],
+                                      parshrd.shape[0],annobj_p,
+                                      annobj.shape[0],&cmu[0],cmu.shape[0],
                                       &crho[0],crho.shape[0],NULL,0,&rstat[0],
                                       rstat.shape[0],&alpha[0],alpha.shape[0],
                                       &nu[0],nu.shape[0],&logz[0],
@@ -92,24 +109,27 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
     else:
         updind = np.ascontiguousarray(updind)
         if logz is None:
-            eptwrap_epupdate_parallel(7,3,&potids[0],potids.shape[0],&numpot[0],
+            eptwrap_epupdate_parallel(8,3,&potids[0],potids.shape[0],&numpot[0],
                                       numpot.shape[0],&parvec[0],
                                       parvec.shape[0],&parshrd[0],
-                                      parshrd.shape[0],&cmu[0],cmu.shape[0],
+                                      parshrd.shape[0],annobj_p,
+                                      annobj.shape[0],&cmu[0],cmu.shape[0],
                                       &crho[0],crho.shape[0],&updind[0],
                                       updind.shape[0],&rstat[0],rstat.shape[0],
                                       &alpha[0],alpha.shape[0],&nu[0],
                                       nu.shape[0],NULL,0,&errcode,errstr)
         else:
-            eptwrap_epupdate_parallel(7,4,&potids[0],potids.shape[0],&numpot[0],
+            eptwrap_epupdate_parallel(8,4,&potids[0],potids.shape[0],&numpot[0],
                                       numpot.shape[0],&parvec[0],
                                       parvec.shape[0],&parshrd[0],
-                                      parshrd.shape[0],&cmu[0],cmu.shape[0],
+                                      parshrd.shape[0],annobj_p,
+                                      annobj.shape[0],&cmu[0],cmu.shape[0],
                                       &crho[0],crho.shape[0],&updind[0],
                                       updind.shape[0],&rstat[0],rstat.shape[0],
                                       &alpha[0],alpha.shape[0],&nu[0],
                                       nu.shape[0],&logz[0],logz.shape[0],
                                       &errcode,errstr)
+    PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
         # HIER: Define own exception, say EptwrapError
@@ -236,6 +256,7 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
                     np.ndarray[int,ndim=1] pm_numpot not None,
                     np.ndarray[np.double_t,ndim=1] pm_parvec not None,
                     np.ndarray[int,ndim=1] pm_parshrd not None,
+                    np.ndarray[np.uint64_t,ndim=1] pm_annobj not None,
                     np.ndarray[int,ndim=1] rp_rowind not None,
                     np.ndarray[int,ndim=1] rp_colind not None,
                     np.ndarray[np.double_t,ndim=1] rp_bvals not None,
@@ -254,6 +275,7 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
                     np.ndarray[np.double_t,ndim=1] sd_dampfact = None):
     cdef int errcode, rsz, sd_nupd, sd_nrec, aout, ain
     cdef char errstr[512]
+    cdef void** annobj_p
     # Ensure that input/output arguments are contiguous
     updjind = np.ascontiguousarray(updjind)
     pm_potids = np.ascontiguousarray(pm_potids)
@@ -304,13 +326,15 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
             aout = 2
             if not (sd_numvalid is None or sd_dampfact is None):
                 aout = 5
+    annobj_p = make_voidptr_array(pm_annobj)  # Convert to void* array
     # Call C function
     if sd_numvalid is None:
-        eptwrap_fact_sequpdates(16,aout,n,m,&updjind[0],updjind.shape[0],
+        eptwrap_fact_sequpdates(17,aout,n,m,&updjind[0],updjind.shape[0],
                                 &pm_potids[0],pm_potids.shape[0],&pm_numpot[0],
                                 pm_numpot.shape[0],&pm_parvec[0],
                                 pm_parvec.shape[0],&pm_parshrd[0],
-                                pm_parshrd.shape[0],&rp_rowind[0],
+                                pm_parshrd.shape[0],annobj_p,
+                                pm_annobj.shape[0],&rp_rowind[0],
                                 rp_rowind.shape[0],&rp_colind[0],
                                 rp_colind.shape[0],&rp_bvals[0],
                                 rp_bvals.shape[0],&rp_pi[0],rp_pi.shape[0],
@@ -325,15 +349,16 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
     else:
         # With selective damping
         if sd_subind is None:
-            ain = 19
+            ain = 20
         else:
             sd_subind = np.ascontiguousarray(sd_subind)
-            ain = 21
+            ain = 22
         eptwrap_fact_sequpdates(ain,aout,n,m,&updjind[0],updjind.shape[0],
                                 &pm_potids[0],pm_potids.shape[0],&pm_numpot[0],
                                 pm_numpot.shape[0],&pm_parvec[0],
                                 pm_parvec.shape[0],&pm_parshrd[0],
-                                pm_parshrd.shape[0],&rp_rowind[0],
+                                pm_parshrd.shape[0],annobj_p,
+                                pm_annobj.shape[0],&rp_rowind[0],
                                 rp_rowind.shape[0],&rp_colind[0],
                                 rp_colind.shape[0],&rp_bvals[0],
                                 rp_bvals.shape[0],&rp_pi[0],rp_pi.shape[0],
@@ -343,9 +368,9 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
                                 sd_numvalid.shape[0],&sd_topind[0],
                                 sd_topind.shape[0],&sd_topval[0],
                                 sd_topval.shape[0],
-                                &sd_subind[0] if ain>19 else NULL,
-                                sd_subind.shape[0] if ain>19 else 0,
-                                sd_subexcl if ain>20 else 0,
+                                &sd_subind[0] if ain>20 else NULL,
+                                sd_subind.shape[0] if ain>20 else 0,
+                                sd_subexcl if ain>21 else 0,
                                 &rstat[0] if aout>0 else NULL,
                                 rstat.shape[0] if aout>0 else 0,
                                 &delta[0] if aout>1 else NULL,
@@ -353,6 +378,7 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
                                 &sd_dampfact[0] if aout>2 else NULL,
                                 sd_dampfact.shape[0] if aout>2 else 0,&sd_nupd,
                                 &sd_nrec,&errcode,errstr)
+    PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
         # HIER: Define own exception, say EptwrapError
@@ -366,20 +392,24 @@ def potmanager_isvalid(np.ndarray[int,ndim=1] potids not None,
                        np.ndarray[int,ndim=1] numpot not None,
                        np.ndarray[np.double_t,ndim=1] parvec not None,
                        np.ndarray[int,ndim=1] parshrd not None,
+                       np.ndarray[np.uint64_t,ndim=1] annobj not None,
                        int posoff = 0):
     cdef int errcode
     cdef char errstr[512]
     cdef char* retstr
+    cdef void** annobj_p
     # Ensure that input arguments are contiguous
     potids = np.ascontiguousarray(potids)
     numpot = np.ascontiguousarray(numpot)
     parvec = np.ascontiguousarray(parvec)
     parshrd = np.ascontiguousarray(parshrd)
+    annobj_p = make_voidptr_array(annobj)  # Convert to void* array
     # Call C function
-    eptwrap_potmanager_isvalid(5,1,&potids[0],potids.shape[0],&numpot[0],
+    eptwrap_potmanager_isvalid(6,1,&potids[0],potids.shape[0],&numpot[0],
                                numpot.shape[0],&parvec[0],parvec.shape[0],
-                               &parshrd[0],parshrd.shape[0],posoff,&retstr,
-                               &errcode,errstr)
+                               &parshrd[0],parshrd.shape[0],annobj_p,
+                               annobj.shape[0],posoff,&retstr,&errcode,errstr)
+    PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
         # HIER: Define own exception, say EptwrapError
@@ -387,7 +417,7 @@ def potmanager_isvalid(np.ndarray[int,ndim=1] potids not None,
     return <bytes>retstr
 
 def epupdate_single(pid,np.ndarray[np.double_t,ndim=1] pars not None,
-                    double cmu,double crho):
+                    np.uint64_t annobj,double cmu,double crho):
     cdef int errcode, rstat
     cdef char errstr[512]
     cdef double alpha, nu, logz
@@ -395,11 +425,13 @@ def epupdate_single(pid,np.ndarray[np.double_t,ndim=1] pars not None,
     pars = np.ascontiguousarray(pars)
     # Call C function
     if isinstance(pid,str):
-        eptwrap_epupdate_single2(4,4,<char*>pid,&pars[0],pars.shape[0],cmu,
-                                 crho,&rstat,&alpha,&nu,&logz,&errcode,errstr)
+        eptwrap_epupdate_single2(5,4,<char*>pid,&pars[0],pars.shape[0],
+                                 <void*>annobj,cmu,crho,&rstat,&alpha,&nu,
+                                 &logz,&errcode,errstr)
     else:
-        eptwrap_epupdate_single1(4,4,<int>pid,&pars[0],pars.shape[0],cmu,crho,
-                                 &rstat,&alpha,&nu,&logz,&errcode,errstr)
+        eptwrap_epupdate_single1(5,4,<int>pid,&pars[0],pars.shape[0],
+                                 <void*>annobj,cmu,crho,&rstat,&alpha,&nu,
+                                 &logz,&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
         # HIER: Define own exception, say EptwrapError
@@ -412,20 +444,25 @@ def epupdate_single_pman(np.ndarray[int,ndim=1] potids not None,
                          np.ndarray[int,ndim=1] numpot not None,
                          np.ndarray[np.double_t,ndim=1] parvec not None,
                          np.ndarray[int,ndim=1] parshrd not None,
+                         np.ndarray[np.uint64_t,ndim=1] annobj not None,
                          int pind,double cmu,double crho):
     cdef int errcode, rstat
     cdef char errstr[512]
+    cdef void** annobj_p
     cdef double alpha, nu, logz
     # Ensure that input arguments are contiguous
     potids = np.ascontiguousarray(potids)
     numpot = np.ascontiguousarray(numpot)
     parvec = np.ascontiguousarray(parvec)
     parshrd = np.ascontiguousarray(parshrd)
+    annobj_p = make_voidptr_array(annobj)  # Convert to void* array
     # Call C function
-    eptwrap_epupdate_single3(7,4,&potids[0],potids.shape[0],&numpot[0],
+    eptwrap_epupdate_single3(8,4,&potids[0],potids.shape[0],&numpot[0],
                              numpot.shape[0],&parvec[0],parvec.shape[0],
-                             &parshrd[0],parshrd.shape[0],pind,cmu,crho,
-                             &rstat,&alpha,&nu,&logz,&errcode,errstr)
+                             &parshrd[0],parshrd.shape[0],annobj_p,
+                             annobj.shape[0],pind,cmu,crho,&rstat,&alpha,&nu,
+                             &logz,&errcode,errstr)
+    PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
         # HIER: Define own exception, say EptwrapError
