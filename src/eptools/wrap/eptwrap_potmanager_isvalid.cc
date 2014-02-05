@@ -1,8 +1,8 @@
 /* -------------------------------------------------------------------
  * EPTWRAP_POTMANAGER_ISVALID
  *
- * Potential manager defined by POTIDS, NUMPOT, PARVEC, PARSHRD. See
- * 'PotManagerFactory' comments for full details.
+ * Potential manager defined by POTIDS, NUMPOT, PARVEC, PARSHRD,
+ * ANNOBJ. See 'PotManagerFactory' comments for full details.
  * Here, the validity of this representation is checked. If an error
  * is detected, an error string is returned, containing the
  * coordinate (block and position within block) where things are
@@ -16,6 +16,7 @@
  * - NUMPOT:  " [int32 array]
  * - PARVEC:  " [double array]
  * - PARSHRD: " [int32 array]
+ * - ANNOBJ:  " [void* array]
  * - POSOFF:  Optional. Offset added to positions stated in RETSTR.
  *            Def.: 0
  *
@@ -38,11 +39,12 @@ const char* eptwrap_potmanager_isvalid_emptyStr = "";
  */
 void eptwrap_potmanager_isvalid(int ain,int aout,W_IARRAY(potids),
 				W_IARRAY(numpot),W_DARRAY(parvec),
-				W_IARRAY(parshrd),int posoff,char** retstr,
-				W_ERRORARGS)
+				W_IARRAY(parshrd),W_ARRAY(annobj,void*),
+				int posoff,char** retstr,W_ERRORARGS)
 {
   ArrayHandle<int> potidsA,numpotA,parshrdA;
   ArrayHandle<double> parvecA;
+  ArrayHandle<void*> annobjA;
 
   try {
     /* Read arguments */
@@ -53,13 +55,16 @@ void eptwrap_potmanager_isvalid(int ain,int aout,W_IARRAY(potids),
     if (aout!=1)
       W_RETERROR(2,"Need 1 return argument");
     W_CHKSIZE(numpot,npotids,"NUMPOT");
+    W_CHKSIZE(annobj,npotids,"ANNOBJ");
     W_MASKARRAY(potids);
     W_MASKARRAY(numpot);
     W_MASKARRAY(parvec);
     W_MASKARRAY(parshrd);
+    W_MASKARRAY(annobj);
     *retstr = (char*) eptwrap_potmanager_isvalid_emptyStr;
     try {
-      PotManagerFactory::checkRepres(potidsA,numpotA,parvecA,parshrdA,posoff);
+      PotManagerFactory::checkRepres(potidsA,numpotA,parvecA,parshrdA,annobjA,
+				     posoff);
     } catch (InvalidParameterException ex) {
       /* Use 'errstr' as buffer for RETSTR */
       strcpy(errstr,ex.msg());

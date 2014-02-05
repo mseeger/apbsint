@@ -398,14 +398,10 @@ IMPLEMENTATION OF EP TOOLBOX
       - PotManagerFactory [OK]
       - wrap/eptools_helper [OK]
       - wrap/eptwrap_epupdate_parallel [OK]
-      - wrap/eptwrap_epupdate_single [HIER!]
-      - wrap/eptwrap_fact_sequpdates
-      - wrap/eptwrap_potmanager_isvalid
-      
-
-
-
-    - Extend all code in eptools_ext
+      - wrap/eptwrap_epupdate_single [OK]
+      - wrap/eptwrap_fact_sequpdates [OK]
+      - wrap/eptwrap_potmanager_isvalid [OK]
+    - Extend all code in eptools_ext [HIER!]
     - Update Python code (module apbsint)
     - Update Matlab code: Annotations not supported for now
     - Implement this for Laplace potential, based on EPPotDebugQuadLaplace

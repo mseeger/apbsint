@@ -11,7 +11,7 @@
  * Operates on ([I]: Input, [I/O]: Input/output, some vectors are
  * overwritten):
  * - Potential manager [I]. PM_POTIDS, PM_NUMPOT, PM_PARVEC, PM_PARSHRD,
- *   see EPTOOLS_EPUPDATE_PARALLEL comments.
+ *   PM_ANNOBJ, see EPTOOLS_EPUPDATE_PARALLEL comments.
  *   NOTE: Need full potential manager, even if updates only done on
  *   subset of potentials.
  * - Representation [I/O]. Structure and content of coupling factor
@@ -70,6 +70,7 @@
  * - PM_NUMPOT:   " [int32 array]
  * - PM_PARVEC:   " [double array]
  * - PM_PARSHRD:  " [int32 array]
+ * - PM_ANNOBJ:   " [void* array]
  * - RP_ROWIND:   Factorized EP representation [int32 array]
  * - RP_COLIND:   " [int32 array]
  * - RP_BVALS:    " [double array]
@@ -105,9 +106,9 @@
 void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
 			     W_IARRAY(pm_potids),W_IARRAY(pm_numpot),
 			     W_DARRAY(pm_parvec),W_IARRAY(pm_parshrd),
-			     W_IARRAY(rp_rowind),W_IARRAY(rp_colind),
-			     W_DARRAY(rp_bvals),W_DARRAY(rp_pi),
-			     W_DARRAY(rp_beta),W_DARRAY(margpi),
+			     W_ARRAY(pm_annobj,void*),W_IARRAY(rp_rowind),
+			     W_IARRAY(rp_colind),W_DARRAY(rp_bvals),
+			     W_DARRAY(rp_pi),W_DARRAY(rp_beta),W_DARRAY(margpi),
 			     W_DARRAY(margbeta),double piminthres,
 			     double dampfact,W_IARRAY(sd_numvalid),
 			     W_IARRAY(sd_topind),W_DARRAY(sd_topval),
@@ -118,7 +119,7 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
 {
   try {
     /* Read arguments */
-    if (ain<15 || ain>21)
+    if (ain<16 || ain>22)
       W_RETERROR(2,"Wrong number of input arguments");
     if (aout>5)
       W_RETERROR(2,"Too many return arguments");
@@ -133,7 +134,7 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     /* Potential manager */
     Handle<PotentialManager> potMan;
     createPotentialManager(W_ARR(pm_potids),W_ARR(pm_numpot),W_ARR(pm_parvec),
-			   W_ARR(pm_parshrd),potMan,W_ERRARGS);
+			   W_ARR(pm_parshrd),W_ARR(pm_annobj),potMan,W_ERRARGS);
     if (potMan->size()!=m)
       W_RETERROR(1,"PM_*: Potential manager has wrong size");
     /* Representation of B */
@@ -153,13 +154,13 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     int sd_k=0; // K of selective damping (0 if not active)
     ArrayHandle<int> sd_numvalidA,sd_topindA,sd_subindA;
     ArrayHandle<double> sd_topvalA;
-    if (ain>15) {
+    if (ain>16) {
       if (dampfact<0.0 || dampfact>=1.0)
 	W_RETERROR(1,"DAMPFACT: Out of range");
-      if (ain>16) {
+      if (ain>17) {
 	// Selective damping
 	//printMsgStdout("Point 4");
-	if (ain<19)
+	if (ain<20)
 	  W_RETERROR(1,"Need all SD_XXX or none");
 	W_CHKSIZE(sd_numvalid,n,"SD_NUMVALID");
 	W_MASKARRAY(sd_numvalid);
@@ -170,11 +171,11 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
 	W_CHKSIZE(sd_topval,nsd_topind,"SD_TOPVAL");
 	W_MASKARRAY(sd_topval);
 	//printMsgStdout("Point 5");
-	if (ain>19) {
+	if (ain>20) {
 	  if (nsd_subind==0 || nsd_subind>m)
 	    W_RETERROR(1,"SD_SUBIND: Wrong size");
 	  W_MASKARRAY(sd_subind);
-	  if (ain==20)
+	  if (ain==21)
 	    sd_subexcl=0;
 	}
       }

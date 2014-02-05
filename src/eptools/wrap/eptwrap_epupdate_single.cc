@@ -12,11 +12,13 @@
  * - (1):
  *   - PID:     Potential ID or Name (if string)
  *   - PARS:    Parameter vector
+ *   - ANNOBJ:  Annotation (0: None)
  * - Or (2):
  *   - POTIDS:  Potential manager representation [int32 array]
  *   - NUMPOT:  " [int32 array]
  *   - PARVEC:  " [double array]
  *   - PARSHRD: " [int32 array]
+ *   - ANNOBJ:  " [void* array]
  *   - PIND:    Potential number
  * - CMU:     Cavity mean
  * - CRHO:    Cavity variance
@@ -38,13 +40,14 @@
 #include "src/eptools/potentials/PotentialManager.h"
 
 void eptwrap_epupdate_single1(int ain,int aout,int pid,W_DARRAY(pars),
-			      double cmu,double crho,int* rstat,double* alpha,
-			      double* nu,double* logz,W_ERRORARGS)
+			      void* annobj,double cmu,double crho,int* rstat,
+			      double* alpha,double* nu,double* logz,
+			      W_ERRORARGS)
 {
   try {
     /* Read arguments */
-    if (ain!=4)
-      W_RETERROR(2,"Need 4 input arguments");
+    if (ain!=5)
+      W_RETERROR(2,"Need 5 input arguments");
     if (aout==3)
       logz=0;
     else if (aout==4) {
@@ -57,7 +60,7 @@ void eptwrap_epupdate_single1(int ain,int aout,int pid,W_DARRAY(pars),
     /* Create potential object, do update */
     Handle<EPScalarPotential> epPot;
     try {
-      epPot.changeRep(EPPotentialFactory::create(pid,pars));
+      epPot.changeRep(EPPotentialFactory::create(pid,pars,annobj));
     } catch (...) {
       W_RETERROR(1,"Cannot create potential object");
     }
@@ -71,25 +74,27 @@ void eptwrap_epupdate_single1(int ain,int aout,int pid,W_DARRAY(pars),
 }
 
 void eptwrap_epupdate_single2(int ain,int aout,char* pname,W_DARRAY(pars),
-			      double cmu,double crho,int* rstat,double* alpha,
-			      double* nu,double* logz,W_ERRORARGS)
+			      void* annobj,double cmu,double crho,int* rstat,
+			      double* alpha,double* nu,double* logz,
+			      W_ERRORARGS)
 {
   eptwrap_epupdate_single1(ain,aout,EPPotentialNamedFactory::getID4Name(pname),
-			   W_ARR(pars),cmu,crho,rstat,alpha,nu,logz,W_ERRARGS);
+			   W_ARR(pars),annobj,cmu,crho,rstat,alpha,nu,logz,
+			   W_ERRARGS);
 }
 
 void eptwrap_epupdate_single3(int ain,int aout,W_IARRAY(potids),
 			      W_IARRAY(numpot),W_DARRAY(parvec),
-			      W_IARRAY(parshrd),int pind,double cmu,
-			      double crho,int* rstat,double* alpha,double* nu,
-			      double* logz,W_ERRORARGS)
+			      W_IARRAY(parshrd),W_ARRAY(annobj,void*),int pind,
+			      double cmu,double crho,int* rstat,double* alpha,
+			      double* nu,double* logz,W_ERRORARGS)
 {
   Handle<PotentialManager> potMan;
 
   try {
     /* Read arguments */
-    if (ain!=7)
-      W_RETERROR(2,"Need 7 input arguments");
+    if (ain!=8)
+      W_RETERROR(2,"Need 8 input arguments");
     if (aout==3)
       logz=0;
     else if (aout==4) {
@@ -98,7 +103,7 @@ void eptwrap_epupdate_single3(int ain,int aout,W_IARRAY(potids),
     } else
       W_RETERROR(2,"Wrong number of return arguments");
     createPotentialManager(W_ARR(potids),W_ARR(numpot),W_ARR(parvec),
-			   W_ARR(parshrd),potMan,W_ERRARGS);
+			   W_ARR(parshrd),W_ARR(annobj),potMan,W_ERRARGS);
     if (pind<0 || pind>=potMan->size())
       W_RETERROR(1,"PIND out of range");
     /* Do update */

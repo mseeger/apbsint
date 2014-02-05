@@ -15,20 +15,21 @@ extern "C" {
 #endif
 
   void eptwrap_epupdate_single1(int ain,int aout,int pid,W_DARRAY(pars),
-				double cmu,double crho,int* rstat,
+				void* annobj,double cmu,double crho,int* rstat,
 				double* alpha,double* nu,double* logz,
 				W_ERRORARGS);
 
   void eptwrap_epupdate_single2(int ain,int aout,char* pname,W_DARRAY(pars),
-				double cmu,double crho,int* rstat,
+				void* annobj,double cmu,double crho,int* rstat,
 				double* alpha,double* nu,double* logz,
 				W_ERRORARGS);
 
   void eptwrap_epupdate_single3(int ain,int aout,W_IARRAY(potids),
 				W_IARRAY(numpot),W_DARRAY(parvec),
-				W_IARRAY(parshrd),int pind,double cmu,
-				double crho,int* rstat,double* alpha,
-				double* nu,double* logz,W_ERRORARGS);
+				W_IARRAY(parshrd),W_ARRAY(annobj,void*),
+				int pind,double cmu,double crho,int* rstat,
+				double* alpha,double* nu,double* logz,
+				W_ERRORARGS);
 
 #ifdef __cplusplus
 }

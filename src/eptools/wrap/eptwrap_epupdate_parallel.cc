@@ -51,7 +51,7 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
 
   try {
     /* Read arguments */
-    if (ain<6 || ain>7)
+    if (ain<7 || ain>8)
       W_RETERROR(2,"Wrong number of input arguments");
     if (aout<3 || aout>4)
       W_RETERROR(2,"Wrong number of return arguments");
@@ -60,7 +60,7 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
 			   W_ARR(parshrd),W_ARR(annobj),potMan,W_ERRARGS);
     totsz=ncmu;
     W_CHKSIZE(crho,totsz,"CRHO");
-    if (ain>6) {
+    if (ain>7) {
       if (updind==0)
 	W_RETERROR(2,"UPDIND missing");
       W_CHKSIZE(updind,totsz,"UPDIND");
