@@ -22,7 +22,7 @@
    * f(L) = -e log(a) < 0. Here, e is roughly 1/a as a gets large, so the
    * bracket size behaves as log(a)/a.
    */
-  bool EPPotPoissonExpRate::proximal(double h,double rho,double& sstar)
+  bool EPPotPoissonExpRate::proximal(double h,double rho,double& sstar) const
   {
     double ascal,bL,bR;
 

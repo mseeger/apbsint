@@ -67,7 +67,7 @@ EXLDOPTS_BLAS=
 EXLIBS_GSL=	-lgsl
 EXLDOPTS_GSL=
 EXINCS_GSL=
-DEFINES_GSL=	-DHAVE_LIBGSL
+DEFINES_GSL=	-DHAVE_LIBGSL -DHAVE_WORKAROUND
 
 EXINCS_MATLAB=
 EXLDOPTS_MATLAB=	-cxx
@@ -186,9 +186,15 @@ _EPTOOLSOBJS=	potentials/DefaultPotManager \
 		potentials/EPPotentialNamedFactory \
 		potentials/PotManagerFactory \
 		potentials/SpecfunServices \
+		potentials/quad/QuadPotProximalNewton \
+		potentials/quad/EPPotQuadLaplaceApprox \
+		potentials/quad/EPPotPoissonExpRate \
 		FactorizedEPRepresentation \
 		FactorizedEPDriver
 EPTOOLSOBJS=	$(_EPTOOLSOBJS:%=$(EPTOOLSDIR)/%.o)
+
+EPTOOLSOBJS_gslyes=	$(EPTOOLSDIR)/potentials/quad/AdaptiveQuadPackServices.o \
+			$(EPTOOLSDIR)/potentials/quad/AdaptiveQuadPackDebugServices.o
 
 EPTOOLSWRAPDIR=	$(EPTOOLSDIR)/wrap
 _EPTOOLSWRAPOBJS=	eptools_helper \
@@ -319,7 +325,7 @@ make_gslno:
 	@$(MAKE) make_mex$(mex)
 
 make_gslyes:
-	@$(MAKE) make_mex$(mex) LIBS="$(EXLIBS_GSL) $(LIBS)" LDFLAGS="$(LDFLAGS) $(EXLDOPTS_GSL)" INCS="$(INCS) $(EXINCS_GSL)" DEFINES="$(DEFINES) $(DEFINES_GSL)" ESSMINIMUMOBJS="$(ESSMINIMUMOBJS) $(ESSMINIMUMOBJS_gslyes)"
+	@$(MAKE) make_mex$(mex) LIBS="$(EXLIBS_GSL) $(LIBS)" LDFLAGS="$(LDFLAGS) $(EXLDOPTS_GSL)" INCS="$(INCS) $(EXINCS_GSL)" DEFINES="$(DEFINES) $(DEFINES_GSL)" ESSMINIMUMOBJS="$(ESSMINIMUMOBJS) $(ESSMINIMUMOBJS_gslyes)" EPTOOLSOBJS="$(EPTOOLSOBJS) $(EPTOOLSOBJS_gslyes)"
 
 #make_fftno:
 #	@$(MAKE) make_fftw$(fftw)

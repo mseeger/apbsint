@@ -24,6 +24,9 @@
   const int EPPotentialFactory::potGaussMixture;
   const int EPPotentialFactory::potSpikeSlab;
   const int EPPotentialFactory::potLast;
+#ifdef HAVE_WORKAROUND
+#include "src/eptools/potentials/EPPotentialFactory_workaround.cc"
+#endif
 
   EPScalarPotential* EPPotentialFactory::create(int pid,const double* pv,
 						void* annot)
@@ -62,6 +65,10 @@
     case potSpikeSlab:
       rpot = new EPPotSpikeSlab(pv[0],pv[1]);
       break;
+#ifdef HAVE_WORKAROUND
+    default:
+      rpot = create_workaround(pid,pv,annot);
+#endif
     }
 
     return rpot;
@@ -103,6 +110,10 @@
     case potSpikeSlab:
       rpot = new EPPotSpikeSlab();
       break;
+#ifdef HAVE_WORKAROUND
+    default:
+      rpot = createDefault_workaround(pid,pv,annot);
+#endif
     }
 
     return rpot;

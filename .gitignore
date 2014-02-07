@@ -78,6 +78,9 @@ matlab/make.inc.def.nowa
 # Things specific to the current workaround in this project #
 #############################################################
 src/eptools/potentials/SpecfunServices_workaround.h
+src/eptools/potentials/EPPotentialFactory_workaround.h
+src/eptools/potentials/EPPotentialFactory_workaround.cc
+src/eptools/potentials/EPPotentialNamedFactory_workaround.cc
 src/eptools/potentials/quad/AdaptiveQuadPackServices.h
 src/eptools/potentials/quad/AdaptiveQuadPackServices.cc
 src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.h

@@ -79,8 +79,8 @@
      * @param errmsg S.a. Def.: 0
      * @return       Return status (0: Success)
      */
-    virtual int quad(quad_function& fun,double a,bool aInf,double b,bool bInf,
-		     double& ival,const ArrayHandle<double>& wayPts=
+    virtual int quad(const quad_function& fun,double a,bool aInf,double b,
+		     bool bInf,double& ival,const ArrayHandle<double>& wayPts=
 		     ArrayHandleZero<double>::get(),double* abserr=0,
 		     string* errmsg=0) = 0;
   };

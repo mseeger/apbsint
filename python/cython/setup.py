@@ -29,7 +29,8 @@ df_library_dirs = ['/usr/lib64']
 nwa_library_dirs = df_include_dirs[:]
 
 if work_around:
-    df_define_macros.append(('HAVE_LIBGSL', None))
+    df_define_macros.extend([('HAVE_LIBGSL', None),
+                             ('HAVE_WORKAROUND', None)])
     df_libraries.append('gsl')
 
 # eptools_ext: Main API to C++ functions
@@ -47,6 +48,9 @@ eptools_ext_sources = [
     'base/src/eptools/potentials/EPPotentialNamedFactory.cc',
     'base/src/eptools/potentials/PotManagerFactory.cc',
     'base/src/eptools/potentials/SpecfunServices.cc',
+    'base/src/eptools/potentials/quad/QuadPotProximalNewton.cc',
+    'base/src/eptools/potentials/quad/EPPotQuadLaplaceApprox.cc',
+    'base/src/eptools/potentials/quad/EPPotPoissonExpRate.cc',
     'base/src/eptools/FactorizedEPRepresentation.cc',
     'base/src/eptools/FactorizedEPDriver.cc',
     'base/src/eptools/wrap/eptools_helper_basic.cc',
@@ -63,9 +67,7 @@ eptools_ext_sources = [
     'base/src/eptools/wrap/eptwrap_potmanager_isvalid.cc'
 ]
 if work_around:
-    eptools_ext_sources.append(
-        'base/lhotse/specfun/Specfun.cc'
-    )
+    eptools_ext_sources.append('base/lhotse/specfun/Specfun.cc')
 
 # apbtest_ext: API for test code (excluding the workaround)
 apbtest_ext_sources = [
@@ -103,10 +105,10 @@ ptannotate_ext_sources = [
     'base/lhotse/Range.cc'
 ]
 if work_around:
-    ptannotate_ext_sources.extend([
-        'base/src/eptools/potentials/quad/AdaptiveQuadPackServices.cc',
-        'base/src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc'
-    ])
+    ptannotate_ext_sources.extend(
+        ['base/src/eptools/potentials/quad/AdaptiveQuadPackServices.cc',
+         'base/src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc']
+    )
     ptannotate_compile_time_env = {'INCLUDE_WORKAROUND' : True}
 else:
     ptannotate_compile_time_env = {'INCLUDE_WORKAROUND' : False}

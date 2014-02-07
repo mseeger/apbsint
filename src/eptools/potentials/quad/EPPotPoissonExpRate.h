@@ -15,6 +15,7 @@
 
 #include "src/eptools/potentials/quad/QuadPotProximal.h"
 #include "src/eptools/potentials/quad/EPPotPoissonCommon.h"
+#include "lhotse/optimize/FuncOneDim.h"
 
 //BEGINNS(eptools)
   /**
@@ -35,7 +36,7 @@
   public:
     // Public methods
 
-    QuadPotProximalNewton_Func1D() : ascal(1.0) {}
+    EPPotPoissonExpRate_Func1D() : ascal(1.0) {}
 
     void setA(double pa) {
       ascal=pa;

@@ -97,17 +97,19 @@
     void getInterval(double& a,bool& aInf,double& b,bool& bInf,
 		     ArrayHandle<double>& wayPts) const {
       aInf=bInf=true;
-      wayPts.changeRep(1); wayPts[0]=yscal;
+      if (wayPts.size()!=1)
+	wayPts.changeRep(1);
+      wayPts[0]=yscal;
     }
 
     double eval(double s,double* dl=0,double* ddl=0) const {
       double ret;
       // NOTE: Does not complain if s==yscal, treats it like s>yscal
       if (s>=yscal) {
-	ret=tau*(s-yscal)+log(0.5*tau);
+	ret=tau*(s-yscal)-log(0.5*tau);
 	if (dl!=0) *dl=tau;
       } else {
-	ret=-tau*(s-yscal)+log(0.5*tau);
+	ret=-tau*(s-yscal)-log(0.5*tau);
 	if (dl!=0) *dl=-tau;
       }
       if (ddl!=0) *ddl=0.0;

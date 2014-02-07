@@ -100,6 +100,10 @@
      * method is called by all others.
      */
     static void setup();
+
+#ifdef HAVE_WORKAROUND
+    static void setup_workaround();
+#endif
   };
 //ENDNS
 

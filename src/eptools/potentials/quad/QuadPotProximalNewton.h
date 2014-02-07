@@ -3,7 +3,7 @@
  * -------------------------------------------------------------------
  * Project source file
  * Module: eptools
- * Desc.:  Header class QuadPotProximal
+ * Desc.:  Header class QuadPotProximalNewton
  * ------------------------------------------------------------------- */
 
 /*
@@ -12,8 +12,8 @@
  *   it in order to initialize the bracket
  */
 
-#ifndef EPTOOLS_QUADPOTPROXIMAL_H
-#define EPTOOLS_QUADPOTPROXIMAL_H
+#ifndef EPTOOLS_QUADPOTPROXIMALNEWTON_H
+#define EPTOOLS_QUADPOTPROXIMALNEWTON_H
 
 #if HAVE_CONFIG_H
 #  include <config.h>

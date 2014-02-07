@@ -422,20 +422,32 @@ IMPLEMENTATION OF EP TOOLBOX
       For now, we just change the MEX files to call the wrappers with 0
       arrays for 'annobj'.
       Re-run test code
-    - Implement this for Laplace potential, based on EPPotDebugQuadLaplace
-      and EPPotQuadLaplaceApprox [HIER!]
   - Code for debugging quadrature implementation:
     - Implement variant which uses waypoints if given: Also split inf.
       intervals [OK]
     - Debug implementation for Laplace potential. Proximal map has analytical
       solution [OK]
-    - Hook new potential types in. [HIER!]
+    - OK: 
+    - Mechanism (cond. compile) to support additional potentials in workaround
+      mode. [OK]
+      NOTE: What we do here is just a hack! In the long run, should simplify the
+      registration of new potential types: hardcoded constants are NOT the way
+      to go!
+      - EPPotentialFactory
+      - EPPotentialNamedFactory
+    - Hook new potential types in. [OK]
       This needs conditional compilation, since new potentials exist only
       in workaround. Use new compiler flag.
+    - Does it still compile? [HIER!]
+      - Workaround:
+      - Not workaround:
     - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad
       ==> Also include case where proxmap lands on critical point
-  - Add verbosity_debug outputs
-  - Code watching!
+  - Debugging:
+    - Code watching!
+      Also check derivations in TR
+    - Add verbosity_debug outputs
+    - Run test code, comparing (a), (b), (c)
   - Negative binomial potential (see notes) (?)
     Could be done when needed
 

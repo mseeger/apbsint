@@ -67,7 +67,7 @@
     bool isValidPars(const double* pv) const {
       int i=(int) ceil(pv[0]);
 
-      return (i>=0 && ((double) i)==py);
+      return (i>=0 && ((double) i)==pv[0]);
     }
 
     bool hasWayPoints() const {
@@ -76,6 +76,7 @@
 
     /**
      * The integration interval is all of R, and l(s) is smooth everywhere.
+     * NOTE: Assumes that the log rate function is smooth.
      */
     void getInterval(double& a,bool& aInf,double& b,bool& bInf,
 		     ArrayHandle<double>& wayPts) const {

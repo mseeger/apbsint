@@ -45,12 +45,20 @@
     static const int potGaussMixture=6;
     static const int potSpikeSlab   =7;
     static const int potLast        =7;
+#ifdef HAVE_WORKAROUND
+#include "src/eptools/potentials/EPPotentialFactory_workaround.h"
+#endif
 
   public:
     // Public static methods
 
     static bool isValidID(int pid) {
+#ifndef HAVE_WORKAROUND
       return (pid>=0 && pid<=potLast);
+#else
+      return (pid>=0 && pid<=potLast) || (pid>=potFirst_workaround &&
+					  pid<=potLast_workaround);
+#endif
     }
 
     /**
@@ -90,6 +98,16 @@
      */
     static EPScalarPotential* createDefault(int pid,const double* pv=0,
 					    void* annot=0);
+
+#ifdef HAVE_WORKAROUND
+  protected:
+    static EPScalarPotential* create_workaround(int pid,const double* pv,
+						void* annot);
+
+    static EPScalarPotential* createDefault_workaround(int pid,const double* pv,
+						       void* annot);
+  public:
+#endif
   };
 //ENDNS
 

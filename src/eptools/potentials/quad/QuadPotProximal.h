@@ -24,7 +24,7 @@
    * @author  Matthias Seeger
    * @version %I% %G%
    */
-  class QuadPotProximal : public QuadraturePotential
+  class QuadPotProximal : public virtual QuadraturePotential
   {
   public:
     // Public methods

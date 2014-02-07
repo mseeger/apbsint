@@ -78,7 +78,7 @@
    * Integrand function g(x) passed to quadrature routine. See
    * 'EPPotQuadLaplaceApprox_intFuncParams' comments.
    */
-  double EPPotQuadLaplaceApprox_intFunc(double x,void* params)
+  inline double EPPotQuadLaplaceApprox_intFunc(double x,void* params)
   {
     return ((const EPPotQuadLaplaceApprox_intFuncParams*) params)->getG(x);
   }
@@ -126,7 +126,7 @@
     QuadPotProximal* qpotProx;            // 'quadPot' with correct type
     Handle<QuadratureServices> quadServ;  // Quadrature services
     quad_function intFunc;                // Represents integrand g(x)
-    EPPotQuadLaplaceApprox_intFuncParams intFuncPars;
+    mutable EPPotQuadLaplaceApprox_intFuncParams intFuncPars;
 
   public:
     // Public methods

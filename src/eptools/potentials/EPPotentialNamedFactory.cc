@@ -31,6 +31,13 @@
       potIDs[potGaussMixture]  = "GaussMixture";
       potNames["SpikeSlab"]    = potSpikeSlab;
       potIDs[potSpikeSlab]     = "SpikeSlab";
+#ifdef HAVE_WORKAROUND
+      setup_workaround();
+#endif
     }
   }
+
+#ifdef HAVE_WORKAROUND
+#include "src/eptools/potentials/EPPotentialNamedFactory_workaround.cc"
+#endif
 //ENDNS

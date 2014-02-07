@@ -44,7 +44,7 @@
    */
   bool EPPotQuadLaplaceApprox::compMoments(double cmu,double crho,
 					   double& alpha,double& nu,
-					   double* logz=0,double eta=1.0) const
+					   double* logz,double eta) const
   {
     int i,wsz;
     double a,b,sstar,sigma;
