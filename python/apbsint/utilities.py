@@ -18,6 +18,7 @@ import time  # For profiling
 import apbsint.helpers as helpers
 import apbsint.coup_fact as cf
 import apbsint.eptools_ext as epx
+import apbsint.ptannotate_ext as pta
 
 __all__ = ['ElemPotManager', 'PotManager', 'Model', 'ModelCoupled',
            'ModelFactorized', 'Representation', 'RepresentationCoupled',
@@ -32,16 +33,19 @@ class ElemPotManager:
 
     Elementary component type for PotManager, collects potential name,
     number of potentials and potential parameters.
+    A potential can be annotated by an object of type
+    pta.PotentialAnnotation. The default is None (no annotation).
     Attributes should be changed only via access methods: we maintain
     an up_date flag, based on which the internal representation is
     recomputed in PotManager. Otherwise, attributes are not controlled
     here, but only in PotManager.
 
     """
-    def __init__(self,name,size,pars):
+    def __init__(self,name,size,pars,annobj=None):
         self.setname(name,False)
         self.setsize(size,False)
         self.setpars(pars,False)
+        self.setannobj(annobj,False)
         self.up_date = False
 
     def setname(self,name,chk=True):
@@ -70,6 +74,13 @@ class ElemPotManager:
             # Can't really check this, so assume it has changed
             self.up_date = False
         self.pars = pars
+
+    def setannobj(self,annobj,chk=True):
+        if not (annobj is None or isinstance(annobj,pta.PotentialAnnotation)):
+            raise TypeError('ANNOBJ must be apbsint.ptannotate_ext.PotentialAnnotation')
+        if chk:
+            self.up_date = self.up_date and (annobj == self.annobj)
+        self.annobj = annobj
 
 # Mechanism to check whether internal representation has to be recomputed:
 # - Recompute (in 'check_internal') if the up_date field of any ElemPotManager
@@ -101,8 +112,10 @@ class PotManager:
         self.elem = elem
 
     # Internal representation consists of 'potids', 'numpot', 'parvec',
-    # 'parshrd' (all contiguous 1D np.ndarray, dtype np.int32 except for
-    # 'parvec': np.float64).
+    # 'parshrd', 'annobj': all contiguous 1D np.ndarray, dtype np.int32
+    # except 'parvec': np.float64, 'annobj': np.uint64.
+    # 'annobj' stores a void* to the annotation object ('getptr' method),
+    # or 0 if none.
     # See src/eptools/potentials/PotManagerFactory.h or documentation for
     # details.
     # Also, we compute 'updind' as index of all non-Gaussian potentials
@@ -119,6 +132,7 @@ class PotManager:
             nb = len(elem)
             self.potids = np.empty(nb,dtype=np.int32)
             self.numpot = np.empty(nb,dtype=np.int32)
+            self.annobj = np.zeros(nb,dtype=np.uint64)
             parshrd = []
             pvsz = 0 # Size of PARVEC
             updind = []
@@ -131,6 +145,8 @@ class PotManager:
                 self.potids[k] = pid
                 numk = elem[k].size
                 self.numpot[k] = numk
+                if elem[k].annobj is not None:
+                    self.annobj[k] = elem[k].annobj.getptr()
                 pars = elem[k].pars
                 nump = len(pars)
                 for p in xrange(nump):
@@ -163,7 +179,7 @@ class PotManager:
                     off += sz
             # Test whether all parameter values are valid
             msg = epx.potmanager_isvalid(self.potids,self.numpot,self.parvec,
-                                         self.parshrd)
+                                         self.parshrd,self.annobj)
             if len(msg)>0:
                 raise ValueError(msg)
             # Set all up_date flags

@@ -114,6 +114,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     npm_parvec,nrp_bvals,nrp_pi,nrp_beta,nmargpi,nmargbeta;
   int* sd_numvalid=0,*sd_topind=0,*sd_subind=0;
   double* sd_topval=0;
+  void** annobj;
   int nsd_numvalid=0,nsd_topind=0,nsd_subind=0,nsd_topval=0;
   int* rstat=0;
   double* delta=0,*sd_dampfact=0;
@@ -174,15 +175,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   /* Call C++ wrapper, deal with error */
   /*sprintf(errstr,"nupdjind=%d. Call wrapper",nupdjind);
     printMsgStdout(errstr);*/
-  eptwrap_fact_sequpdates(std::min(nrhs,21),nlhs,n,m,M_ARR(updjind),
+  annobj=getZeroVoidArray(npm_potids); /* Dummy void* array */
+  eptwrap_fact_sequpdates(std::min(nrhs+1,22),nlhs,n,m,M_ARR(updjind),
 			  M_ARR(pm_potids),M_ARR(pm_numpot),M_ARR(pm_parvec),
-			  M_ARR(pm_parshrd),M_ARR(rp_rowind),M_ARR(rp_colind),
-			  M_ARR(rp_bvals),M_ARR(rp_pi),M_ARR(rp_beta),
-			  M_ARR(margpi),M_ARR(margbeta),piminthres,dampfact,
-			  M_ARR(sd_numvalid),M_ARR(sd_topind),
-			  M_ARR(sd_topval),M_ARR(sd_subind),sd_subexcl,
-			  M_ARR(rstat),M_ARR(delta),M_ARR(sd_dampfact),
-			  &sd_nupd,&sd_nrec,&errcode,errstr);
+			  M_ARR(pm_parshrd),annobj,npm_potids,M_ARR(rp_rowind),
+			  M_ARR(rp_colind),M_ARR(rp_bvals),M_ARR(rp_pi),
+			  M_ARR(rp_beta),M_ARR(margpi),M_ARR(margbeta),
+			  piminthres,dampfact,M_ARR(sd_numvalid),
+			  M_ARR(sd_topind),M_ARR(sd_topval),M_ARR(sd_subind),
+			  sd_subexcl,M_ARR(rstat),M_ARR(delta),
+			  M_ARR(sd_dampfact),&sd_nupd,&sd_nrec,&errcode,errstr);
+  mxFree((void*) annobj);
   /*printMsgStdout("Exit from wrapper");*/
   if (errcode!=0)
     mexErrMsgTxt(errstr);

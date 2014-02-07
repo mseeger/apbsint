@@ -64,20 +64,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (mxIsChar(prhs[0])) {
       // PID is string: Name
       char* pidStr = (char*) getString(prhs[0],"PID");
-      eptwrap_epupdate_single2(4,nlhs,pidStr,M_ARR(pars),cmu,crho,&rstat,
-			       &alpha,&nu,&logz,&errcode,errstr);
+      eptwrap_epupdate_single2(5,nlhs,pidStr,M_ARR(pars),(void*) 0,cmu,crho,
+			       &rstat,&alpha,&nu,&logz,&errcode,errstr);
       mxFree((void*) pidStr);
     } else {
       // PID is number: ID
       int pid = getScalInt(prhs[0],"PID");
-      eptwrap_epupdate_single1(4,nlhs,pid,M_ARR(pars),cmu,crho,&rstat,
-			       &alpha,&nu,&logz,&errcode,errstr);
+      eptwrap_epupdate_single1(5,nlhs,pid,M_ARR(pars),(void*) 0,cmu,crho,
+			       &rstat,&alpha,&nu,&logz,&errcode,errstr);
     }
   } else {
     /* (2) Potential manager to identify potential type and parameters */
     int pind;
     int* potids,*numpot,*parshrd;
     double* parvec;
+    void** annobj;
     int npotids,nnumpot,nparshrd,nupdind,nparvec;
     argidx = -1;
     M_GETIARRAY(potids,"POTIDS");
@@ -87,9 +88,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     M_GETISCAL(pind,"PIND");
     M_GETDSCAL(cmu,"CMU");
     M_GETDSCAL(crho,"CRHO");
-    eptwrap_epupdate_single3(7,nlhs,M_ARR(potids),M_ARR(numpot),
-			     M_ARR(parvec),M_ARR(parshrd),pind,cmu,crho,
-			     &rstat,&alpha,&nu,&logz,&errcode,errstr);
+    annobj=getZeroVoidArray(npotids); /* Dummy void* array */
+    eptwrap_epupdate_single3(8,nlhs,M_ARR(potids),M_ARR(numpot),
+			     M_ARR(parvec),M_ARR(parshrd),annobj,npotids,pind,
+			     cmu,crho,&rstat,&alpha,&nu,&logz,&errcode,errstr);
+    mxFree((void*) annobj);
   }
   if (errcode!=0)
     mexErrMsgTxt(errstr);

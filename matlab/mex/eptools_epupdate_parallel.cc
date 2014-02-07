@@ -45,7 +45,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   int argidx;
   int* potids,*numpot,*parshrd,*updind=0;
   double* parvec,*cmu,*crho;
-  int npotids,nnumpot,nparshrd,nupdind,nparvec,ncmu,ncrho;
+  void** annobj;
+  int npotids,nnumpot,nparshrd,nupdind=0,nparvec,ncmu,ncrho;
   int* rstat;
   double* alpha,*nu,*logz=0;
   int nrstat,nalpha,nnu,nlogz;
@@ -76,11 +77,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (nlhs>3)
     M_MAKEDARRAY(logz);
   /* Call C++ wrapper, deal with error */
-  eptwrap_epupdate_parallel(std::min(nrhs,7),nlhs,M_ARR(potids),
+  annobj=getZeroVoidArray(npotids); /* Dummy void* array */
+  eptwrap_epupdate_parallel(std::min(nrhs+1,8),nlhs,M_ARR(potids),
 			    M_ARR(numpot),M_ARR(parvec),M_ARR(parshrd),
-			    M_ARR(cmu),M_ARR(crho),M_ARR(updind),
+			    annobj,npotids,M_ARR(cmu),M_ARR(crho),M_ARR(updind),
 			    M_ARR(rstat),M_ARR(alpha),M_ARR(nu),
 			    M_ARR(logz),&errcode,errstr);
+  mxFree((void*) annobj);
   if (errcode!=0)
     mexErrMsgTxt(errstr);
 }

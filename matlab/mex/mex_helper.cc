@@ -316,3 +316,14 @@ int _parseInt32Vector(const mxArray* arg,const char* name,int** vec,int n,
 
   return sz;
 }
+
+void** getZeroVoidArray(int n)
+{
+  int i;
+  void** arr=(void**) mxMalloc(n*sizeof(void*));
+
+  for (i=0; i<n; i++)
+    arr[i]=(void*) 0;
+
+  return arr;
+}

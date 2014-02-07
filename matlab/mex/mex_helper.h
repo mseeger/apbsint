@@ -111,4 +111,12 @@ int _parseDoubleVector(const mxArray* arg,const char* name,double** vec,int n,
 int _parseInt32Vector(const mxArray* arg,const char* name,int** vec,int n,
 		      char* errstr);
 
+/*
+ * Allocates void* array of size n and fills with 0. This is used right now
+ * to deal with annotation objects, which are not supported in the Matlab
+ * interface (for now).
+ * NOTE: The array has to be deallocated by 'mxFree' afterwards.
+ */
+void** getZeroVoidArray(int n);
+
 #endif

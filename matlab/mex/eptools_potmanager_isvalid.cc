@@ -39,6 +39,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   int argidx,posoff=0;
   int* potids,*numpot,*parshrd;
   double* parvec;
+  void** annobj;
   int npotids,nnumpot,nparshrd,nparvec;
   char* retstr;
   int errcode;
@@ -58,8 +59,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (nrhs>4)
     M_GETISCAL(posoff,"POSOFF");
   /* Call C++ wrapper, deal with error */
-  eptwrap_potmanager_isvalid(4,1,M_ARR(potids),M_ARR(numpot),M_ARR(parvec),
-			     M_ARR(parshrd),posoff,&retstr,&errcode,errstr);
+  annobj=getZeroVoidArray(npotids); /* Dummy void* array */
+  eptwrap_potmanager_isvalid(std::min(nrhs+1,6),1,M_ARR(potids),M_ARR(numpot),
+			     M_ARR(parvec),M_ARR(parshrd),annobj,npotids,
+			     posoff,&retstr,&errcode,errstr);
+  mxFree((void*) annobj);
   if (errcode!=0)
     mexErrMsgTxt(errstr);
   /* Return argument */

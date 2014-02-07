@@ -416,17 +416,22 @@ IMPLEMENTATION OF EP TOOLBOX
       ==> Works if Extension imported from Cython.Distutils.extension instead
           of distutils.extension
       OK: Seems to compile
-    - Update Python code (module apbsint) [HIER!]
-    - Update Matlab code: Annotations not supported for now
+    - Update Python code (module apbsint) [OK]
+      Re-run test code (should work, no annotations)
+    - Update Matlab code: Annotations not supported for now. [OK]
+      For now, we just change the MEX files to call the wrappers with 0
+      arrays for 'annobj'.
+      Re-run test code
     - Implement this for Laplace potential, based on EPPotDebugQuadLaplace
-      and EPPotQuadLaplaceApprox
+      and EPPotQuadLaplaceApprox [HIER!]
   - Code for debugging quadrature implementation:
     - Implement variant which uses waypoints if given: Also split inf.
       intervals [OK]
     - Debug implementation for Laplace potential. Proximal map has analytical
       solution [OK]
     - Hook new potential types in. [HIER!]
-      These must be annotated by quadrature service object (above)
+      This needs conditional compilation, since new potentials exist only
+      in workaround. Use new compiler flag.
     - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad
       ==> Also include case where proxmap lands on critical point
   - Add verbosity_debug outputs

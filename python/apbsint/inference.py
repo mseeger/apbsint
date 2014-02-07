@@ -70,7 +70,8 @@ class InfDriver:
         nu = np.empty(pm)
         logz = np.empty(pm)
         epx.epupdate_parallel(ppotman.potids,ppotman.numpot,ppotman.parvec,
-                              ppotman.parshrd,h_q,rho_q,rstat,alpha,nu,logz)
+                              ppotman.parshrd,ppotman.annobj,h_q,rho_q,rstat,
+                              alpha,nu,logz)
         indok = np.nonzero(rstat)[0]
         tvec = 1. - nu[indok]*rho_q[indok]
         indok2 = np.nonzero(tvec >= 1e-9)[0]
@@ -366,8 +367,8 @@ class EPCoupParallelInfDriver(CoupledInfDriver):
             #print 'Time(inference:comp_cav): %.8fs' % (t_stop-t_start)
             #t_start=time.time()
             epx.epupdate_parallel(potman.potids,potman.numpot,potman.parvec,
-                                  potman.parshrd,cmu,crho,rstat,alpha0,nu0,
-                                  None,potman.updind)
+                                  potman.parshrd,potman.annobj,cmu,crho,rstat,
+                                  alpha0,nu0,None,potman.updind)
             #t_stop=time.time()
             #print 'Time(epupdate_parallel): %.8fs' % (t_stop-t_start)
             # Update EP parameters, and figure out where skips happened
@@ -577,7 +578,8 @@ class EPCoupSequentialInfDriver(CoupledInfDriver):
                     (rstat, alpha, nu, logz) \
                         = epx.epupdate_single_pman(potman.potids,potman.numpot,
                                                    potman.parvec,
-                                                   potman.parshrd,j,cmu,crho)
+                                                   potman.parshrd,
+                                                   potman.annobj,j,cmu,crho)
                     if rstat == 0:
                         do_skip = 1  # Local EP update failed
                     else:
@@ -879,22 +881,23 @@ class EPFactorizedInfDriver(InfDriver):
             delta = np.empty(sz)
             if not do_seldamp:
                 epx.fact_sequpdates(n,m,updind,potman.potids,potman.numpot,
-                                    potman.parvec,potman.parshrd,bfact.rowind,
-                                    bfact.colind,bfact.bvals,rep.ep_pi,
-                                    rep.ep_beta,rep.marg_pi,rep.marg_beta,
-                                    opts.piminthres,opts.damp,rstat,delta)
+                                    potman.parvec,potman.parshrd,potman.annobj,
+                                    bfact.rowind,bfact.colind,bfact.bvals,
+                                    rep.ep_pi,rep.ep_beta,rep.marg_pi,
+                                    rep.marg_beta,opts.piminthres,opts.damp,
+                                    rstat,delta)
             else:
                 sd_dampfact = np.empty(sz)
                 sd_nupd, sd_nrec = \
                     epx.fact_sequpdates(n,m,updind,potman.potids,potman.numpot,
                                         potman.parvec,potman.parshrd,
-                                        bfact.rowind,bfact.colind,bfact.bvals,
-                                        rep.ep_pi,rep.ep_beta,rep.marg_pi,
-                                        rep.marg_beta,opts.piminthres,
-                                        opts.damp,rstat,delta,rep.sd_numvalid,
-                                        rep.sd_topind,rep.sd_topval,
-                                        rep.sd_subind,rep.sd_subexcl,
-                                        sd_dampfact)
+                                        potman.annobj,bfact.rowind,
+                                        bfact.colind,bfact.bvals,rep.ep_pi,
+                                        rep.ep_beta,rep.marg_pi,rep.marg_beta,
+                                        opts.piminthres,opts.damp,rstat,delta,
+                                        rep.sd_numvalid,rep.sd_topind,
+                                        rep.sd_topval,rep.sd_subind,
+                                        rep.sd_subexcl,sd_dampfact)
                 # Among non-skipped updates, count those for which SD_DAMPFACT
                 # larger than OPTS.DAMP
                 nsdamp = np.sum(sd_dampfact[np.nonzero(rstat==0)] > opts.damp)
