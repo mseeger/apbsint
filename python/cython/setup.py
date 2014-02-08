@@ -67,7 +67,11 @@ eptools_ext_sources = [
     'base/src/eptools/wrap/eptwrap_potmanager_isvalid.cc'
 ]
 if work_around:
-    eptools_ext_sources.append('base/lhotse/specfun/Specfun.cc')
+    eptools_ext_sources.extend(
+        ['base/lhotse/specfun/Specfun.cc',
+         'base/src/eptools/potentials/quad/AdaptiveQuadPackServices.cc',
+         'base/src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc']
+    )
 
 # apbtest_ext: API for test code (excluding the workaround)
 apbtest_ext_sources = [

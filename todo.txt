@@ -438,9 +438,16 @@ IMPLEMENTATION OF EP TOOLBOX
     - Hook new potential types in. [OK]
       This needs conditional compilation, since new potentials exist only
       in workaround. Use new compiler flag.
-    - Does it still compile? [HIER!]
-      - Workaround:
-      - Not workaround:
+    - Does it still compile?
+      - Workaround: Matlab [OK], Python [OK]
+      - Not workaround: [HIER!]
+    - Does this actually work? Test somehow!
+      - AdaptiveQuadPackServices object created by ptannotate_ext, cast to 
+        void*, then to np.uint64
+      - np.uint64 passed to eptools_ext code (different ext. module!), cast to
+        void*, then to QuadratureServices*, then AdaptiveQuadPackServices
+        method called
+      In WC, have to integrate ptannotate_ext into eptools_ext.
     - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad
       ==> Also include case where proxmap lands on critical point
   - Debugging:
