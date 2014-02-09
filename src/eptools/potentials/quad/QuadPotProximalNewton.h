@@ -24,9 +24,8 @@
 
 //BEGINNS(eptools)
   /**
-   * Represents derivative f'(s) for proximal map criterion
-   *   f(s) = rho l(s) + (1/2) (s - h)^2,    l(s) = -log t(s),
-   *   f'(s) = rho l'(s) + s - h
+   * Represents derivative f(s) of proximal map criterion
+   *   f(s) = rho l'(s) + s - h,    l(s) = -log t(s),
    * Used to drive 'OneDimSolver'.
    *
    * @author  Matthias Seeger
@@ -45,7 +44,7 @@
 
     QuadPotProximalNewton_Func1D(const QuadraturePotential* qpot,
 				 double ph=0.0,double prho=1.0) :
-      quadPot(qpot),h(ph),rho(prho) {
+      quadPot(qpot) {
       if (!qpot->hasSecondDerivatives())
 	throw InvalidParameterException(EXCEPT_MSG(""));
       setPars(ph,prho);
@@ -62,7 +61,7 @@
     }
 
     void eval(double x,double* f,double* df) {
-      quadPot->eval(x,f,df);
+      quadPot->eval(x,f,df); // l'(s), l''(s) (l(s) not needed)
       (*f) = rho*(*f)+x-h;
       (*df) = rho*(*df)+1.0;
     }
@@ -76,10 +75,10 @@
    * <p>
    * An initial bracket has to be specified via 'initBracket'. Namely,
    * we search for a root of
-   *   f'(s) = rho l'(s) + s - h
-   * Since f''(s) = rho l''(s) + 1, this function is increasing if l(s)
+   *   f(s) = rho l'(s) + s - h
+   * Since f'(s) = rho l''(s) + 1, this function is increasing if l(s)
    * is convex, so an initial bracket [L,R] must be s.t.
-   *   f'(L) < 0,  f'(R) > 0
+   *   f(L) < 0,  f(R) > 0
    * L must be supplied. If R is not supplied, it is determined
    * automatically. This may fail for non-convex l(s).
    *
@@ -91,7 +90,7 @@
   protected:
     // Members
 
-    mutable Handle<QuadPotProximalNewton_Func1D> proxFun; // Function f'(s)
+    mutable Handle<QuadPotProximalNewton_Func1D> proxFun; // Function f(s)
     double acc,facc;  // See 'OneDimSolver'
 
   public:
@@ -110,7 +109,7 @@
     /**
      * See header comment. The initial bracket is [L,R]. L has to be supplied,
      * R is optional ('r' is not used if <= 'l'). We require that
-     *   f'(L) < 0,   f'(R) > 0.
+     *   f(L) < 0,   f(R) > 0.
      *
      * @param h   See 'proximal'
      * @param rho "

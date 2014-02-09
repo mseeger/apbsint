@@ -109,7 +109,7 @@
 	ret=tau*(s-yscal)-log(0.5*tau);
 	if (dl!=0) *dl=tau;
       } else {
-	ret=-tau*(s-yscal)-log(0.5*tau);
+	ret=tau*(yscal-s)-log(0.5*tau);
 	if (dl!=0) *dl=-tau;
       }
       if (ddl!=0) *ddl=0.0;
@@ -117,6 +117,14 @@
       return ret;
     }
 
+    /*
+     * This is the usual l_1 proximal map:
+     * If x = s-y: argmin_x kappa |x| + 0.5 (x-mu)^2,
+     * kappa = rho*tau, mu = h-y.
+     * The solution x_* is soft shrinkage of mu by kappa.
+     * NOTE: This maps s_* = y for all h close to y, so we sit on the
+     * waypoint then (where l(s) is not differentiable).
+     */
     bool proximal(double h,double rho,double& sstar) const {
       double mu=h-yscal,kap=rho*tau;
 

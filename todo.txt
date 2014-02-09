@@ -448,13 +448,32 @@ IMPLEMENTATION OF EP TOOLBOX
         void*, then to QuadratureServices*, then AdaptiveQuadPackServices
         method called
       ==> Yes, this works fine!
-    - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad
-      ==> Also include case where proxmap lands on critical point [HIER!]
-  - Debugging:
-    - Code watching!
-      Also check derivations in TR
-    - Add verbosity_debug outputs
-    - Run test code, comparing (a), (b), (c)
+  - Code watching!
+    - Check derivation in TR [OK]
+    - QuadraturePotential [OK]
+      - eval: l(s) and derivs
+      - getInterval: a, b, waypts
+    - QuadPotProximal [OK]
+      - proximal
+    - QuadPotProximalNewton [OK]
+      - initBracket
+      - implem. proximal
+    - EPPotDebugQuadLaplace [OK]
+      - C&P from EPPotLaplace for basic
+      - implem. QuadPotProximal
+    - EPPotQuadrature [HIER!]
+    - EPPotPoissonCommon
+    - EPPotPoissonExpRate
+    - EPPotPoissonLogisticRate
+    - EPPotQuadLaplaceApprox
+    - QuadratureServices
+    - AdaptiveQuadPackServices
+    - AdaptiveQuadPackDebugServices
+  - Debugging of quadrature code:
+    - Test code for Laplace potential: (a) exact, (b) debug_split, (c) normal
+      ada_quad
+    - Verbosity outputs
+    - Debug code for Poisson potentials: How to get ground truth??
   - Negative binomial potential (see notes) (?)
     Could be done when needed
 
