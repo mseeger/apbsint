@@ -465,8 +465,8 @@ IMPLEMENTATION OF EP TOOLBOX
       - implem. hasA of QuadraturePotential
     - EPPotPoissonCommon [OK]
     - EPPotPoissonExpRate [OK]
-    - EPPotPoissonLogisticRate [HIER!]
-    - EPPotQuadLaplaceApprox
+    - EPPotPoissonLogisticRate [OK]
+    - EPPotQuadLaplaceApprox [HIER!]
     - QuadratureServices
     - AdaptiveQuadPackServices
     - AdaptiveQuadPackDebugServices
