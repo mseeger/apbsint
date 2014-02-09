@@ -440,16 +440,16 @@ IMPLEMENTATION OF EP TOOLBOX
       in workaround. Use new compiler flag.
     - Does it still compile?
       - Workaround: Matlab [OK], Python [OK]
-      - Not workaround: [HIER!]
-    - Does this actually work? Test somehow!
+      - Not workaround: [OK]
+    - Does this actually work? Test somehow! [OK]
       - AdaptiveQuadPackServices object created by ptannotate_ext, cast to 
         void*, then to np.uint64
       - np.uint64 passed to eptools_ext code (different ext. module!), cast to
         void*, then to QuadratureServices*, then AdaptiveQuadPackServices
         method called
-      In WC, have to integrate ptannotate_ext into eptools_ext.
+      ==> Yes, this works fine!
     - Test code: Compare (a) exact, (b) debug_split, (c) normal ada_quad
-      ==> Also include case where proxmap lands on critical point
+      ==> Also include case where proxmap lands on critical point [HIER!]
   - Debugging:
     - Code watching!
       Also check derivations in TR

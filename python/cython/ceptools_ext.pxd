@@ -150,3 +150,6 @@ cdef extern from "src/eptools/wrap/eptwrap_choldnrk1.h":
                            ddot_type f_ddot,drotg_type f_drotg,
                            drot_type f_drot,dscal_type f_dscal,
                            daxpy_type f_daxpy,int* errcode,char* errstr)
+
+cdef extern from "src/eptools/wrap/eptwrap_debug_castannobj.h":
+    void eptwrap_debug_castannobj(void* annobj,int* errcode,char* errstr)

@@ -620,3 +620,13 @@ def choldnrk1(np.ndarray[np.double_t,ndim=2] l not None,bytes luplo not None,
         # HIER: Define own exception, say EptwrapError
         raise TypeError(<bytes>errstr)
     return stat
+
+def debug_castannobj(np.uint64_t annobj):
+    cdef int errcode
+    cdef char errstr[512]
+    # Call C function
+    eptwrap_debug_castannobj(<void*>annobj,&errcode,errstr)
+    # Check for error, raise exception
+    if errcode != 0:
+        # HIER: Define own exception, say EptwrapError
+        raise TypeError(<bytes>errstr)

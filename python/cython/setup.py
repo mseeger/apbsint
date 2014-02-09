@@ -64,7 +64,8 @@ eptools_ext_sources = [
     'base/src/eptools/wrap/eptwrap_fact_sequpdates.cc',
     'base/src/eptools/wrap/eptwrap_getpotid.cc',
     'base/src/eptools/wrap/eptwrap_getpotname.cc',
-    'base/src/eptools/wrap/eptwrap_potmanager_isvalid.cc'
+    'base/src/eptools/wrap/eptwrap_potmanager_isvalid.cc',
+    'base/src/eptools/wrap/eptwrap_debug_castannobj.cc'
 ]
 if work_around:
     eptools_ext_sources.extend(

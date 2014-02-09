@@ -83,6 +83,8 @@
 		     bool bInf,double& ival,const ArrayHandle<double>& wayPts=
 		     ArrayHandleZero<double>::get(),double* abserr=0,
 		     string* errmsg=0) = 0;
+
+    virtual void debug_method() const = 0; // DEBUG!
   };
 //ENDNS
 

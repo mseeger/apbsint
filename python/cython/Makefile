@@ -2,6 +2,7 @@ all:
 	python setup.py build_ext --inplace
 	mv eptools_ext.so ../apbsint/.
 	mv apbtest_ext.so ../apbsint/.
+	mv ptannotate_ext.so ../apbsint/.
 
 wa:
 	python setup.py build_ext --inplace --workaround
