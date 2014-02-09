@@ -461,10 +461,11 @@ IMPLEMENTATION OF EP TOOLBOX
     - EPPotDebugQuadLaplace [OK]
       - C&P from EPPotLaplace for basic
       - implem. QuadPotProximal
-    - EPPotQuadrature [HIER!]
-    - EPPotPoissonCommon
-    - EPPotPoissonExpRate
-    - EPPotPoissonLogisticRate
+    - EPPotQuadrature [OK]
+      - implem. hasA of QuadraturePotential
+    - EPPotPoissonCommon [OK]
+    - EPPotPoissonExpRate [OK]
+    - EPPotPoissonLogisticRate [HIER!]
     - EPPotQuadLaplaceApprox
     - QuadratureServices
     - AdaptiveQuadPackServices

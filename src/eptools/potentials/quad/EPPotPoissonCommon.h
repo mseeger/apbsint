@@ -14,13 +14,17 @@
 #endif
 
 #include "src/eptools/potentials/quad/QuadraturePotential.h"
+#include "src/eptools/potentials/SpecfunServices.h"
 
 //BEGINNS(eptools)
   /**
    * Some common code for Poisson potential classes with different rate
    * functions lam(s):
-   *   t(s) = lam(s)^y exp(-lam(s)),  y in N,
+   *   t(s) = (y!)^-1 lam(s)^y exp(-lam(s)),  y in N,
    * Parameters: y (nonneg. int.)
+   * <p>
+   * ATTENTION: If 'SpecfunServices::logGamma' is not implemented, we drop
+   * the constant (y!)^-1 in front.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -31,6 +35,7 @@
     // Members
 
     double yscal;
+    double logYFact; // log(y!)
 
   public:
     // Public methods
@@ -50,6 +55,7 @@
       if (!isValidPars(&py))
 	throw InvalidParameterException(EXCEPT_MSG(""));
       yscal=py;
+      setLogYFact();
     }
 
     int numPars() const {
@@ -82,6 +88,20 @@
 		     ArrayHandle<double>& wayPts) const {
       aInf=bInf=true;
       wayPts.changeRep(0); // no way points
+    }
+
+  protected:
+    /**
+     * Computes log(y!) = log Gamma(y+1), stores in 'logYFact'.
+     * ATTENTION: If 'SpecfunServices::logGamma' is not implemented, we
+     * set 'logYFact' to 0.
+     */
+    double setLogYFact() {
+      try {
+	logYFact=SpecfunServices::logGamma(yscal+1.0);
+      } catch (NotImplemException ex) {
+	logYFact=0.0;
+      }
     }
   };
 //ENDNS

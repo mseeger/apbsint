@@ -19,12 +19,15 @@
 //BEGINNS(eptools)
   /**
    * Poisson potential with logistic rate function:
-   *   t(s) = lam(s)^y exp(-lam(s)),  y in N,
+   *   t(s) = (y!)^-1 lam(s)^y exp(-lam(s)),  y in N,
    *   lam(s) = log(1 + exp(s))
    * Parameters: y (nonneg. int.)
    * <p>
    * We need numerical quadrature for this potential. We use the generic
    * Newton implementation.
+   * <p>
+   * ATTENTION: If 'SpecfunServices::logGamma' is not implemented, we drop
+   * the constant (y!)^-1 in front.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -76,7 +79,7 @@
 	(*ddl) = sig*temp+yscal*sgdlm*(sgdlm-temp);
       }
 
-      return lam-yscal*lam;
+      return lam-yscal*log(lam)+logYFact;
     }
 
     void initBracket(double h,double rho,double& l,double& r) const;

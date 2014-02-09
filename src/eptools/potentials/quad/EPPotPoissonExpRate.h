@@ -55,7 +55,7 @@
 
   /**
    * Poisson potential with exponential rate function:
-   *   t(s) = lam(s)^y exp(-lam(s)),  y in N,
+   *   t(s) = (y!)^-1 lam(s)^y exp(-lam(s)),  y in N,
    *   lam(s) = exp(s)
    * Parameters: y (nonneg. int.)
    * <p>
@@ -63,6 +63,9 @@
    * very simple 1D Newton optimization, which is implemented here (we use
    * 'OneDimSolver', but time could be saved by running few hardcoded Newton
    * steps).
+   * <p>
+   * ATTENTION: If 'SpecfunServices::logGamma' is not implemented, we drop
+   * the constant (y!)^-1 in front.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -79,7 +82,7 @@
     // Public methods
 
     /**
-     * @param py Value for y
+     * @param py    Value for y
      * @param pacc  See 'OneDimSolver::newton'. >0
      * @param pfacc "
      */
@@ -106,7 +109,7 @@
 
       if (dl!=0) (*dl)=temp-yscal;
       if (ddl!=0) (*ddl)=temp;
-      return temp-s*yscal;
+      return temp-s*yscal+logYFact;
     }
 
     bool proximal(double h,double rho,double& sstar) const;

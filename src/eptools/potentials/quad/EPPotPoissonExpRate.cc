@@ -15,11 +15,11 @@
    *   f(s) = exp(s) + s - a
    * (1) If a<=1: L = a-exp(a), R = a
    * (2) If a>1: R = log(a) gives f(R) = log(a) > 0. We choose
-   * L = (1-e) log(a), which gives
-   * f(L) = a (a^{-e} - 1) + (1-e) log(a). Setting
-   * a (a^{-e} - 1) + log(a) equal to 0 gives
-   * e = -log(1 - (log a)/a)/log(a) and
-   * f(L) = -e log(a) < 0. Here, e is roughly 1/a as a gets large, so the
+   * L = (1-u) log(a), which gives
+   * f(L) = a (a^{-u} - 1) + (1-u) log(a). Setting
+   * a (a^{-u} - 1) + log(a) equal to 0 gives
+   * u = -log(1 - (log a)/a)/log(a) and
+   * f(L) = -u log(a) < 0. Here, u is roughly 1/a as a gets large, so the
    * bracket size behaves as log(a)/a.
    */
   bool EPPotPoissonExpRate::proximal(double h,double rho,double& sstar) const
@@ -33,13 +33,13 @@
       bL=ascal-exp(ascal); bR=ascal;
     } else {
       bR=log(ascal);
-      bL=-log1p(-bR/ascal)/bR;
+      bL=bR-log1p(-bR/ascal);
     }
     try {
       // Run Newton solver
       sstar = OneDimSolver::newton(proxFun.p(),bL,bR,acc,facc,
 				   OneDimSolver::brackRightRegular,0.0,
-				   "EPPotPoissonExpRate");
+				   "EPPotPoissonExpRate") - log(rho);
     } catch (...) {
       return false; // Exception thrown in 'OneDimSolver::newton'
     }
