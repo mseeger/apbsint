@@ -31,7 +31,7 @@
    * @author  Matthias Seeger
    * @version %I% %G%
    */
-  class EPPotProbit : public EPScalarPotential
+  class EPPotProbit : public EPScalarPotential,public QuadPotProximalNewton
   {
   protected:
     // Members
@@ -42,13 +42,15 @@
   public:
     // Public methods
 
-    explicit EPPotProbit(double py,double psoff=0.0,bool phardStep=false) :
-      soff(psoff),hardStep(phardStep) {
+    explicit EPPotProbit(double py,double psoff=0.0,bool phardStep=false,
+			 double pacc=1e-7,double pfacc=1e-7,int pverb=0) :
+      QuadPotProximalNewton(pacc,pfacc,pverb),soff(psoff),hardStep(phardStep) {
       setTarget(py);
     }
 
-    explicit EPPotProbit(bool phardStep=false) :
-      soff(0.0),hardStep(phardStep) {
+    explicit EPPotProbit(bool phardStep=false,double pacc=1e-7,
+			 double pfacc=1e-7,int pverb=0) :
+      QuadPotProximalNewton(pacc,pfacc,pverb),soff(0.0),hardStep(phardStep) {
       setTarget(1.0);
     }
 
@@ -97,7 +99,7 @@
     bool compMoments(double cmu,double crho,double& alpha,double& nu,
 		     double* logz=0,double eta=1.0) const;
 
-    // 'QuadPotProximal' methods
+    // 'QuadPotProximalNewton' methods
 
     bool hasFirstDerivatives() const {
       if (hardStep) throw NotImplemException(EXCEPT_MSG(""));
@@ -133,10 +135,12 @@
     }
 
     void initBracket(double h,double rho,double& l,double& r) const {
-      double temp=rho*SpecfunServices::m_sqrt2/SpecfunServices::m_sqrtpi;
+      double c2=rho*SpecfunServices::m_sqrt2/SpecfunServices::m_sqrtpi,temp;
 
-      l=h;
-      r=yscal*std::max(0.0,yscal*(h+soff-temp))-soff;
+      temp=yscal*(h+soff);
+      l=(temp>=0.0)?(-temp):(-temp/(1.0+rho));
+      temp+=c2;
+      r=(temp>=0.0)?(-temp):(-temp/(1.0+c2));
       if (r<l) {
 	temp=l; l=r; r=temp;
       }

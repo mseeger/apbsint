@@ -42,9 +42,10 @@
      * @param py    Value for y
      * @param pacc  See 'OneDimSolver::newton'. >0
      * @param pfacc "
+     * @param pverb Passed to 'QuadPotProximalNewton'. Def.: 0
      */
-    EPPotPoissonLogisticRate(double py,double pacc,double pfacc) :
-      QuadPotProximalNewton(pacc,pfacc),EPPotPoissonCommon(py) {}
+    EPPotPoissonLogisticRate(double py,double pacc,double pfacc,int pverb=0) :
+      QuadPotProximalNewton(pacc,pfacc,pverb),EPPotPoissonCommon(py) {}
 
     bool isLogConcave() const {
       return true;

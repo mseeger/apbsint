@@ -91,7 +91,8 @@
     // Members
 
     mutable Handle<QuadPotProximalNewton_Func1D> proxFun; // Function f(s)
-    double acc,facc;  // See 'OneDimSolver'
+    double acc,facc; // See 'OneDimSolver'
+    int verbose;     // Verbosity level
 
   public:
     // Public methods
@@ -101,8 +102,9 @@
      *
      * @param pacc  See 'OneDimSolver::newton'. >0
      * @param pfacc "
+     * @param pverb Verbosity level. Def.: 0 (no messages)
      */
-    QuadPotProximalNewton(double pacc,double pfacc);
+    QuadPotProximalNewton(double pacc,double pfacc,int pverb=0);
 
     bool proximal(double h,double rho,double& sstar) const;
 

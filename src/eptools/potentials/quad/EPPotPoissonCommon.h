@@ -96,7 +96,7 @@
      * ATTENTION: If 'SpecfunServices::logGamma' is not implemented, we
      * set 'logYFact' to 0.
      */
-    double setLogYFact() {
+    void setLogYFact() {
       try {
 	logYFact=SpecfunServices::logGamma(yscal+1.0);
       } catch (NotImplemException ex) {

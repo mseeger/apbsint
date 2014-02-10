@@ -42,7 +42,7 @@
      * Must be called whenever parameters have been changed. Throws exception
      * if parameters invalid, does precomputations.
      */
-    double init() {
+    void init() {
       if (qpot==0 || rho<(1e-16) || eta<=0.0 || eta>1.0 || sigma<(1e-16) ||
 	  k<0 || k>2)
 	throw InvalidParameterException(EXCEPT_MSG(""));
@@ -55,16 +55,18 @@
     }
 
     double getG(double x) const {
-      double temp=exp(hsstar-getH(sstar+sigma*x));
+      double ret=exp(hsstar-getH(sstar+sigma*x));
 
       switch (k) {
-      case 0:
-	return temp;
       case 1:
-	return temp*x;
+	ret*=x;
+	break;
       case 2:
-	return temp*x*x;
+	ret*=(x*x);
+	break;
       }
+
+      return ret;
     }
 
     /**

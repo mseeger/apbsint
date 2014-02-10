@@ -10,10 +10,11 @@
 #include "lhotse/optimize/OneDimSolver.h"
 
 //BEGINNS(eptools)
-  QuadPotProximalNewton::QuadPotProximalNewton(double pacc,double pfacc) :
-    acc(pacc),facc(pfacc)
+  QuadPotProximalNewton::QuadPotProximalNewton(double pacc,double pfacc,
+					       int pverb) :
+    acc(pacc),facc(pfacc),verbose(pverb)
   {
-    if (pacc<=0.0 || pfacc<=0.0)
+    if (pacc<=0.0 || pfacc<=0.0 || pverb<0)
       throw InvalidParameterException(EXCEPT_MSG(""));
     proxFun.changeRep(new QuadPotProximalNewton_Func1D(this));
   }
@@ -27,6 +28,13 @@
       initBracket(h,rho,bL,bR);
       int brRight=(bR>bL)?OneDimSolver::brackRightRegular:
 	OneDimSolver::brackRightInfinite;
+      if (verbose>0) {
+	cout << "  QuadPotProximalNewton: Bracket=[" << bL << ",";
+	if (bR>bL)
+	  cout << bR << "]" << endl;
+	else
+	  cout << "infty)" << endl;
+      }
       // Run Newton solver
       sstar = OneDimSolver::newton(proxFun.p(),bL,bR,acc,facc,brRight,0.0,
 				   "QuadPotProximalNewton");
