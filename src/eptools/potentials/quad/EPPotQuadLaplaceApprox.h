@@ -43,7 +43,7 @@
      * if parameters invalid, does precomputations.
      */
     double init() {
-      if (qpot==0 || rho<(1e-16) || eta<=0.0 || eta>=1.0 || sigma<(1e-16) ||
+      if (qpot==0 || rho<(1e-16) || eta<=0.0 || eta>1.0 || sigma<(1e-16) ||
 	  k<0 || k>2)
 	throw InvalidParameterException(EXCEPT_MSG(""));
       hsstar=getH(sstar);
@@ -155,7 +155,6 @@
      * <p>
      * We also return with failure if any of the quadrature service calls
      * returns with status !=0. Again, this may be too stringent.
-     * TODO: Add verbosity, in particular in case of failure!
      */
     bool compMoments(double cmu,double crho,double& alpha,double& nu,
 		     double* logz=0,double eta=1.0) const;

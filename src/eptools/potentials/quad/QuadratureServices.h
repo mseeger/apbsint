@@ -51,6 +51,13 @@
     virtual bool hasAbsErrorEstimate() const = 0;
 
     /**
+     * Messages are printed for a positive verbosity level.
+     *
+     * @return Verbosity level (0: No messages)
+     */
+    virtual int getVerbose() const = 0;
+
+    /**
      * Main quadrature service:
      *   I = int_a^b f(x) d x.
      * a is -infty if 'aInf'==true ('a' ignored then), same with b, +infty,

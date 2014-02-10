@@ -10,8 +10,8 @@
 #include "src/eptools/potentials/SpecfunServices.h"
 
 //BEGINNS(eptools)
-  EPPotQuadLaplaceApprox::EPPotQuadLaplaceApprox(const Handle<QuadPotProximal>& qpot,const Handle<QuadratureServices>& qserv) :
-    EPPotQuadrature(qpot),quadServ(qserv),qpotProx(qpot.p())
+EPPotQuadLaplaceApprox::EPPotQuadLaplaceApprox(const Handle<QuadPotProximal>& qpot,const Handle<QuadratureServices>& qserv) :
+  EPPotQuadrature(qpot),quadServ(qserv),qpotProx(qpot.p())
   {
     if (!qpot->hasSecondDerivatives())
       throw InvalidParameterException(EXCEPT_MSG("Need 2nd derivatives"));
@@ -39,23 +39,37 @@
   }
 
   /*
-   * TODO: Verbosity for debugging. And meaningful reaction to errors (right
-   * now, we probably fail too often).
+   * TODO: Meaningful reaction to errors (right now, we probably fail too
+   * often).
    */
   bool EPPotQuadLaplaceApprox::compMoments(double cmu,double crho,
 					   double& alpha,double& nu,
 					   double* logz,double eta) const
   {
-    int i,wsz;
+    int i,wsz,verbose=quadServ->getVerbose();
     double a,b,sstar,sigma;
     bool aInf,bInf,isCritical;
     ArrayHandle<double> wayPts;
 
     if (crho<1e-14 || eta<1e-10 || eta>1.0)
       throw InvalidParameterException(EXCEPT_MSG(""));
+    if (verbose>0) {
+      cout << "EPPotQuadLaplaceApprox::compMoments: cmu=" << cmu << ",crho="
+	   << crho;
+      if (eta==1.0)
+	cout << endl;
+      else
+	cout << ", eta=" << eta << endl;
+    }
     // Determine mode of integrand
-    if (!qpotProx->proximal(cmu,eta*crho,sstar))
+    if (!qpotProx->proximal(cmu,eta*crho,sstar)) {
+      if (verbose>0)
+	cout << "  Proximal map computation failed"
+	     << endl;
       return false; // Update fails if mode search not successful
+    }
+    if (verbose>0)
+      cout << "  s_star=" << sstar << endl;
     // Interval [a,b] and waypoints. Can we use 2nd derivative at 'sstar'?
     qpotProx->getInterval(a,aInf,b,bInf,wayPts);
     wsz=qpotProx->hasWayPoints()?wayPts.size():0;
@@ -70,6 +84,8 @@
 	  isCritical=true; break;
 	}
     }
+    if (verbose>0 && isCritical)
+      cout << "  s_star falls on critical point" << endl;
     // Configure integrand function (except for sigma). Have to do this here,
     // so can use 'getD2H' (does not depend on sigma)
     intFuncPars.h=cmu;
@@ -90,6 +106,8 @@
     // Finalize initialization and transform integration interval
     intFuncPars.sigma=sigma;
     intFuncPars.init(); // Precomputations
+    if (verbose>0)
+      cout << "  sigma=" << sigma << endl;
     if (!aInf) a=(a-sstar)/sigma;
     if (!bInf) b=(b-sstar)/sigma;
     for (i=0; i<wsz; i++)
@@ -99,10 +117,16 @@
     // TODO: Verbosity! React to errors appropriately.
     double ztil,ex1,ex2;
     if (quadServ->quad(intFunc,a,aInf,b,bInf,ztil,qpotProx->hasWayPoints(),
-		       wayPts)!=0)
+		       wayPts)!=0) {
+      if (verbose>0)
+	cout << "  Quad(k=0) fails" << endl;
       return false; // Quadrature failure
-    if (ztil<(1e-12))
+    }
+    if (ztil<(1e-12)) {
+      if (verbose>0)
+	cout << "  Z_til too small (" << ztil << ")" << endl;
       return false; // Z_til too small (failure of mode normalization?)
+    }
     if (logz!=0)
       *logz = log(ztil)-intFuncPars.hsstar+log(sigma)-
 	0.5*(log(crho)+SpecfunServices::m_ln2pi);
@@ -112,16 +136,24 @@
     intFuncPars.hsstar-=log(ztil);
     intFuncPars.k=1;
     if (quadServ->quad(intFunc,a,aInf,b,bInf,ex1,qpotProx->hasWayPoints(),
-		       wayPts)!=0)
+		       wayPts)!=0) {
+      if (verbose>0)
+	cout << "  Quad(k=1) fails" << endl;
       return false; // Quadrature failure
+    }
     intFuncPars.k=2;
     if (quadServ->quad(intFunc,a,aInf,b,bInf,ex2,qpotProx->hasWayPoints(),
-		       wayPts)!=0)
+		       wayPts)!=0) {
+      if (verbose>0)
+	cout << "  Quad(k=2) fails" << endl;
       return false; // Quadrature failure
+    }
     // Can alpha, nu be estimated more directly? Here, we compute them from
     // E[x], E[x^2], expectation w.r.t. p_hat.
     alpha=(sigma*ex1+sstar-cmu)/crho;
     ex2-=ex1*ex1; // Variance
     nu=(1.0-ex2*sigma*sigma/crho)/crho;
+
+    return true;
   }
 //ENDNS

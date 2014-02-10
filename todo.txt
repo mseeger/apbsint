@@ -473,10 +473,13 @@ IMPLEMENTATION OF EP TOOLBOX
     - hasWP -> EPPotQuadLaplaceApprox [OK]
     - EPPotDebugQuadLaplace -> EPPotLaplace [OK]
   - Debugging of quadrature code:
-    - Verbosity outputs [HIER!]
+    - Verbosity outputs [OK]
     - Test code for Laplace potential: (a) exact, (b) debug_split, (c) normal
-      ada_quad
-    - Debug code for Poisson potentials: How to get ground truth??
+      ada_quad [OK]
+    ==> OK: This works great! See eptb15
+    - Debugging the Newton root finding code: [HIER!]
+      Do this for Probit potential, we have ground truth then!
+    - Debug code for Poisson potentials: How to get ground truth?
   - Negative binomial potential (see notes) (?)
     Could be done when needed
 

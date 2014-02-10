@@ -15,6 +15,7 @@
 
 #include "src/eptools/potentials/EPScalarPotential.h"
 #include "src/eptools/potentials/SpecfunServices.h"
+#include "src/eptools/potentials/quad/QuadPotProximalNewton.h"
 
 //BEGINNS(eptools)
   /**
@@ -23,6 +24,9 @@
    *   t(s) = I{y (s + soff) >= 0}    ['hardStep'==true]
    * Here, y must be in {-1,+1}.
    * Parameters: y, soff. 'hardStep' is not a parameter.
+   * <p>
+   * We implement 'QuadPotProximalNewton' here in order to support debugging
+   * quadrature code. Implemented for 'hardStep'==false only.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -92,6 +96,51 @@
 
     bool compMoments(double cmu,double crho,double& alpha,double& nu,
 		     double* logz=0,double eta=1.0) const;
+
+    // 'QuadPotProximal' methods
+
+    bool hasFirstDerivatives() const {
+      if (hardStep) throw NotImplemException(EXCEPT_MSG(""));
+      return true;
+    }
+
+    bool hasSecondDerivatives() const {
+      if (hardStep) throw NotImplemException(EXCEPT_MSG(""));
+      return true;
+    }
+
+    bool hasWayPoints() const {
+      if (hardStep) throw NotImplemException(EXCEPT_MSG(""));
+      return true;
+    }
+
+    void getInterval(double& a,bool& aInf,double& b,bool& bInf,
+		     ArrayHandle<double>& wayPts) const {
+      if (hardStep) throw NotImplemException(EXCEPT_MSG(""));
+      aInf=bInf=true;
+      wayPts.changeRep(0);
+    }
+
+    double eval(double s,double* dl=0,double* ddl=0) const {
+      double temp,temp2;
+
+      temp=yscal*(s+soff);
+      temp2=-yscal*SpecfunServices::derivLogCdfNormal(temp);
+      if (dl!=0) *dl=temp2;
+      if (ddl!=0) *ddl=temp2*(temp2-temp*yscal);
+
+      return -SpecfunServices::logCdfNormal(temp);
+    }
+
+    void initBracket(double h,double rho,double& l,double& r) const {
+      double temp=rho*SpecfunServices::m_sqrt2/SpecfunServices::m_sqrtpi;
+
+      l=h;
+      r=yscal*std::max(0.0,yscal*(h+soff-temp))-soff;
+      if (r<l) {
+	temp=l; l=r; r=temp;
+      }
+    }
   };
 
   /*

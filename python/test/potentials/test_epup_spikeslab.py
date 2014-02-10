@@ -48,7 +48,8 @@ alpha = np.empty(m)
 nu = np.empty(m)
 logz = np.empty(m)
 abt.eptools_ext.epupdate_parallel(potman.potids,potman.numpot,potman.parvec,
-                                  potman.parshrd,cmu,crho,rstat,alpha,nu,logz)
+                                  potman.parshrd,potman.annobj,cmu,crho,rstat,
+                                  alpha,nu,logz)
 indok = np.nonzero(rstat)[0]
 if indok.shape[0] < m:
     print 'epupdate_parallel: %d updates failed' % (m-indok.shape[0])
