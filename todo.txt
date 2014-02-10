@@ -466,14 +466,16 @@ IMPLEMENTATION OF EP TOOLBOX
     - EPPotPoissonCommon [OK]
     - EPPotPoissonExpRate [OK]
     - EPPotPoissonLogisticRate [OK]
-    - EPPotQuadLaplaceApprox [HIER!]
-    - QuadratureServices
-    - AdaptiveQuadPackServices
-    - AdaptiveQuadPackDebugServices
+    - EPPotQuadLaplaceApprox [OK]
+    - QuadratureServices [OK]
+    - AdaptiveQuadPackServices [OK]
+    - AdaptiveQuadPackDebugServices [OK]
+    - hasWP -> EPPotQuadLaplaceApprox [OK]
+    - EPPotDebugQuadLaplace -> EPPotLaplace [OK]
   - Debugging of quadrature code:
+    - Verbosity outputs [HIER!]
     - Test code for Laplace potential: (a) exact, (b) debug_split, (c) normal
       ada_quad
-    - Verbosity outputs
     - Debug code for Poisson potentials: How to get ground truth??
   - Negative binomial potential (see notes) (?)
     Could be done when needed

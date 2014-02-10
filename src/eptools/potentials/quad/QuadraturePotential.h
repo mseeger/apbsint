@@ -30,6 +30,14 @@
    * - l(s) is smooth in any open subinterval, but may be discontinuous,
    *   nondifferentiable, even singular at any waypoint or a, b
    * This information is returned if 'hasWayPoints' returns true.
+   * <p>
+   * NOTE: It makes sense to implement this interface for potentials which
+   * have a direct (non-quadrature) implementation of 'EPScalarPotential'.
+   * - Test of quadrature code
+   * - If a potential is first prototyped by quadrature, then implemented
+   *   directly, the latter can be compared against quadrature immediately
+   * - 'eval' (or 'proximal' in subclass 'QuadPotProximal') are useful for
+   *   plotting curves derived from the potential
    *
    * @author  Matthias Seeger
    * @version %I% %G%

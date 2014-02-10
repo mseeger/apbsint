@@ -33,7 +33,7 @@
       bL=ascal-exp(ascal); bR=ascal;
     } else {
       bR=log(ascal);
-      bL=bR-log1p(-bR/ascal);
+      bL=bR+log1p(-bR/ascal);
     }
     try {
       // Run Newton solver

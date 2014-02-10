@@ -14,7 +14,7 @@
     EPPotQuadrature(qpot),quadServ(qserv),qpotProx(qpot.p())
   {
     if (!qpot->hasSecondDerivatives())
-      throw InvalidParameterException(EXCEPT_MSG("Need 1st/2nd derivatives"));
+      throw InvalidParameterException(EXCEPT_MSG("Need 2nd derivatives"));
     // Check interval and waypoints
     double a,b;
     bool aInf,bInf;
@@ -40,7 +40,7 @@
 
   /*
    * TODO: Verbosity for debugging. And meaningful reaction to errors (right
-   * now, we probabnly fail too often).
+   * now, we probably fail too often).
    */
   bool EPPotQuadLaplaceApprox::compMoments(double cmu,double crho,
 					   double& alpha,double& nu,
@@ -71,7 +71,7 @@
 	}
     }
     // Configure integrand function (except for sigma). Have to do this here,
-    // so can use 'getD2H'
+    // so can use 'getD2H' (does not depend on sigma)
     intFuncPars.h=cmu;
     intFuncPars.rho=crho;
     intFuncPars.eta=eta;
@@ -98,7 +98,8 @@
     // Z_til after mode normalization, then 1st and 2nd moment
     // TODO: Verbosity! React to errors appropriately.
     double ztil,ex1,ex2;
-    if (quadServ->quad(intFunc,a,aInf,b,bInf,ztil,wayPts)!=0)
+    if (quadServ->quad(intFunc,a,aInf,b,bInf,ztil,qpotProx->hasWayPoints(),
+		       wayPts)!=0)
       return false; // Quadrature failure
     if (ztil<(1e-12))
       return false; // Z_til too small (failure of mode normalization?)
@@ -110,10 +111,12 @@
     // NOTE: Do not call 'intFuncPars.init()', would overwrite 'hsstar'!
     intFuncPars.hsstar-=log(ztil);
     intFuncPars.k=1;
-    if (quadServ->quad(intFunc,a,aInf,b,bInf,ex1,wayPts)!=0)
+    if (quadServ->quad(intFunc,a,aInf,b,bInf,ex1,qpotProx->hasWayPoints(),
+		       wayPts)!=0)
       return false; // Quadrature failure
     intFuncPars.k=2;
-    if (quadServ->quad(intFunc,a,aInf,b,bInf,ex2,wayPts)!=0)
+    if (quadServ->quad(intFunc,a,aInf,b,bInf,ex2,qpotProx->hasWayPoints(),
+		       wayPts)!=0)
       return false; // Quadrature failure
     // Can alpha, nu be estimated more directly? Here, we compute them from
     // E[x], E[x^2], expectation w.r.t. p_hat.

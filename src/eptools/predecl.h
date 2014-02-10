@@ -29,6 +29,19 @@
   class EPPotSpikeSlab;
   class EPPotGaussian;
   class EPPotGaussMixture;
+  class QuadraturePotential;
+  class QuadPotProximal;
+  class QuadPotProximalNewton;
+  class EPPotQuadrature;
+  class QuadratureServices;
+  class EPPotQuadLaplaceApprox;
+  class EPPotPoissonCommon;
+  class EPPotPoissonExpRate;
+  class EPPotPoissonLogisticRate;
+#ifdef HAVE_WORKAROUND
+  class AdaptiveQuadPackServices;
+  class AdaptiveQuadPackDebugServices;
+#endif
   class FactEPMaximumPiValues;
   class FactorizedEPRepresentation;
   class FactorizedEPDriver;

@@ -55,10 +55,14 @@
      *   I = int_a^b f(x) d x.
      * a is -infty if 'aInf'==true ('a' ignored then), same with b, +infty,
      * and 'bInf'.
-     * 'wayPts' (optional) is an array of "critical" points, where f(x) is
+     *
+     * If 'hasWP' is true, 'wayPts' contains critical points, where f(x) is
      * singular, discontinuous, not differentiable, etc. If given, the
      * entries must be increasing, and a < 'wayPts[0]', 'wayPts[end-1]' < b
-     * (the array does not include a, b).
+     * (the array does not include a, b). If 'hasWP' is false, 'wayPts' is
+     * ignored. In this case, there may still be critical points, but the
+     * user does not specify them. If 'hasWP' is true and 'wayPts' is empty,
+     * the integrand is smooth on the interior of the domain.
      * <p>
      * An absolute error estimate is written to 'abserr' if given, and if
      * 'hasAbsErrorEstimate' returns true, otherwise it is ignored.
@@ -74,17 +78,19 @@
      * @param b      Right interval boundary b (ignored if 'bInf'==true)
      * @param bInf   Is b = +infty?
      * @param ival   Integral value I returned here
+     * @param hasWP  S.a.
      * @param wayPts S.a. Can be 0
      * @param abserr S.a. Def.: 0
      * @param errmsg S.a. Def.: 0
      * @return       Return status (0: Success)
      */
     virtual int quad(const quad_function& fun,double a,bool aInf,double b,
-		     bool bInf,double& ival,const ArrayHandle<double>& wayPts=
+		     bool bInf,double& ival,bool hasWP,
+		     const ArrayHandle<double>& wayPts=
 		     ArrayHandleZero<double>::get(),double* abserr=0,
 		     string* errmsg=0) = 0;
 
-    virtual void debug_method() const = 0; // DEBUG!
+    virtual void debug_method() const {}; // DEBUG!
   };
 //ENDNS
 

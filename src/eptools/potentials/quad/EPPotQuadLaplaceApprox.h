@@ -25,6 +25,9 @@
    *   h(s) = eta*l(s) + (s-h)^2/(2*rho)
    * Here, l(s) = -log t(s) is represented by the 'QuadraturePotential'
    * object.
+   * <p>
+   * NOTE: h(s) here lacks the additive constant 0.5*log(2*pi*rho) in
+   * the TR.
    */
   class EPPotQuadLaplaceApprox_intFuncParams
   {
@@ -97,7 +100,7 @@
    *
    * We first determine the mode of the integrand for Z by 'proximal'. The
    * value of the integrand there is pulled outside, which hopefully counters
-   * under/overflow. We also transform the integration variable using the 2nd
+   * underflow. We also transform the integration variable using the 2nd
    * derivative of l(s) there. This is not done (and we standardize using the
    * variance rho) if the minimum point mu of l(s) is equal or very close to a
    * waypoint or one of a, b. The normalized and transformed integrand g(x)
