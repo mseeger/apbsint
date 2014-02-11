@@ -477,9 +477,10 @@ IMPLEMENTATION OF EP TOOLBOX
     - Test code for Laplace potential: (a) exact, (b) debug_split, (c) normal
       ada_quad [OK]
     ==> OK: This works great! See eptb15
-    - Debugging the Newton root finding code: [HIER!]
+    - Debugging the Newton root finding code: [OK]
       Do this for Probit potential, we have ground truth then!
-    - Debug code for Poisson potentials: How to get ground truth?
+    ==> OK, works fine. See eptb16
+    - Debug code for Poisson potentials: How to get ground truth? [HIER!]
   - Negative binomial potential (see notes) (?)
     Could be done when needed
 

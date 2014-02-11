@@ -16,11 +16,12 @@
   {
     if (pacc<=0.0 || pfacc<=0.0 || pverb<0)
       throw InvalidParameterException(EXCEPT_MSG(""));
-    proxFun.changeRep(new QuadPotProximalNewton_Func1D(this));
   }
 
   bool QuadPotProximalNewton::proximal(double h,double rho,double& sstar) const
   {
+    if (proxFun==0)
+      proxFun.changeRep(new QuadPotProximalNewton_Func1D(this));
     proxFun->setPars(h,rho);
     try {
       // Initial bracket

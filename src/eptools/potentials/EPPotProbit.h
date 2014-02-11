@@ -135,12 +135,12 @@
     }
 
     void initBracket(double h,double rho,double& l,double& r) const {
-      double c2=rho*SpecfunServices::m_sqrt2/SpecfunServices::m_sqrtpi,temp;
+      double c=rho*SpecfunServices::m_sqrt2/SpecfunServices::m_sqrtpi,temp;
 
       temp=yscal*(h+soff);
-      l=(temp>=0.0)?(-temp):(-temp/(1.0+rho));
-      temp+=c2;
-      r=(temp>=0.0)?(-temp):(-temp/(1.0+c2));
+      l=(temp>=0.0)?h:((h-rho*soff)/(1+rho));
+      temp+=c;
+      r=(temp>=0.0)?(h+yscal*c):((h-rho*soff+yscal*c)/(1+rho));
       if (r<l) {
 	temp=l; l=r; r=temp;
       }

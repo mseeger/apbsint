@@ -99,6 +99,9 @@
 
     /**
      * Constructor.
+     * Note that 'proxFun' is created only once first used, not here. This
+     * avoids trouble by passing the 'this' pointer for ourselves, while not
+     * fully constructed.
      *
      * @param pacc  See 'OneDimSolver::newton'. >0
      * @param pfacc "

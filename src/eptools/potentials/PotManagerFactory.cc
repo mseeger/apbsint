@@ -91,18 +91,20 @@
     ArrayHandle<int> shrdMsk,parOff;
     double* pvecP=parVec.p();
     int* shrdP=parShrd.p();
-    char errStr[100];
+    ArrayHandle<char> errStr;
 
     if (numPot.size()!=numk || annObj.size()!=numk)
       throw InvalidParameterException("NUMPOT or ANNOBJ have wrong size");
     for (k=0; k<numk; k++) {
       if (!EPPotentialFactory::isValidID(potIDs[k])) {
-	sprintf(errStr,"Block %d: POTIDS entry invalid",k+posoff);
-	throw InvalidParameterException(errStr);
+	errStr.changeRep(50);
+	sprintf(errStr.p(),"Block %d: POTIDS entry invalid",k+posoff);
+	throw InvalidParameterException(errStr.p());
       }
       if (numPot[k]<=0) {
-	sprintf(errStr,"Block %d: NUMPOT entry must be positive",k+posoff);
-	throw InvalidParameterException(errStr);
+	errStr.changeRep(59);
+	sprintf(errStr.p(),"Block %d: NUMPOT entry must be positive",k+posoff);
+	throw InvalidParameterException(errStr.p());
       }
     }
     for (k=0; k<numk; k++) {
@@ -113,25 +115,28 @@
 	epPot.changeRep(EPPotentialFactory::createDefault(pid,pvecP,
 							  annObj[k]));
       } catch (StandardException ex) {
-	sprintf(errStr,"Block %d: Cannot create potential object (%s)",
+	errStr.changeRep(65+strlen(ex.msg()));
+	sprintf(errStr.p(),"Block %d: Cannot create potential object (%s)",
 		k+posoff,ex.msg());
-	throw InvalidParameterException(errStr);
+	throw InvalidParameterException(errStr.p());
       }
       int numConstPars=epPot->numConstPars();
       int npar=epPot->numPars(); // Could be 0
       if (numConstPars>0) {
 	// Checks for construction parameters
 	if (npar<numConstPars) {
-	  sprintf(errStr,"Block %d: Need %d construction parameters",k+posoff,
-		  numConstPars);
-	  throw InvalidParameterException(errStr);
+	  errStr.changeRep(71);
+	  sprintf(errStr.p(),"Block %d: Need %d construction parameters",
+		  k+posoff,numConstPars);
+	  throw InvalidParameterException(errStr.p());
 	}
 	for (i=0; i<numConstPars; i++)
 	  if (!shrdP[i]) {
-	    sprintf(errStr,
+	    errStr.changeRep(73);
+	    sprintf(errStr.p(),
 		    "Block %d: PARSHRD invalid for construction parameters",
 		    k+posoff);
-	    throw InvalidParameterException(errStr);
+	    throw InvalidParameterException(errStr.p());
 	  }
       }
       if (npar>0) {
@@ -158,12 +163,13 @@
 	  for (j=0; j<npar; j++)
 	    tmpVec[j]=pvecMsk[parOff[j]+(shrdMsk[j]?0:i)];
 	  if (!epPot->isValidPars(tmpVec.p())) {
+	    errStr.changeRep(74);
 	    if (numk>1)
-	      sprintf(errStr,"Potential %d in block %d: Invalid parameters",
+	      sprintf(errStr.p(),"Potential %d in block %d: Invalid parameters",
 		      i+posoff,k+posoff);
 	    else
-	      sprintf(errStr,"Potential %d: Invalid parameters",i+posoff);
-	    throw InvalidParameterException(errStr);
+	      sprintf(errStr.p(),"Potential %d: Invalid parameters",i+posoff);
+	    throw InvalidParameterException(errStr.p());
 	  }
 	}
       }
