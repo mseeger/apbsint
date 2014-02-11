@@ -480,11 +480,10 @@ IMPLEMENTATION OF EP TOOLBOX
     - Debugging the Newton root finding code: [OK]
       Do this for Probit potential, we have ground truth then!
     ==> OK, works fine. See eptb16
-    - Debug code for Poisson potentials: How to get ground truth? [HIER!]
+    - Debug code for Poisson potentials: How to get ground truth? [OK]
       Just do a consistency check for Poisson with exp. rate, then move on
-  - Negative binomial potential (see notes) (?)
+  - Negative binomial potential (see notes) (?) [HIER!]
     Could be done when needed
-
 
 - Create some meaningful exception classes, and use them [HIER!]
 

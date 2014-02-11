@@ -58,6 +58,7 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
     /* Create potential manager */
     createPotentialManager(W_ARR(potids),W_ARR(numpot),W_ARR(parvec),
 			   W_ARR(parshrd),W_ARR(annobj),potMan,W_ERRARGS);
+    //cout << "Wrap: Done createPotentialManager" << endl; // DEBUG!
     totsz=ncmu;
     W_CHKSIZE(crho,totsz,"CRHO");
     if (ain>7) {
@@ -84,6 +85,7 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
     /* Main loop over all potentials */
     for (i=0; i<totsz; i++) {
       j=(updind==0)?i:updind[i];
+      //cout << "i=" << i << endl;
       rstat[i] =
 	potMan->getPot(j).compMoments(cmu[i],crho[i],alpha[i],nu[i],&temp);
       if (rstat[i] && aout>3)

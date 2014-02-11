@@ -19,13 +19,14 @@ def reldiff(a,b):
 # Main code
 
 # Parameters (potential, quadrature)
-y_lst = [0., 1., 2., 4., 7., 15.]
+y_lst = [0., 1., 2., 4., 7., 15.] # First entry must be 0
 q_maxiv = 50
 q_epsabs = 1e-6
 q_epsrel = 1e-6
+q_verbose = 0
 # Cavity moments
-cmu = np.arange(-5.,5.,0.1)
-#cmu = np.arange(-20.,20.,0.1)
+#cmu = np.arange(-5.,5.,0.1)
+cmu = np.arange(-20.,20.,0.1)
 crho_val = 1.
 #cmu = np.arange(-200.,200.,1.)
 #crho_val = 1e+3
@@ -70,7 +71,7 @@ for i in range(1,num_pm):
         print 'i=%d: %d updates failed' % (i,m-mm)
     cmu2[:] = cmu
     cmu2 += y*crho
-    pm = potman[0]
+    pm = potman[0] # y=0
     abt.eptools_ext.epupdate_parallel(pm.potids,pm.numpot,pm.parvec,
                                       pm.parshrd,pm.annobj,cmu2,crho,rstat2,
                                       alpha2,nu2,logz2)

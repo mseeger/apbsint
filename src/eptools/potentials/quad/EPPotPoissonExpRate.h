@@ -90,6 +90,7 @@
       EPPotPoissonCommon(py),acc(pacc),facc(pfacc) {
       if (pacc<=0.0 || pfacc<=0.0)
 	throw InvalidParameterException(EXCEPT_MSG(""));
+      proxFun.changeRep(new EPPotPoissonExpRate_Func1D());
     }
 
     bool isLogConcave() const {

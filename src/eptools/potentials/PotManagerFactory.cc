@@ -40,6 +40,7 @@
       // NOTE: We can pass 'pvecP' for construction parameters (if any),
       // without having to prepare a parameter vector or even knowing the
       // size. These parameters must form the prefix
+      //cout << "ManFactory: k=" << k << endl; // DEBUG!
       Handle<EPScalarPotential> epPot;
       try {
 	epPot.changeRep(EPPotentialFactory::createDefault(pid,pvecP,annObj[k]));
