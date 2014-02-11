@@ -481,6 +481,7 @@ IMPLEMENTATION OF EP TOOLBOX
       Do this for Probit potential, we have ground truth then!
     ==> OK, works fine. See eptb16
     - Debug code for Poisson potentials: How to get ground truth? [HIER!]
+      Just do a consistency check for Poisson with exp. rate, then move on
   - Negative binomial potential (see notes) (?)
     Could be done when needed
 
