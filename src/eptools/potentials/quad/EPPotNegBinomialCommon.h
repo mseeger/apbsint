@@ -24,6 +24,9 @@
    *   p(s) = lam(s)/(r + lam(s)),
    *   C    = Gamma(r+y)/(Gamma(y+1) Gamma(r))
    * Parameters: y (nonneg. int.), r (positive)
+   * <p>
+   * ATTENTION: If 'SpecfunServices::logGamma' is not implemented, we
+   * use C=1 as constant in front.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -34,7 +37,7 @@
     // Members
 
     double yscal,rscal;
-    double logConst;    // log C(y,r)
+    double logConst;    // log C(y,r) + r log r
 
   public:
     // Public methods
@@ -88,11 +91,16 @@
     bool isValidPars(const double* pv) const {
       int i=(int) ceil(pv[0]);
 
-      return (i>=0 && ((double) i)==py && pv[1]>1e-12);
+      return (i>=0 && ((double) i)==pv[0] && pv[1]>1e-12);
+    }
+
+    bool hasWayPoints() const {
+      return true;
     }
 
     /**
      * The integration interval is all of R, and l(s) is smooth everywhere.
+     * NOTE: Assumes that the log rate function is smooth.
      */
     void getInterval(double& a,bool& aInf,double& b,bool& bInf,
 		     ArrayHandle<double>& wayPts) const {
@@ -103,9 +111,14 @@
   protected:
     void update() {
       // Recompute log C
-     logConst=SpecfunServices::logGamma(rscal+yscal)-
-       SpecfunServices::logGamma(yscal+1.0)-
-       SpecfunServices::logGamma(rscal);
+      try {
+	logConst=SpecfunServices::logGamma(rscal+yscal)-
+	  SpecfunServices::logGamma(yscal+1.0)-
+	  SpecfunServices::logGamma(rscal);
+      } catch (NotImplemException ex) {
+	logConst=0.0;
+      }
+      logConst+=rscal*log(rscal);
     }
   };
 //ENDNS

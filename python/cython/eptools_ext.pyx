@@ -7,11 +7,12 @@
 # -------------------------------------------------------------------
 
 # TODO:
-# - Define specific exception(s). Right now, TypeError is used everywhere
 # - Add docstring's (best: use reStructured text)
 
 import cython
 import numpy as np
+import apbsint.exceptions as exc
+
 cimport numpy as np
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from ceptools_ext cimport *
@@ -60,16 +61,12 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
     # Ensure that input/output arguments are contiguous
     rsz = cmu.shape[0]
     if not (rstat.flags.c_contiguous and rstat.shape[0]==rsz):
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('RSTAT must be contiguous array of size of CMU')
     if not (alpha.flags.c_contiguous and alpha.shape[0]==rsz):
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('ALPHA must be contiguous array of size of CMU')
     if not (nu.flags.c_contiguous and nu.shape[0]==rsz):
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('NU must be contiguous array of size of CMU')
     if not (logz is None or (logz.flags.c_contiguous and logz.shape[0]==rsz)):
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('LOGZ must be contiguous array of size of CMU')
     potids = np.ascontiguousarray(potids)
     numpot = np.ascontiguousarray(numpot)
@@ -132,8 +129,7 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
     PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
 
 def getpotid(bytes name not None):
     cdef int errcode, pid
@@ -142,8 +138,7 @@ def getpotid(bytes name not None):
     eptwrap_getpotid(1,1,<char*>name,&pid,&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return pid
 
 def getpotname(int pid):
@@ -154,8 +149,7 @@ def getpotname(int pid):
     eptwrap_getpotname(1,1,pid,&name,&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return <bytes>name
 
 @cython.boundscheck(False)
@@ -171,10 +165,8 @@ def fact_compmarginals(int n,int m,np.ndarray[int,ndim=1] rp_rowind not None,
     cdef char errstr[512]
     # Ensure that input/output arguments are contiguous
     if not margpi.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('MARGPI must be contiguous array')
     if not margbeta.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('MARGBETA must be contiguous array')
     rp_rowind = np.ascontiguousarray(rp_rowind)
     rp_colind = np.ascontiguousarray(rp_colind)
@@ -190,8 +182,7 @@ def fact_compmarginals(int n,int m,np.ndarray[int,ndim=1] rp_rowind not None,
                                &errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -212,11 +203,9 @@ def fact_compmaxpi(int n,int m,np.ndarray[int,ndim=1] rp_rowind not None,
     rp_beta = np.ascontiguousarray(rp_beta)
     # Create return arguments
     if sd_k<2:
-        # HIER: Define own exception, or use appropriate one!
-        raise TypeError('SD_K: Must be >1')
+        raise ValueError('SD_K: Must be >1')
     if n<1:
-        # HIER: Define own exception, or use appropriate one!
-        raise TypeError('N: Must be positive')
+        raise ValueError('N: Must be positive')
     rsz = n*(sd_k+1)
     cdef np.ndarray[int,ndim=1] sd_numvalid = np.zeros(n,dtype=np.int32)
     cdef np.ndarray[int,ndim=1] sd_topind = np.zeros(rsz,dtype=np.int32)
@@ -243,8 +232,7 @@ def fact_compmaxpi(int n,int m,np.ndarray[int,ndim=1] rp_rowind not None,
                                sd_topval.shape[0],&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return (sd_numvalid,sd_topind,sd_topval)
 
 # NOTE: sd_nupd, sd_nrec are returned only if rstat, delta, sd_dampfact and
@@ -286,32 +274,24 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
     rp_colind = np.ascontiguousarray(rp_colind)
     rp_bvals = np.ascontiguousarray(rp_bvals)
     if not rp_pi.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('RP_PI must be contiguous array')
     if not rp_beta.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('RP_BETA must be contiguous array')
     if not margpi.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('MARGPI must be contiguous array')
     if not margbeta.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('MARGBETA must be contiguous array')
     if sd_numvalid is not None:
         if not sd_numvalid.flags.c_contiguous:
-            # HIER: Define own exception, say EptwrapError
             raise TypeError('SD_NUMVALID must be contiguous array')
         if sd_topind is None or not sd_topind.flags.c_contiguous:
-            # HIER: Define own exception, or use appropriate one!
             raise TypeError('SD_TOPIND must be contiguous array')
         if sd_topval is None or not sd_topval.flags.c_contiguous:
-            # HIER: Define own exception, or use appropriate one!
             raise TypeError('SD_TOPVAL must be contiguous array')
     # Return arguments
     rsz = updjind.shape[0]
     if rsz<1:
-        # HIER: Define own exception, or use appropriate one!
-        raise TypeError('UPDJIND must not be empty')
+        raise ValueError('UPDJIND must not be empty')
     if not (rstat is None or rstat.flags.c_contiguous):
         raise TypeError('RSTAT must be contiguous array')
     if not (delta is None or delta.flags.c_contiguous):
@@ -381,8 +361,7 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
     PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     if aout>2:
         return (sd_nupd,sd_nrec)
 
@@ -412,8 +391,7 @@ def potmanager_isvalid(np.ndarray[int,ndim=1] potids not None,
     PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return <bytes>retstr
 
 def epupdate_single(pid,np.ndarray[np.double_t,ndim=1] pars not None,
@@ -434,8 +412,7 @@ def epupdate_single(pid,np.ndarray[np.double_t,ndim=1] pars not None,
                                  &logz,&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return (rstat,alpha,nu,logz)
 
 @cython.boundscheck(False)
@@ -465,8 +442,7 @@ def epupdate_single_pman(np.ndarray[int,ndim=1] potids not None,
     PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return (rstat,alpha,nu,logz)
 
 @cython.boundscheck(False)
@@ -482,19 +458,14 @@ def choluprk1(np.ndarray[np.double_t,ndim=2] l not None,bytes luplo not None,
     cdef char errstr[512]
     # Ensure that input/output arguments are contiguous
     if not l.flags.f_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('L must be Fortran contiguous (column-major)')
     if not vec.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('VEC must be contiguous array')
     if not cvec.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('CVEC must be contiguous array')
     if not svec.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('SVEC must be contiguous array')
     if not workv.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('WORKV must be contiguous array')
     # We use fst_matrix transfer type
     cdef fst_matrix lmat, zmat
@@ -518,10 +489,8 @@ def choluprk1(np.ndarray[np.double_t,ndim=2] l not None,bytes luplo not None,
                           f_drot,&errcode,errstr)
     else:
         if not z.flags.f_contiguous:
-            # HIER: Define own exception, say EptwrapError
             raise TypeError('Z must be Fortran contiguous (column-major)')
         if not y.flags.c_contiguous:
-            # HIER: Define own exception, say EptwrapError
             raise TypeError('Y must be contiguous array')
         zmat.buff = &z[0,0]
         zmat.m, zmat.n = z.shape[0], z.shape[1]
@@ -535,8 +504,7 @@ def choluprk1(np.ndarray[np.double_t,ndim=2] l not None,bytes luplo not None,
                           f_dcopy,f_drotg,f_drot,&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return stat
 
 # NOTE: The ISP argument, which can be used for the MEX version, is not
@@ -556,19 +524,14 @@ def choldnrk1(np.ndarray[np.double_t,ndim=2] l not None,bytes luplo not None,
     isp = 1
     # Ensure that input/output arguments are contiguous
     if not l.flags.f_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('L must be Fortran contiguous (column-major)')
     if not vec.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('VEC must be contiguous array')
     if not cvec.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('CVEC must be contiguous array')
     if not svec.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('SVEC must be contiguous array')
     if not workv.flags.c_contiguous:
-        # HIER: Define own exception, say EptwrapError
         raise TypeError('WORKV must be contiguous array')
     # We use fst_matrix transfer type
     cdef fst_matrix lmat, zmat
@@ -599,10 +562,8 @@ def choldnrk1(np.ndarray[np.double_t,ndim=2] l not None,bytes luplo not None,
                           errstr)
     else:
         if not z.flags.f_contiguous:
-            # HIER: Define own exception, say EptwrapError
             raise TypeError('Z must be Fortran contiguous (column-major)')
         if not y.flags.c_contiguous:
-            # HIER: Define own exception, say EptwrapError
             raise TypeError('Y must be contiguous array')
         zmat.buff = &z[0,0]
         zmat.m, zmat.n = z.shape[0], z.shape[1]
@@ -617,8 +578,7 @@ def choldnrk1(np.ndarray[np.double_t,ndim=2] l not None,bytes luplo not None,
                           &errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)
     return stat
 
 def debug_castannobj(np.uint64_t annobj):
@@ -628,5 +588,4 @@ def debug_castannobj(np.uint64_t annobj):
     eptwrap_debug_castannobj(<void*>annobj,&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
-        # HIER: Define own exception, say EptwrapError
-        raise TypeError(<bytes>errstr)
+        raise exc.ApBsWrapError(<bytes>errstr)

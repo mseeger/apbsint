@@ -61,8 +61,11 @@
    * <p>
    * We need numerical quadrature for this potential. 'proximal' requires a
    * very simple 1D Newton optimization, which is implemented here (we use
-   * 'OneDimSolver', but time could be saved by running few hardcoded Newton
-   * steps).
+   * 'OneDimSolver').
+   *
+   * NOTE: As derived in the TR, the results for any y can be expressed in
+   * terms of results for y=0 (changing 'h'). If lookup tables are to be used,
+   * we only need one for y=0.
    * <p>
    * ATTENTION: If 'SpecfunServices::logGamma' is not implemented, we drop
    * the constant (y!)^-1 in front.

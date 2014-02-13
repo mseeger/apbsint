@@ -482,12 +482,12 @@ IMPLEMENTATION OF EP TOOLBOX
     ==> OK, works fine. See eptb16
     - Debug code for Poisson potentials: How to get ground truth? [OK]
       Just do a consistency check for Poisson with exp. rate, then move on
-  - Negative binomial potential (see notes) (?) [HIER!]
-    Could be done when needed
+  - Negative binomial potential (see notes) (?) [OK]
+    Just for exponential rate for now.
 
-- Create some meaningful exception classes, and use them [HIER!]
+- Create some meaningful exception classes, and use them [OK]
 
-- Documentation of source code:
+- Documentation of source code: [HIER!]
   - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto
     standard
 
@@ -509,10 +509,12 @@ IMPLEMENTATION OF EP TOOLBOX
     the same potential? This is due to SD, so what happens there?
 
 - Important extensions ("next steps"):
-  - Integrating out hyperparameters:
+  - Integrating out hyperparameters: [HIER!]
     - Work out how to deal with variance hyperparameter in Gaussian potential:
       Requires quadrature [OK]
       NOTE: Infer.NET is doing quadrature as well
+      Careful: Can be multimodal. Specific guard against that?
+    - How would this work generically for the 3 different modes?
     - Code it up, using GSL adaptive quadrature without any lookup table
       tricks for now
     - Create simple test example, maybe even something where exact inference
@@ -521,9 +523,6 @@ IMPLEMENTATION OF EP TOOLBOX
     ICML paper)
   - Computation of EP free energy: Useful for monitoring and model selection
     ==> Do I understand this in factorized mode?
-
-- Practice matplotlib: Same rel. diff. plots in Python as in Matlab
-  (factorized mode)
 
 - Wrap up test code (both Matlab and Python):
   - Write demo for binary classification, where ROC curves are computed
