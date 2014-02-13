@@ -116,12 +116,15 @@ Denote the repository root by [ROOT].
 
   Make sure that both Cython and distutils are present.
 
-  Edit [ROOT]/python/cython/setup.py. Search for 'df_include_dirs'.
-  Replace the repo root there by [ROOT].
+  $ cd [ROOT]/python/cython
+  $ cp apbsint_profile.py.template apbsint_profile.py
 
-  You may have to configure 'df_library_dirs' so that libraries in
-  'df_libraries' are found. If these come with header files in non-standard
-  places, you may have to configure 'df_include_dirs'.
+  Edit apbsint_profile.py. 'get_include_dirs' must return include directories,
+  'get_library_dirs' library directories for the C++ compiler and linker.
+  Make sure to use absolute pathnames.
+
+  In particular, the list returned by 'get_include_dirs' must include [ROOT]
+  (absolute pathname).
 
 * Build
 

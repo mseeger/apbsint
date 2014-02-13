@@ -1,0 +1,14 @@
+# Template for apbsint_profile module, included by setup.py
+# - Copy to apbsint_profile.py
+#   Do NOT track this copy in the repo!
+# - Configure for your system. At the least, enter the absolute
+#   path of the repo root in 'get_include_dir'
+
+# Absolute paths of include directories for C++ compiler.
+# NOTE: Must include the apbsint repository root
+def get_include_dirs():
+    return '/home/seeger/apbsint'
+
+# Absolute paths of library directories for C++ compiler
+def get_library_dirs():
+    return '/usr/lib64'

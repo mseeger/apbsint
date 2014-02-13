@@ -11,21 +11,35 @@ from Cython.Distutils.extension import Extension
 import sys
 import numpy
 
+# System profile (has to be edited)
+import apbsint_profile as aprof
+
 work_around = False
 if '--workaround' in sys.argv:
     work_around = True
     sys.argv.remove('--workaround')
 
 # Basic information passed to compiler/linker
+# NOTE: Do not change the present file. Enter system-specific information
+# in apbsint_profile.py.
 # - df_include_dirs: Include path(s). The repo root must be in there
 # - df_library_dirs: Library path(s) for your system
-df_include_dirs = [numpy.get_include(), '/home/seeger/apbsint']
+df_include_dirs = [numpy.get_include()]
+tlst = aprof.get_include_dirs()
+if type(tlst) == str:
+    df_include_dirs.append(tlst)
+else:
+    df_include_dirs.extend(tlst)
 nwa_include_dirs = df_include_dirs[:]
 df_define_macros = [('HAVE_NO_BLAS', None), ('HAVE_FORTRAN', None)]
 nwa_define_macros = df_define_macros[:]
 df_libraries = ['m']
 nwa_libraries = df_libraries[:]
-df_library_dirs = ['/usr/lib64']
+tlst = aprof.get_library_dirs()
+if type(tlst) == str:
+    df_library_dirs = [tlst]
+else:
+    df_library_dirs = tlst
 nwa_library_dirs = df_include_dirs[:]
 
 if work_around:

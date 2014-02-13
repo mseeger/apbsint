@@ -70,6 +70,7 @@ Thumbs.db
 ###################################
 python/cython/build
 python/cython/*.cpp
+python/cython/apbsint_profile.py
 #matlab/bin/*
 matlab/make.inc.def
 matlab/make.inc.def.wa

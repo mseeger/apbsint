@@ -514,7 +514,7 @@ IMPLEMENTATION OF EP TOOLBOX
       Requires quadrature [OK]
       NOTE: Infer.NET is doing quadrature as well
       Careful: Can be multimodal. Specific guard against that?
-    - How would this work generically for the 3 different modes?
+    - How would this work generically for the 3 different modes? [OK]
     - Code it up, using GSL adaptive quadrature without any lookup table
       tricks for now
     - Create simple test example, maybe even something where exact inference
