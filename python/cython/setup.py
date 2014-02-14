@@ -164,7 +164,7 @@ df_ext_modules = [
         libraries = df_libraries,
         library_dirs = df_library_dirs,
         language = 'c++',
-        cython_compile_time_env = ptannotate_compile_time_env
+        pyrex_compile_time_env = ptannotate_compile_time_env
     )
 ]
 

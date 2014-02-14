@@ -487,6 +487,10 @@ IMPLEMENTATION OF EP TOOLBOX
 
 - Create some meaningful exception classes, and use them [OK]
 
+- setup.py: pyrex_compile_time_env does not work properly in Ubuntu
+  ==> May have to find another solution here of setting the INCLUDE_WORKAROUND
+      variable!
+
 - Documentation of source code: [HIER!]
   - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto
     standard
