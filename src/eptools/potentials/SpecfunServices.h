@@ -81,6 +81,24 @@
      */
     static double logGamma(double z);
 
+    /**
+     * Given the cubic polynomial
+     *   r(x) = x^3 + a x^2 + b x + c,  a,b,c in R,
+     * return real-valued roots. The number of real-valued roots
+     * (either 1 or 3) is returned. If this is 1, then only x0 is written
+     * to. If this is 3, then x0 <= x1 <= x2.
+     *
+     * @param a Polynomial coefficient
+     * @param b "
+     * @param c "
+     * @param x0 Root ret. here
+     * @param x1 Root ret. here (if ret. 3)
+     * @param x2 "
+     * @return   Number of r-v roots (1 or 3)
+     */
+    static int rootsCubicPolynomial(double a,double b,double c,double& x0,
+				    double& x1,double& x2);
+
   protected:
     // Internal static methods
 
