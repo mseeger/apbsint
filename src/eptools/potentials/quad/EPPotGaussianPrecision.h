@@ -14,43 +14,100 @@
 #endif
 
 #include "src/eptools/potentials/EPBivarPrecPotential.h"
+#include "src/eptools/potentials/SpecfunServices.h"
+#include "src/eptools/potentials/quad/QuadratureServices.h"
 
 //BEGINNS(eptools)
+  /**
+   * Represents integrand function g(x) and its parameters:
+   *   g(x) = exp( off - h_l(v_* + sigma*x) ),
+   * where h_l(v) depends on a, c/rho, xi and l.
+   */
+  class EPPotGaussianPrecision_intFuncParams
+  {
+  public:
+    double a,cdr,xi;
+    int l;
+    double vstar,sigma;
+    double off,cnst;
+
+    /**
+     * Must be called whenever parameters a, c/rho or xi are changed.
+     */
+    void init() {
+      if (a<(1e-16) || cdr<(1e-16) || xi<0.0 || l<0 || l>2)
+	throw InvalidParameterException(EXCEPT_MSG(""));
+      cnst=0.5*xi-a*log(cdr)+SpecfunServices::logGamma(a);
+    }
+
+    double getH(double v) const {
+      int dl=(double) l;
+
+      return (dl+0.5)*log1p(v)-(a+dl-0.5)*log(v)-0.5*xi/(1.0+v)+cdr*v+cnst;
+    }
+
+    double getG(double x) const {
+      return exp(off-getH(vstar+sigma*x));
+    }
+
+    /**
+     * Second derivative h_0''(v). This does not depend on 'cdr', 'l'.
+     */
+    double getD2H(double v) const {
+      double temp=v+1.0;
+
+      return (a-0.5)/v/v-(0.5+xi/temp)/temp/temp;
+    }
+  };
+
+  /**
+   * Integrand function g(x) passed to quadrature routine. See
+   * 'EPPotGaussianPrecision_intFuncParams' comments.
+   */
+  inline double EPPotGaussianPrecision_intFunc(double x,void* params)
+  {
+    return ((const EPPotGaussianPrecision_intFuncParams*) params)->getG(x);
+  }
+
   /**
    * Gaussian potential of input s and precision tau:
    *   t(s,tau) = N(s | y, tau^-1)
    * Parameters: y.
    * <p>
    * We need quadrature in order to integrate w.r.t. tau, done by 'quadServ'.
-   * If unbounded above, the integrand is transformed by a Laplace
+   * If bounded above, the integrand is transformed by a Laplace
    * approximation (see also 'EPPotQuadLaplaceApprox'), the corr. mode can
    * be solved for analytically (requires roots of cubic equation).
    *
    * @author  Matthias Seeger
    * @version %I% %G%
    */
-  class EPPotGaussianPrecision : public EPBivarPrecPotential // HIER!
+  class EPPotGaussianPrecision : public EPBivarPrecPotential
   {
   protected:
     // Members
 
-    double yscal,tau;
+    double yscal;
+    Handle<QuadratureServices> quadServ; // Quadrature services
+    quad_function intFunc;               // Represents integrand g(x)
+    mutable EPPotGaussianPrecision_intFuncParams intFuncPars;
 
   public:
     // Public methods
 
-    EPPotLaplace(double py=0.0,double ptau=1.0) {
-      setY(py); setTau(ptau);
-    }
-
-    virtual double getTau() const {
-      return tau;
-    }
-
-    virtual void setTau(double ptau) {
-      if (ptau<1e-12)
-	throw InvalidParameterException(EXCEPT_MSG(""));
-      tau=ptau;
+    /**
+     * Constructor
+     *
+     * @param qserv Quadrature services
+     * @param py    Init. value for y. Def.: 0
+     */
+    EPPotGaussianPrecision(const Handle<QuadratureServices>& qserv,
+			   double py=0.0) : quadServ(qserv) {
+      setY(py);
+      // Integrand function
+      intFuncPars.l=0;
+      intFunc.function=&EPPotGaussianPrecision_intFunc;
+      intFunc.params=(void*) &intFuncPars;
     }
 
     virtual double getY() const {
@@ -62,102 +119,35 @@
     }
 
     int numPars() const {
-      return 2;
+      return 1;
     }
 
     void getPars(double* pv) const {
-      pv[0]=getY(); pv[1]=getTau();
+      pv[0]=getY();
     }
 
     void setPars(const double* pv) {
-      setY(pv[0]); setTau(pv[1]);
+      setY(pv[0]);
     }
 
     bool isValidPars(const double* pv) const {
-      return (pv[1]>=1e-12);
+      return true;
     }
 
     bool suppFractional() const {
-      return true;
+      return false;
     }
 
     bool isLogConcave() const {
-      return true;
-    }
-
-    /*
-     * t(s)^eta corresponds to C times 'EPPotQuantileRegress' with
-     *   kappa = 1/2, xi = 2 eta tau, C = (tau/2)^eta.
-     */
-    bool compMoments(double cmu,double crho,double& alpha,double& nu,
-		     double* logz=0,double eta=1.0) const {
-      if (crho<1e-14 || eta<1e-10 || eta>1.0)
-	throw InvalidParameterException(EXCEPT_MSG(""));
-
-      bool ret =
-	EPPotQuantileRegress::compMomentsInt(cmu,crho,2.0*eta*tau,yscal,0.5,
-					     alpha,nu,logz);
-      if (ret && logz!=0)
-	(*logz) += eta*log(0.5*tau);
-
-      return ret;
-    }
-
-    // 'QuadPotProximal' methods
-
-    bool hasFirstDerivatives() const {
-      return true;
-    }
-
-    bool hasSecondDerivatives() const {
-      return true;
-    }
-
-    bool hasWayPoints() const {
-      return true;
+      return false;
     }
 
     /**
-     * The integration interval is all of R. y is a waypoint, l(s) is not
-     * differentiable there.
+     * HIER!!
      */
-    void getInterval(double& a,bool& aInf,double& b,bool& bInf,
-		     ArrayHandle<double>& wayPts) const {
-      aInf=bInf=true;
-      if (wayPts.size()!=1)
-	wayPts.changeRep(1);
-      wayPts[0]=yscal;
-    }
-
-    double eval(double s,double* dl=0,double* ddl=0) const {
-      double ret;
-      // NOTE: Does not complain if s==yscal, treats it like s>yscal
-      if (s>=yscal) {
-	ret=tau*(s-yscal)-log(0.5*tau);
-	if (dl!=0) *dl=tau;
-      } else {
-	ret=tau*(yscal-s)-log(0.5*tau);
-	if (dl!=0) *dl=-tau;
-      }
-      if (ddl!=0) *ddl=0.0;
-
-      return ret;
-    }
-
-    /*
-     * This is the usual l_1 proximal map:
-     * If x = s-y: argmin_x kappa |x| + 0.5 (x-mu)^2,
-     * kappa = rho*tau, mu = h-y.
-     * The solution x_* is soft shrinkage of mu by kappa.
-     * NOTE: This maps s_* = y for all h close to y, so we sit on the
-     * waypoint then (where l(s) is not differentiable).
-     */
-    bool proximal(double h,double rho,double& sstar) const {
-      double mu=h-yscal,kap=rho*tau;
-
-      sstar=yscal+((mu>kap)?(mu-kap):((mu<-kap)?(mu+kap):0.0));
-      return true;
-    }
+    bool compMoments(double cmu,double crho,double ca,double cc,double& alpha,
+		     double& nu,double& hata,double& hatc,double* logz=0,
+		     double eta=1.0) const;
   };
 //ENDNS
 
