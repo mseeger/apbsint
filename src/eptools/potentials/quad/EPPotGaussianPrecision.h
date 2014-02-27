@@ -26,7 +26,7 @@
   class EPPotGaussianPrecision_intFuncParams
   {
   public:
-    double a,cdr,xi;
+    double a,cdrho,xi;
     int l;
     double vstar,sigma;
     double off,cnst;
@@ -35,15 +35,15 @@
      * Must be called whenever parameters a, c/rho or xi are changed.
      */
     void init() {
-      if (a<(1e-16) || cdr<(1e-16) || xi<0.0 || l<0 || l>2)
+      if (a<(1e-16) || cdrho<(1e-16) || xi<0.0 || l<0 || l>2)
 	throw InvalidParameterException(EXCEPT_MSG(""));
-      cnst=0.5*xi-a*log(cdr)+SpecfunServices::logGamma(a);
+      cnst=0.5*xi-a*log(cdrho)+SpecfunServices::logGamma(a);
     }
 
     double getH(double v) const {
       int dl=(double) l;
 
-      return (dl+0.5)*log1p(v)-(a+dl-0.5)*log(v)-0.5*xi/(1.0+v)+cdr*v+cnst;
+      return (dl+0.5)*log1p(v)-(a+dl-0.5)*log(v)-0.5*xi/(1.0+v)+cdrho*v+cnst;
     }
 
     double getG(double x) const {
@@ -51,7 +51,7 @@
     }
 
     /**
-     * Second derivative h_0''(v). This does not depend on 'cdr', 'l'.
+     * Second derivative h_0''(v). This does not depend on 'cdrho', 'l'.
      */
     double getD2H(double v) const {
       double temp=v+1.0;
@@ -143,7 +143,13 @@
     }
 
     /**
-     * HIER!!
+     * Integration over tau requires numerical quadrature over [0,infty).
+     * If 'ca'>1/2, we apply a Laplace approximation to transform and
+     * normalize the integrand (see 'EPPotQuadLaplaceApprox'). Mode finding
+     * is analytically tractable (requires roots of cubic equation).
+     * If 'ca'<=1/2, the integrand's mode is at 0 (left boundary), of
+     * infinite value if 'ca'<1/2. In this case, we do not apply a
+     * transformation.
      */
     bool compMoments(double cmu,double crho,double ca,double cc,double& alpha,
 		     double& nu,double& hata,double& hatc,double* logz=0,
