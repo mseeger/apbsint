@@ -14,8 +14,8 @@
 					   double& hata,double& hatc,
 					   double* logz,double eta) const
   {
-    int i,wsz,verbose=quadServ->getVerbose();
-    double temp,limA,vstar,sigma;
+    int verbose=quadServ->getVerbose();
+    double temp,vstar,sigma;
 
     if (eta!=1.0)
       throw NotImplemException(EXCEPT_MSG(""));
@@ -74,59 +74,76 @@
       // No transformation
       vstar=0.0; sigma=1.0;
     }
-    // HIER!
-    // Finalize initialization and transform integration interval
+    // Quadrature calls: log Z_tilde and kappa moments
+    // The integral are over [0,infty) (before transformation), and the
+    // integrand is smooth. It has a singularity at 0 iff 'ca'<1/2.
+    double lztil,ex1,ex2,hvstar,limA;
+    intFuncPars.vstar=vstar;
     intFuncPars.sigma=sigma;
-    intFuncPars.init(); // Precomputations
-    if (verbose>0)
-      cout << "  sigma=" << sigma << endl;
-    if (!aInf) a=(a-sstar)/sigma;
-    if (!bInf) b=(b-sstar)/sigma;
-    for (i=0; i<wsz; i++)
-      wayPts[i]=(wayPts[i]-sstar)/sigma;
-    // Run quadrature calls. We first estimate the normalization constant
-    // Z_til after mode normalization, then 1st and 2nd moment
-    // TODO: Verbosity! React to errors appropriately.
-    double ztil,ex1,ex2;
-    if (quadServ->quad(intFunc,a,aInf,b,bInf,ztil,qpotProx->hasWayPoints(),
-		       wayPts)!=0) {
+    hvstar=doLaplace?intFuncPars.getH(vstar):0.0;
+    intFuncPars.off=hvstar;
+    limA=-vstar/sigma;
+    if (quadServ->quad(intFunc,limA,false,limA,true,lztil,true)!=0) {
       if (verbose>0)
-	cout << "  Quad(k=0) fails" << endl;
+	cout << "  Quad(lztil, l=0) fails" << endl;
       return false; // Quadrature failure
     }
-    if (ztil<(1e-12)) {
+    if (lztil<(1e-12)) {
       if (verbose>0)
 	cout << "  Z_til too small (" << ztil << ")" << endl;
       return false; // Z_til too small (failure of mode normalization?)
     }
+    lztil=log(lztil)-hvstar; // log Z_til
     if (logz!=0)
-      *logz = log(ztil)-intFuncPars.hsstar+log(sigma)-
-	0.5*(log(crho)+SpecfunServices::m_ln2pi);
-    // We fold Z_til into the 1st and 2nd moment computation by subtracting
-    // log Z_til from h(sstar) in 'intFuncPars'.
-    // NOTE: Do not call 'intFuncPars.init()', would overwrite 'hsstar'!
-    intFuncPars.hsstar-=log(ztil);
-    intFuncPars.k=1;
-    if (quadServ->quad(intFunc,a,aInf,b,bInf,ex1,qpotProx->hasWayPoints(),
-		       wayPts)!=0) {
+      *logz = lztil-0.5*(log(crho)+SpecfunServices::m_ln2pi);
+    intFuncPars.off=-lztil; // New offset is -log Z_til
+    intFuncPars.l=1;
+    if (quadServ->quad(intFunc,limA,false,limA,true,ex1,true)!=0) {
       if (verbose>0)
-	cout << "  Quad(k=1) fails" << endl;
+	cout << "  Quad(ex1, l=1) fails" << endl;
       return false; // Quadrature failure
     }
-    intFuncPars.k=2;
-    if (quadServ->quad(intFunc,a,aInf,b,bInf,ex2,qpotProx->hasWayPoints(),
-		       wayPts)!=0) {
+    intFuncPars.l=2;
+    if (quadServ->quad(intFunc,limA,false,limA,true,ex2,true)!=0) {
       if (verbose>0)
-	cout << "  Quad(k=2) fails" << endl;
+	cout << "  Quad(ex2, l=2) fails" << endl;
       return false; // Quadrature failure
     }
-    // Can alpha, nu be estimated more directly? Here, we compute them from
-    // E[x], E[x^2], expectation w.r.t. p_hat.
-    alpha=(sigma*ex1+sstar-cmu)/crho;
-    ex2-=ex1*ex1; // Variance
-    nu=(1.0-ex2*sigma*sigma/crho)/crho;
+    alpha=ex1*(yscal-cmu)/crho;
+    nu=(ex1-xi*(ex2-ex1*ex1))/crho;
+    // tau moments -> a_hat, c_hat
+    intFuncPars.l=0; // Reset
+    intFuncPars.off=-lztil;
+    intFuncPars.a=ca+1.0;
+    intFuncPars.init();
+    if (quadServ->quad(intFunc,limA,false,limA,true,ex1,true)!=0) {
+      if (verbose>0)
+	cout << "  Quad(ex_tau1) fails" << endl;
+      return false; // Quadrature failure
+    }
+    ex1*=(ca/cc);
+    if (ex1<(1e-12)) {
+      if (verbose>0)
+	cout << "  E[tau] too small (" << ex1 << ")" << endl;
+      return false;
+    }
+    intFuncPars.off=-log(ex1);
+    intFuncPars.a=ca+2.0;
+    intFuncPars.init();
+    if (quadServ->quad(intFunc,limA,false,limA,true,ex2,true)!=0) {
+      if (verbose>0)
+	cout << "  Quad(ex_tau2) fails" << endl;
+      return false; // Quadrature failure
+    }
+    ex2*=((ca+1.0)/cc);
+    if (ex2-ex1<(1e-12)) {
+      if (verbose>0)
+	cout << "  x2-x1 too small (" << x2-x1 << ")" << endl;
+      return false;
+    }
+    hatc=1.0/(ex2-ex1);
+    hata=x1*hatc;
 
     return true;
-    
   }
 //ENDNS
