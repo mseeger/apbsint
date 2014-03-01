@@ -88,7 +88,7 @@ src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.h
 src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc
 lhotse/specfun
 python/cython/apbtest_workaround_ext.pyx
-python/cython/cptannotate_ext_workaround.pxi
+python/cython/cptannotate_ext_workaround.pxd
 python/cython/ptannotate_ext_workaround.pxi
 matlab/make.inc.workaround
 python/test/workaround

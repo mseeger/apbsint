@@ -115,7 +115,7 @@ apbtest_workaround_ext_sources = [
 
 # ptannotate_ext: Potential annotation classes
 ptannotate_ext_sources = [
-    'ptannotate_ext.pyx',
+    'ptannotate_ext_workaround.pyx' if work_around else 'ptannotate_ext.pyx',
     'base/lhotse/global.cc',
     'base/lhotse/StandardException.cc',
     'base/lhotse/FileUtils.cc',
@@ -128,9 +128,6 @@ if work_around:
         ['base/src/eptools/potentials/quad/AdaptiveQuadPackServices.cc',
          'base/src/eptools/potentials/quad/AdaptiveQuadPackDebugServices.cc']
     )
-    ptannotate_compile_time_env = {'INCLUDE_WORKAROUND' : True}
-else:
-    ptannotate_compile_time_env = {'INCLUDE_WORKAROUND' : False}
     
 df_ext_modules = [
     Extension(
@@ -154,8 +151,6 @@ df_ext_modules = [
         library_dirs = nwa_library_dirs,
         language = 'c++'
     ),
-    # The compile-time constant INCLUDE_WORKAROUND determines whether
-    # workaround code is included
     Extension(
         'ptannotate_ext',
         sources = ptannotate_ext_sources,
@@ -163,8 +158,7 @@ df_ext_modules = [
         define_macros = df_define_macros,
         libraries = df_libraries,
         library_dirs = df_library_dirs,
-        language = 'c++',
-        pyrex_compile_time_env = ptannotate_compile_time_env
+        language = 'c++'
     )
 ]
 

@@ -9,7 +9,7 @@
 # Author: Matthias Seeger
 # -------------------------------------------------------------------
 
-DEF INCLUDE_WORKAROUND = False
+DEF INCLUDE_WORKAROUND = True
 
 # Declarations
 IF INCLUDE_WORKAROUND:
