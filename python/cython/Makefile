@@ -12,7 +12,5 @@ wa:
 	mv ptannotate_ext.so ../apbsint/.
 
 clean:
-	rm eptools_ext.cpp
-	rm apbtest_ext.cpp
-	rm ptannotate_ext.cpp
 	rm -rf build
+	rm *.cpp

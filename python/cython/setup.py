@@ -57,6 +57,7 @@ eptools_ext_sources = [
     'base/lhotse/Interval.cc',
     'base/lhotse/Range.cc',
     'base/lhotse/optimize/OneDimSolver.cc',
+    'base/src/eptools/potentials/EPScalarPotential.cc',
     'base/src/eptools/potentials/DefaultPotManager.cc',
     'base/src/eptools/potentials/EPPotentialFactory.cc',
     'base/src/eptools/potentials/EPPotentialNamedFactory.cc',

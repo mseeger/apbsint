@@ -14,7 +14,7 @@ DEF INCLUDE_WORKAROUND = True
 # Declarations
 IF INCLUDE_WORKAROUND:
     # Workaround: Additional declarations
-    import cptannotate_ext_workaround as pax
+    cimport cptannotate_ext_workaround as pax
 
 # Definitions
 include "ptannotate_ext.pxi"

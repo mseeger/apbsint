@@ -99,19 +99,24 @@
      * Construction parameters: If the potential type for a block has
      * construction parameters, they must form the prefix of the corr.
      * 'parVec' part, and the corr. 'parShrd' entries must all be 1.
+     * <p>
+     * If 'checkPure'==true, all potentials must be in the same argument
+     * group (see 'EPScalarPotential') for the representation to be valid.
      *
      * @param potIDs
      * @param numPot
      * @param parVec
      * @param parShrd
      * @param annObj
-     * @param posoff  S.a. Def.: 0
+     * @param posoff    S.a. Def.: 0
+     * @param checkPure S.a. Def.: false
      */
     static void checkRepres(const ArrayHandle<int>& potIDs,
 			    const ArrayHandle<int>& numPot,
 			    const ArrayHandle<double>& parVec,
 			    const ArrayHandle<int>& parShrd,
-			    const ArrayHandle<void*>& annObj,int posoff=0);
+			    const ArrayHandle<void*>& annObj,int posoff=0,
+			    bool checkPure=false);
   };
 //ENDNS
 

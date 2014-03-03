@@ -91,8 +91,8 @@
       return false;
     }
 
-    bool compMoments(double cmu,double crho,double& alpha,double& nu,
-		     double* logz=0,double eta=1.0) const;
+    bool compMoments(const double* inp,double* ret,double* logz=0,
+		     double eta=1.0) const;
 
   protected:
     // Internal methods
@@ -119,23 +119,23 @@
   };
 
   inline bool
-  EPPotSpikeSlab::compMoments(double cmu,double crho,double& alpha,
-			      double& nu,double* logz,double eta) const
+  EPPotSpikeSlab::compMoments(const double* inp,double* ret,double* logz,
+			      double eta) const
   {
-    double cpi,cbeta;
-    bool ret;
+    double cpi,cbeta,cmu=inp[0],crho=inp[1];
+    bool rstat;
 
     if (eta!=1.0)
       throw NotImplemException("Fractional updates not implemented");
     if (crho<(1e-16))
       throw NumericalException(EXCEPT_MSG(""));
     cpi=1.0/crho; cbeta=cmu/crho;
-    if (ret=compMomentsInt(cbeta,cpi,alpha,nu,logz)) {
+    if (rstat=compMomentsInt(cbeta,cpi,ret[0],ret[1],logz)) {
       if (logz!=0)
 	*logz-=0.5*(cbeta*cmu+log(crho)+SpecfunServices::m_ln2pi);
     }
 
-    return ret;
+    return rstat;
   }
 
   /*

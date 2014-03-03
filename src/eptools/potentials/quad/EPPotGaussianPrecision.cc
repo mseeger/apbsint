@@ -9,13 +9,12 @@
 #include "src/eptools/potentials/quad/EPPotGaussianPrecision.h"
 
 //BEGINNS(eptools)
-  bool EPPotGaussianPrecision::compMoments(double cmu,double crho,double ca,
-					   double cc,double& alpha,double& nu,
-					   double& hata,double& hatc,
+  bool EPPotGaussianPrecision::compMoments(const double* inp,double* ret,
 					   double* logz,double eta) const
   {
     int verbose=quadServ->getVerbose();
     double temp,vstar,sigma;
+    double cmu=inp[0],crho=inp[1],ca=inp[2],cc=inp[3],alpha,nu,hata,hatc;
 
     if (eta!=1.0)
       throw NotImplemException(EXCEPT_MSG(""));
@@ -109,8 +108,8 @@
 	cout << "  Quad(ex2, l=2) fails" << endl;
       return false; // Quadrature failure
     }
-    alpha=ex1*(yscal-cmu)/crho;
-    nu=(ex1-xi*(ex2-ex1*ex1))/crho;
+    ret[0]=alpha=ex1*(yscal-cmu)/crho;
+    ret[1]=nu=(ex1-xi*(ex2-ex1*ex1))/crho;
     // tau moments -> a_hat, c_hat
     intFuncPars.l=0; // Reset
     intFuncPars.off=-lztil;
@@ -141,8 +140,8 @@
 	cout << "  x2-x1 too small (" << x2-x1 << ")" << endl;
       return false;
     }
-    hatc=1.0/(ex2-ex1);
-    hata=x1*hatc;
+    ret[3]=hatc=1.0/(ex2-ex1);
+    ret[2]=hata=x1*hatc;
 
     return true;
   }

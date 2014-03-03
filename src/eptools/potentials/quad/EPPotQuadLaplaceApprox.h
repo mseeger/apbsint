@@ -158,8 +158,8 @@
      * We also return with failure if any of the quadrature service calls
      * returns with status !=0. Again, this may be too stringent.
      */
-    bool compMoments(double cmu,double crho,double& alpha,double& nu,
-		     double* logz=0,double eta=1.0) const;
+    bool compMoments(const double* inp,double* ret,double* logz=0,
+		     double eta=1.0) const;
   };
 //ENDNS
 

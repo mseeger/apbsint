@@ -487,12 +487,37 @@ IMPLEMENTATION OF EP TOOLBOX
 
 - Create some meaningful exception classes, and use them [OK]
 
-- setup.py: pyrex_compile_time_env does not work properly in Ubuntu [HIER!]
+- setup.py: pyrex_compile_time_env does not work properly in Ubuntu
   ==> May have to find another solution here of setting the INCLUDE_WORKAROUND
       variable!
   Simplest:
   - Two different .pyx files. Common code in .pxi files
   - setup.py picks correct one
+  OK: This seems to work. Re-run test codes! [HIER!]
+
+- Integrating out precision hyperparameters:
+  - Work out how to deal with variance hyperparameter in Gaussian potential:
+    Requires quadrature [OK]
+  - How would this work generically for the 3 different modes? [OK]
+  - Code up local update (no LU table now) [OK]
+  - Re-design: In order to avoid duplicating potential and potential manager
+    classes, generalize potentials to input and ret. vectors and group them
+    into argument groups: [OK]
+    - Standard univariate t(s)
+    - Bivariate precision t(s,tau)
+    BUT: Managers must be pure for now (just single group)
+  - Change C++ code:
+    New way of calling 'compMoments', and check that arg. group correct
+    NOTE: Enforce arg. group checks only in wrappers. The generic C++ code
+    should allow for potentials of different groups
+    - EPScalarPontential subclasses [OK]
+    - potentials/ [OK]
+    - quad/ [HIER!]
+    - eptools/
+    - Wrapper functions
+  - New C++/Cython services, parallel the old ones
+  - Create simple test example, maybe even something where exact inference
+    is tractable, and see what it does (f.ex.: MSR paper on grading tests!)
 
 - Documentation of source code:
   - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto
@@ -516,16 +541,6 @@ IMPLEMENTATION OF EP TOOLBOX
     the same potential? This is due to SD, so what happens there?
 
 - Important extensions ("next steps"):
-  - Integrating out hyperparameters: [HIER!]
-    - Work out how to deal with variance hyperparameter in Gaussian potential:
-      Requires quadrature [OK]
-      NOTE: Infer.NET is doing quadrature as well
-      Careful: Can be multimodal. Specific guard against that?
-    - How would this work generically for the 3 different modes? [OK]
-    - Code it up, using GSL adaptive quadrature without any lookup table
-      tricks for now
-    - Create simple test example, maybe even something where exact inference
-      is tractable, and see what it does
   - Coupled mode, sequential updating: Active selection of next update (as in
     ICML paper)
   - Computation of EP free energy: Useful for monitoring and model selection

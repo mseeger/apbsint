@@ -73,6 +73,7 @@
    * Gaussian potential of input s and precision tau:
    *   t(s,tau) = N(s | y, tau^-1)
    * Parameters: y.
+   * Argument group: 'atypeBivarPrec'.
    * <p>
    * We need quadrature in order to integrate w.r.t. tau, done by 'quadServ'.
    * If bounded above, the integrand is transformed by a Laplace
@@ -82,7 +83,7 @@
    * @author  Matthias Seeger
    * @version %I% %G%
    */
-  class EPPotGaussianPrecision : public EPBivarPrecPotential
+  class EPPotGaussianPrecision : public EPScalarPotential
   {
   protected:
     // Members
@@ -142,6 +143,10 @@
       return false;
     }
 
+    int getArgumentGroup() const {
+      return atypeBivarPrec;
+    }
+
     /**
      * Integration over tau requires numerical quadrature over [0,infty).
      * If 'ca'>1/2, we apply a Laplace approximation to transform and
@@ -151,8 +156,7 @@
      * infinite value if 'ca'<1/2. In this case, we do not apply a
      * transformation.
      */
-    bool compMoments(double cmu,double crho,double ca,double cc,double& alpha,
-		     double& nu,double& hata,double& hatc,double* logz=0,
+    bool compMoments(const double* inp,double* ret,double* logz=0,
 		     double eta=1.0) const;
   };
 //ENDNS

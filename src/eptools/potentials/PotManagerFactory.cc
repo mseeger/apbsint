@@ -85,9 +85,9 @@
 				      const ArrayHandle<double>& parVec,
 				      const ArrayHandle<int>& parShrd,
 				      const ArrayHandle<void*>& annObj,
-				      int posoff)
+				      int posoff,bool checkPure)
   {
-    int k,numk=potIDs.size();
+    int k,numk=potIDs.size(),atype;
     ArrayHandle<double> pvecMsk,tmpVec;
     ArrayHandle<int> shrdMsk,parOff;
     double* pvecP=parVec.p();
@@ -173,6 +173,12 @@
 	    throw InvalidParameterException(errStr.p());
 	  }
 	}
+      }
+      if (checkPure) {
+	if (k==0)
+	  atype=epPot->getArgumentGroup();
+	else if (atype!=epPot->getArgumentGroup())
+	  throw InvalidParameterException("All potentials must be in the same argument group");
       }
     }
     if (parShrd.p()+parShrd.size()>shrdP)

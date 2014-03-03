@@ -96,8 +96,8 @@
       return true;
     }
 
-    bool compMoments(double cmu,double crho,double& alpha,double& nu,
-		     double* logz=0,double eta=1.0) const;
+    bool compMoments(const double* inp,double* ret,double* logz=0,
+		     double eta=1.0) const;
 
     // 'QuadPotProximalNewton' methods
 
@@ -153,10 +153,10 @@
    * elsewhere we leave mu{-} unchanged.
    */
   inline bool
-  EPPotProbit::compMoments(double cmu,double crho,double& alpha,double& nu,
-			   double* logz,double eta) const
+  EPPotProbit::compMoments(const double* inp,double* ret,double* logz,
+			   double eta) const
   {
-    double fct,cmupbt,crhop1;
+    double fct,cmupbt,crhop1,cmu=inp[0],crho=inp[1],alpha,nu;
 
     if (eta!=1.0)
       throw NotImplemException(EXCEPT_MSG(""));
@@ -170,6 +170,7 @@
       *logz=SpecfunServices::logCdfNormal(alpha); // log Z
     alpha=fct*SpecfunServices::derivLogCdfNormal(alpha); // alpha
     nu=alpha*(alpha+cmupbt/crhop1); // nu
+    ret[0]=alpha; ret[1]=nu;
     // DEBUG!!
     //if (fabs(cmu-(-11.276141))<1e-5)
     //  cout << "DEBUG: y=" << yscal << ",soff=" << soff << "hStep="

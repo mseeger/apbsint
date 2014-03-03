@@ -66,9 +66,9 @@
      *   t(s)^eta = N(s | y,ssq/eta) eta^{-1/2}
      *   log Z(ssq,eta) = log Z(ssq/eta,1) - 0.5 log(eta)
      */
-    bool compMoments(double cmu,double crho,double& alpha,double& nu,
-		     double* logz=0,double eta=1.0) const {
-      double temp;
+    bool compMoments(const double* inp,double* ret,double* logz=0,
+		     double eta=1.0) const {
+      double temp,cmu=inp[0],crho=inp[1],alpha,nu;
 
       if (crho<=0.0 || eta>1.0 || eta<=0.0)
 	return false;
@@ -76,6 +76,7 @@
       alpha=nu*(temp=yscal-cmu);
       if (logz!=0)
 	*logz=-0.5*(nu*temp*temp-log(nu)+SpecfunServices::m_ln2pi+log(eta));
+      ret[0]=alpha; ret[1]=nu;
 
       return true;
     }

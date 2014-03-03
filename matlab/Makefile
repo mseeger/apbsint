@@ -181,7 +181,8 @@ ESSMINIMUMOBJS_gslyes=	$(SPECFUNDIR)/Specfun.o
 # -------------------------------------------------------------------
 
 EPTOOLSDIR=	$(LHOTSEPROJDIR)/eptools
-_EPTOOLSOBJS=	potentials/DefaultPotManager \
+_EPTOOLSOBJS=	potentials/EPScalarPotential \
+		potentials/DefaultPotManager \
 		potentials/EPPotentialFactory \
 		potentials/EPPotentialNamedFactory \
 		potentials/PotManagerFactory \

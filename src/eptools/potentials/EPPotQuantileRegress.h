@@ -95,12 +95,14 @@
       return true;
     }
 
-    bool compMoments(double cmu,double crho,double& alpha,double& nu,
-		     double* logz=0,double eta=1.0) const {
+    bool compMoments(const double* inp,double* ret,double* logz=0,
+		     double eta=1.0) const {
+      double cmu=inp[0],crho=inp[1];
+
       if (crho<1e-14 || eta<1e-10 || eta>1.0)
 	throw InvalidParameterException(EXCEPT_MSG(""));
 
-      return compMomentsInt(cmu,crho,xi*eta,yscal,kappa,alpha,nu,logz);
+      return compMomentsInt(cmu,crho,xi*eta,yscal,kappa,ret[0],ret[1],logz);
     }
 
     /**

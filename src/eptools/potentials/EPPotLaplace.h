@@ -90,18 +90,19 @@
      * t(s)^eta corresponds to C times 'EPPotQuantileRegress' with
      *   kappa = 1/2, xi = 2 eta tau, C = (tau/2)^eta.
      */
-    bool compMoments(double cmu,double crho,double& alpha,double& nu,
-		     double* logz=0,double eta=1.0) const {
+    bool compMoments(const double* inp,double* ret,double* logz=0,
+		     double eta=1.0) const {
+      double cmu=inp[0],crho=inp[1];
+
       if (crho<1e-14 || eta<1e-10 || eta>1.0)
 	throw InvalidParameterException(EXCEPT_MSG(""));
-
-      bool ret =
+      bool rstat =
 	EPPotQuantileRegress::compMomentsInt(cmu,crho,2.0*eta*tau,yscal,0.5,
-					     alpha,nu,logz);
-      if (ret && logz!=0)
+					     ret[0],ret[1],logz);
+      if (rstat && logz!=0)
 	(*logz) += eta*log(0.5*tau);
 
-      return ret;
+      return rstat;
     }
 
     // 'QuadPotProximal' methods

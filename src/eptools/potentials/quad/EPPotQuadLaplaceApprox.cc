@@ -42,12 +42,11 @@ EPPotQuadLaplaceApprox::EPPotQuadLaplaceApprox(const Handle<QuadPotProximal>& qp
    * TODO: Meaningful reaction to errors (right now, we probably fail too
    * often).
    */
-  bool EPPotQuadLaplaceApprox::compMoments(double cmu,double crho,
-					   double& alpha,double& nu,
+  bool EPPotQuadLaplaceApprox::compMoments(const double* inp,double* ret,
 					   double* logz,double eta) const
   {
     int i,wsz,verbose=quadServ->getVerbose();
-    double a,b,sstar,sigma;
+    double a,b,sstar,sigma,cmu=inp[0],crho=inp[1];
     bool aInf,bInf,isCritical;
     ArrayHandle<double> wayPts;
 
@@ -150,9 +149,9 @@ EPPotQuadLaplaceApprox::EPPotQuadLaplaceApprox(const Handle<QuadPotProximal>& qp
     }
     // Can alpha, nu be estimated more directly? Here, we compute them from
     // E[x], E[x^2], expectation w.r.t. p_hat.
-    alpha=(sigma*ex1+sstar-cmu)/crho;
+    ret[0]=(sigma*ex1+sstar-cmu)/crho; // alpha
     ex2-=ex1*ex1; // Variance
-    nu=(1.0-ex2*sigma*sigma/crho)/crho;
+    ret[1]=(1.0-ex2*sigma*sigma/crho)/crho; // nu
 
     return true;
   }
