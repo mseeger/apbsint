@@ -13,7 +13,7 @@
 #  include <config.h>
 #endif
 
-#include "src/eptools/potentials/EPBivarPrecPotential.h"
+#include "src/eptools/potentials/EPScalarPotential.h"
 #include "src/eptools/potentials/SpecfunServices.h"
 #include "src/eptools/potentials/quad/QuadratureServices.h"
 

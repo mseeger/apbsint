@@ -74,6 +74,10 @@
       return num;
     }
 
+    int numArgumentGroup(int atype) const {
+      return (epPot->getArgumentGroup()==atype)?num:0;
+    }
+
     const EPScalarPotential& getPot(int j) const {
       if (j<0 || j>=size()) throw OutOfRangeException(EXCEPT_MSG(""));
       if (parOff.size()>0) {

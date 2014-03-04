@@ -78,7 +78,7 @@ void eptwrap_choldnrk1(int ain,int aout,fst_matrix* lmat,W_DARRAY(vvec),
 		       daxpy_type f_daxpy,W_ERRORARGS)
 
 {
-  blasint_t i,n,r=0,stp,sz,ione=1,nxi,npos;
+  blasint_t i,n,r=0,stp,sz,ione=1,nxi,npos=0;
   double qs,cval,sval,c1,c2;
   bool islower;
   double* tbuff,*zcol;

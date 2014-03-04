@@ -21,7 +21,9 @@
 #define MAXRELDIFF(a,b) (fabs((a)-(b))/std::max(fabs(a),std::max(fabs(b),1e-8)))
 
   /**
-   * Driver for expectation propagation with factorized backbone.
+   * Driver for expectation propagation with factorized backbone. All
+   * potentials must be in argument group
+   * 'EPScalarPotential::atypeUnivariate'.
    * <p>
    * For details, see technical note.
    *   p(x) = Z^-1 prod_j t_j(s_j),  s = B x, x[0:n-1], s[0:m-1]
@@ -36,7 +38,7 @@
    * Marginal moments represented by [beta_i], [pi_i] ('margBeta',
    * 'margPi'). Must have at all times:
    *   pi_i = sum_j pi_ji,   beta_i = sum_j beta_ji
-   * NOTE: 'FactorizedEPRepresentation::compMoments' computes marginals
+   * NOTE: 'FactorizedEPRepresentation::compMarginals' computes marginals
    * from EP parameters.
    * <p>
    * Sequential EP update:
@@ -95,7 +97,8 @@
     // Public methods
 
     /**
-     * Constructor.
+     * Constructor. All potentials in 'pepPots' must be in argument group
+     * 'EPScalarPotential::atypeUnivariate'.
      *
      * @param pepPots
      * @param pepRepr
@@ -116,6 +119,9 @@
 
       if (ppiMinThres<=0.0 || pmargBeta.size()!=numN || pmargPi.size()!=numN)
 	throw InvalidParameterException(EXCEPT_MSG(""));
+      if (pepPots->size()!=
+	  pepPots->numArgumentGroup(EPScalarPotential::atypeUnivariate))
+	throw InvalidParameterException(EXCEPT_MSG("Potentials must be in group 'atypeUnivariate'"));
     }
 
     virtual ~FactorizedEPDriver() {}
@@ -181,6 +187,7 @@
     const int* vjInd;
     const double* bP;
     double* betaP,*piP,*cBetaP,*cPiP,*mBetaP,*mPiP,*mprBetaP,*mprPiP;
+    double inp[2],ret[2];
     char debMsg[200]; // DEBUG!
 
     if (dampFact<0.0 || dampFact>=1.0)
@@ -221,11 +228,13 @@
     //sprintf(debMsg,"Cav. marg.: cH=%f,cRho=%f",cH,cRho); // DEBUG!
     //printMsgStdout(debMsg);
     // Local EP update
-    if (!epPots->getPot(j).compMoments(cH,cRho,alpha,nu)) {
+    inp[0]=cH; inp[1]=cRho;
+    if (!epPots->getPot(j).compMoments(inp,ret)) {
       sprintf(debMsg,"UUPS: j=%d, cH=%f,cRho=%f",j,cH,cRho); // DEBUG
       printMsgStdout(debMsg);
       return updNumericalError; // EP update failed
     }
+    alpha=ret[0]; nu=ret[1];
     // Compute new EP parameters without damping (to 'mprXXP'). If
     // selective damping is active, we also determine the effective damping
     // factor (overwrites 'dampFact')

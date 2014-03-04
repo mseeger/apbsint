@@ -48,6 +48,7 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
   int i,j,totsz;
   double temp;
   Handle<PotentialManager> potMan;
+  double inp[2],ret[2];
 
   try {
     /* Read arguments */
@@ -61,6 +62,8 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
     //cout << "Wrap: Done createPotentialManager" << endl; // DEBUG!
     totsz=ncmu;
     W_CHKSIZE(crho,totsz,"CRHO");
+    if (potMan->numArgumentGroup(EPScalarPotential::atypeUnivariate)!=totsz)
+      W_RETERROR(1,"All potentials must be in group 'atypeUnivariate'");
     if (ain>7) {
       if (updind==0)
 	W_RETERROR(2,"UPDIND missing");
@@ -86,8 +89,9 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
     for (i=0; i<totsz; i++) {
       j=(updind==0)?i:updind[i];
       //cout << "i=" << i << endl;
-      rstat[i] =
-	potMan->getPot(j).compMoments(cmu[i],crho[i],alpha[i],nu[i],&temp);
+      inp[0]=cmu[i]; inp[1]=crho[i];
+      rstat[i] = potMan->getPot(j).compMoments(inp,ret,&temp);
+      alpha[i]=ret[0]; nu[i]=ret[1];
       if (rstat[i] && aout>3)
 	logz[i]=temp;
     }

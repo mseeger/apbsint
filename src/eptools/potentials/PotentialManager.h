@@ -17,8 +17,7 @@
 
 //BEGINNS(eptools)
   /**
-   * Manager for a set of scalar potentials t_j(s_j), of type
-   * 'EPScalarPotential'.
+   * Manager for a set of potentials t_j(.), of type 'EPScalarPotential'.
    * <p>
    * The service 'getPot' returns the potential object for an index j.
    * A typical implementation has to serve 'getPot' being called by
@@ -45,12 +44,20 @@
     virtual int size() const = 0;
 
     /**
+     * Each potential belongs to an argument group (see 'EPScalarPotential').
+     *
+     * @param atype Argument group
+     * @return      Number of potential in argument group 'atype'
+     */
+    virtual int numArgumentGroup(int atype) const = 0;
+
+    /**
      * NOTE: The returned object should be read-accessed only. In particular,
      * 'setPars' must not be used: the object returned is typically a temp.
      * copy anyway.
      *
      * @param j Potential index
-     * @return  Potential object t_j(s_j)
+     * @return  Potential object t_j(.)
      */
     virtual const EPScalarPotential& getPot(int j) const = 0;
   };

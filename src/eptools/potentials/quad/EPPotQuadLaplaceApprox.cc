@@ -11,7 +11,7 @@
 
 //BEGINNS(eptools)
 EPPotQuadLaplaceApprox::EPPotQuadLaplaceApprox(const Handle<QuadPotProximal>& qpot,const Handle<QuadratureServices>& qserv) :
-  EPPotQuadrature(qpot),quadServ(qserv),qpotProx(qpot.p())
+  EPPotQuadrature(qpot),qpotProx(qpot.p()),quadServ(qserv)
   {
     if (!qpot->hasSecondDerivatives())
       throw InvalidParameterException(EXCEPT_MSG("Need 2nd derivatives"));

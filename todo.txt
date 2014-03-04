@@ -512,10 +512,11 @@ IMPLEMENTATION OF EP TOOLBOX
     should allow for potentials of different groups
     - EPScalarPontential subclasses [OK]
     - potentials/ [OK]
-    - quad/ [HIER!]
-    - eptools/
+    - quad/ [OK]
+    - eptools/ [OK]
     - Wrapper functions
-  - New C++/Cython services, parallel the old ones
+    Compile and run test codes! [OK]
+  - New C++/Cython services, parallel the old ones [HIER!]
   - Create simple test example, maybe even something where exact inference
     is tractable, and see what it does (f.ex.: MSR paper on grading tests!)
 

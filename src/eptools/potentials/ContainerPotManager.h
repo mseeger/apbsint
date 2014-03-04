@@ -56,6 +56,15 @@
       return startPos[i]+pmArr[i]->size();
     }
 
+    int numArgumentGroup(int atype) const {
+      int ret=0;
+
+      for (int i=0; i<pmArr.size(); i++)
+	ret+=pmArr[i]->numArgumentGroup(atype);
+
+      return ret;
+    }
+
     const EPScalarPotential& getPot(int j) const {
       int i,ic;
 

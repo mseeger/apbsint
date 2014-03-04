@@ -65,6 +65,8 @@
      * content of 'parVec' can be invalid (except for construction parameters,
      * s.a.).
      * Call 'checkRepres' for a representation before using it with 'create'.
+     * If 'checkPure'==true, all potentials must be in the same argument
+     * group (see 'EPScalarPotential').
      * <p>
      * ATTENTION: Implementation unsafe, does not copy content or handles
      * of 'parVec', 'parShrd', just uses pointers. If content is changed
@@ -77,13 +79,15 @@
      * @param parVec
      * @param parShrd
      * @param annObj
-     * @return           New potential manager
+     * @param checkPure S.a. Def.: false
+     * @return          New potential manager
      */
     static PotentialManager* create(const ArrayHandle<int>& potIDs,
 				    const ArrayHandle<int>& numPot,
 				    const ArrayHandle<double>& parVec,
 				    const ArrayHandle<int>& parShrd,
-				    const ArrayHandle<void*>& annObj);
+				    const ArrayHandle<void*>& annObj,
+				    bool checkPure=false);
 
     /**
      * Check representation (as passed to 'create') for validity. If an

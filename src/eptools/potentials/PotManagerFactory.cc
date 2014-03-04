@@ -16,9 +16,10 @@
 					      const ArrayHandle<int>& numPot,
 					      const ArrayHandle<double>& parVec,
 					      const ArrayHandle<int>& parShrd,
-					      const ArrayHandle<void*>& annObj)
+					      const ArrayHandle<void*>& annObj,
+					      bool checkPure)
   {
-    int i,j,k,numk=potIDs.size();
+    int i,j,k,numk=potIDs.size(),atype;
     ArrayHandle<Handle<PotentialManager> > parr;
     ArrayHandle<double> pvecMsk;
     ArrayHandle<int> shrdMsk;
@@ -65,6 +66,12 @@
       } else {
 	// Potential has no parameters
 	shrdMsk.changeRep(0); pvecMsk.changeRep(0);
+      }
+      if (checkPure) {
+	if (k==0)
+	  atype=epPot->getArgumentGroup();
+	else if (atype!=epPot->getArgumentGroup())
+	  throw InvalidParameterException(EXCEPT_MSG(""));
       }
       // ATTENTION: 'shrdMsk', 'pvecMsk' do not own their buffers, and
       // they do not copy 'parShrd', 'parVec' content!

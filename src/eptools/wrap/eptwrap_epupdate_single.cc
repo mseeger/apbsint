@@ -44,6 +44,9 @@ void eptwrap_epupdate_single1(int ain,int aout,int pid,W_DARRAY(pars),
 			      double* alpha,double* nu,double* logz,
 			      W_ERRORARGS)
 {
+  Handle<EPScalarPotential> epPot;
+  double inp[2],ret[2];
+
   try {
     /* Read arguments */
     if (ain!=5)
@@ -58,13 +61,16 @@ void eptwrap_epupdate_single1(int ain,int aout,int pid,W_DARRAY(pars),
     if (!EPPotentialFactory::isValidID(pid))
       W_RETERROR(1,"PID: Invalid potential ID");
     /* Create potential object, do update */
-    Handle<EPScalarPotential> epPot;
     try {
       epPot.changeRep(EPPotentialFactory::create(pid,pars,annobj));
     } catch (...) {
       W_RETERROR(1,"Cannot create potential object");
     }
-    *rstat = epPot->compMoments(cmu,crho,*alpha,*nu,logz);
+    if (epPot->getArgumentGroup()!=EPScalarPotential::atypeUnivariate)
+      W_RETERROR(1,"Potential must be in group 'atypeUnivariate'");
+    inp[0]=cmu; inp[1]=crho;
+    *rstat = epPot->compMoments(inp,ret,logz);
+    *alpha=ret[0]; *nu=ret[1];
     W_RETOK;
   } catch (StandardException ex) {
     W_RETERROR_ARGS(1,"Caught LHOTSE exception: %s",ex.msg());
@@ -90,6 +96,7 @@ void eptwrap_epupdate_single3(int ain,int aout,W_IARRAY(potids),
 			      double* nu,double* logz,W_ERRORARGS)
 {
   Handle<PotentialManager> potMan;
+  double inp[2],ret[2];
 
   try {
     /* Read arguments */
@@ -106,9 +113,14 @@ void eptwrap_epupdate_single3(int ain,int aout,W_IARRAY(potids),
 			   W_ARR(parshrd),W_ARR(annobj),potMan,W_ERRARGS);
     if (pind<0 || pind>=potMan->size())
       W_RETERROR(1,"PIND out of range");
+    if (potMan->getPot(pind).getArgumentGroup()!=
+	EPScalarPotential::atypeUnivariate)
+      W_RETERROR(1,"Potential must be in group 'atypeUnivariate'");
     /* Do update */
-    *rstat = potMan->getPot(pind).compMoments(cmu,crho,*alpha,*nu,logz);
-    W_RETOK;
+    inp[0]=cmu; inp[1]=crho;
+    *rstat = potMan->getPot(pind).compMoments(inp,ret,logz);
+    *alpha=ret[0]; *nu=ret[1];
+     W_RETOK;
   } catch (StandardException ex) {
     W_RETERROR_ARGS(1,"Caught LHOTSE exception: %s",ex.msg());
   } catch (...) {

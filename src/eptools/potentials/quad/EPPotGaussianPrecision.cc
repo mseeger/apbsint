@@ -14,7 +14,7 @@
   {
     int verbose=quadServ->getVerbose();
     double temp,vstar,sigma;
-    double cmu=inp[0],crho=inp[1],ca=inp[2],cc=inp[3],alpha,nu,hata,hatc;
+    double cmu=inp[0],crho=inp[1],ca=inp[2],cc=inp[3];
 
     if (eta!=1.0)
       throw NotImplemException(EXCEPT_MSG(""));
@@ -89,7 +89,7 @@
     }
     if (lztil<(1e-12)) {
       if (verbose>0)
-	cout << "  Z_til too small (" << ztil << ")" << endl;
+	cout << "  Z_til too small (" << lztil << ")" << endl;
       return false; // Z_til too small (failure of mode normalization?)
     }
     lztil=log(lztil)-hvstar; // log Z_til
@@ -108,8 +108,8 @@
 	cout << "  Quad(ex2, l=2) fails" << endl;
       return false; // Quadrature failure
     }
-    ret[0]=alpha=ex1*(yscal-cmu)/crho;
-    ret[1]=nu=(ex1-xi*(ex2-ex1*ex1))/crho;
+    ret[0]=ex1*(yscal-cmu)/crho; // alpha
+    ret[1]=(ex1-intFuncPars.xi*(ex2-ex1*ex1))/crho; // nu
     // tau moments -> a_hat, c_hat
     intFuncPars.l=0; // Reset
     intFuncPars.off=-lztil;
@@ -137,11 +137,11 @@
     ex2*=((ca+1.0)/cc);
     if (ex2-ex1<(1e-12)) {
       if (verbose>0)
-	cout << "  x2-x1 too small (" << x2-x1 << ")" << endl;
+	cout << "  x2-x1 too small (" << ex2-ex1 << ")" << endl;
       return false;
     }
-    ret[3]=hatc=1.0/(ex2-ex1);
-    ret[2]=hata=x1*hatc;
+    ret[3]=1.0/(ex2-ex1); // hat_c
+    ret[2]=ex1*ret[3]; // hat_a
 
     return true;
   }
