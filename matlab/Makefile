@@ -190,7 +190,6 @@ _EPTOOLSOBJS=	potentials/EPScalarPotential \
 		potentials/quad/QuadPotProximalNewton \
 		potentials/quad/EPPotQuadLaplaceApprox \
 		potentials/quad/EPPotPoissonExpRate \
-		FactorizedEPRepresentation \
 		FactorizedEPDriver
 EPTOOLSOBJS=	$(_EPTOOLSOBJS:%=$(EPTOOLSDIR)/%.o)
 

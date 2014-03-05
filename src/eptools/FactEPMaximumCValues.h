@@ -3,34 +3,34 @@
  * -------------------------------------------------------------------
  * Project source file
  * Module: eptools
- * Desc.:  Header class FactEPMaximumPiValues
+ * Desc.:  Header class FactEPMaximumCValues
  * ------------------------------------------------------------------- */
 
-#ifndef EPTOOLS_FACTEPMAXIMUMPIVALUES_H
-#define EPTOOLS_FACTEPMAXIMUMPIVALUES_H
+#ifndef EPTOOLS_FACTEPMAXIMUMCVALUES_H
+#define EPTOOLS_FACTEPMAXIMUMCVALUES_H
 
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
 #include "src/eptools/MaximumValuesService.h"
-#include "src/eptools/FactorizedEPRepresentation.h"
+#include "src/eptools/FactEPRepresBivarPrec.h"
 
 //BEGINNS(eptools)
   /**
-   * Specialization of 'MaximumValuesService' to max_k pi_ki, where the
-   * factor group (coupling factor B) and the pi values are maintained
-   * by a 'FactorizedEPRepresentation' object.
+   * Specialization of 'MaximumValuesService' to max_j c_jk, where the
+   * structure j -> k and the c values (Gamma parameters) are maintained
+   * by a 'FactEPRepresBivarPrec' object.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
    */
-  class FactEPMaximumPiValues : public MaximumValuesService
+  class FactEPMaximumCValues : public MaximumValuesService
   {
   protected:
     // Additional members
 
-    Handle<FactorizedEPRepresentation> epRepr;
+    Handle<FactEPRepresBivarPrec> epRepr;
 
   public:
     // Public methods
@@ -38,7 +38,7 @@
     /**
      * Constructor. Consistency of 'ptopVal' with 'pepRepr' is not checked.
      *
-     * @param pepRepr   EP representation
+     * @param pepRepr   EP representation (bivariate precision potentials)
      * @param pmaxSize  K
      * @param pnumValid Entries must be in 1:pmaxSize
      * @param ptopInd
@@ -46,18 +46,18 @@
      * @param psubInd   Optional
      * @param psubExcl  Def.: false
      */
-    FactEPMaximumPiValues(const Handle<FactorizedEPRepresentation>& pepRepr,
-			  int pmaxSize,const ArrayHandle<int>& pnumValid,
-			  const ArrayHandle<int>& ptopInd,
-			  const ArrayHandle<double>& ptopVal,
-			  const ArrayHandle<int>& psubInd=
-			  ArrayHandleZero<int>::get(),bool psubExcl=false) :
-      MaximumValuesService(pepRepr->numVariables(),pepRepr->numPotentials(),
+    FactEPMaximumCValues(const Handle<FactEPRepresBivarPrec>& pepRepr,
+			 int pmaxSize,const ArrayHandle<int>& pnumValid,
+			 const ArrayHandle<int>& ptopInd,
+			 const ArrayHandle<double>& ptopVal,
+			 const ArrayHandle<int>& psubInd=
+			 ArrayHandleZero<int>::get(),bool psubExcl=false) :
+      MaximumValuesService(pepRepr->numPrecVars(),pepRepr->numPotentials(),
 			   pmaxSize,pnumValid,ptopInd,ptopVal,psubInd,psubExcl),
       epRepr(pepRepr) {}
 
     int numVariables() const {
-      return epRepr->numVariables();
+      return epRepr->numPrecVars();
     }
 
     int numFactors() const {
@@ -66,10 +66,12 @@
 
     int getFactorValues(int i,const int*& vind,const int*& jind,
 			const double*& xarr) const {
-      // Maps directly to 'FactorizedEPRepresentation::accessCol'
-      const double* bP,*betaP;
+      // Maps directly to 'FactEPRepresBivarPrec::accessTauCol'
+      const double* aP;
+      int sz=epRepr->accessTauCol(i,vind,aP,xarr);
+      jind=vind;
 
-      return epRepr->accessCol(i,vind,jind,bP,betaP,xarr);
+      return sz;
     }
   };
 //ENDNS

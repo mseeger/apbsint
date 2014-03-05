@@ -67,7 +67,6 @@ eptools_ext_sources = [
     'base/src/eptools/potentials/quad/EPPotQuadLaplaceApprox.cc',
     'base/src/eptools/potentials/quad/EPPotPoissonExpRate.cc',
     'base/src/eptools/potentials/quad/EPPotGaussianPrecision.cc',
-    'base/src/eptools/FactorizedEPRepresentation.cc',
     'base/src/eptools/FactorizedEPDriver.cc',
     'base/src/eptools/wrap/eptools_helper_basic.cc',
     'base/src/eptools/wrap/eptools_helper.cc',

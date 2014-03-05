@@ -88,7 +88,7 @@
      * @param psubInd   Optional
      * @param psubExcl  Def.: false
      */
-    MaximumValuesService(int pm,int pn,int pmaxSize,
+    MaximumValuesService(int pn,int pm,int pmaxSize,
 			 const ArrayHandle<int>& pnumValid,
 			 const ArrayHandle<int>& ptopInd,
 			 const ArrayHandle<double>& ptopVal,
