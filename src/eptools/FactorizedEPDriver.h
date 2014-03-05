@@ -275,7 +275,7 @@
       if (!(epMaxPi==0) && prPi<piP[ii]) {
 	//printMsgStdout("sequentialUpdate: HAEH???"); // DEBUG!
 	// Selective damping to ensure that pi_{-ki} >= eps for all k,i
-	temp2=epMaxPi->getMaxBeta(i); // kappa_i
+	temp2=epMaxPi->getMaxValue(i); // kappa_i
 	temp=std::min((mPiP[i]-std::max(temp2,0.0)-piMinThres)/(piP[ii]-prPi),
 		      1.0);
 	if (temp<=0.02) {

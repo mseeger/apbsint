@@ -516,7 +516,12 @@ IMPLEMENTATION OF EP TOOLBOX
     - eptools/ [OK]
     - Wrapper functions
     Compile and run test codes! [OK]
-  - New C++/Cython services, parallel the old ones [HIER!]
+  - New C++/Cython services, parallel the old ones [OK]
+  - New C++ code for factorized case: Include selective damping mechanism, by
+    using code for pi
+    - Generalize FactEPMaximumPiValues [OK]
+    - Extension of FactorizedEPRepresentation [HIER!]
+  - New Python code for inference in the presence of bivariate potentials
   - Create simple test example, maybe even something where exact inference
     is tractable, and see what it does (f.ex.: MSR paper on grading tests!)
 
