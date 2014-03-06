@@ -256,7 +256,7 @@
 
   // Inline methods
 
-  /* HIER!!!
+  /*
    * Arrays: XX is 'beta', 'pi'
    * - vjInd:  V_j
    * - bP:     b_ji
@@ -270,21 +270,28 @@
   inline int FactorizedEPDriver::sequentialUpdate(int j,double dampFact,
 						  double* delta,double* effDamp)
   {
-    int i,ii,vjSz;
-    double temp,temp2,cPi,cBeta,cH,cRho,bval,nu,alpha,prBeta,prPi,
-      thres2=0.5*piMinThres,mH,mRho;
+    int i,ii,vjSz,k;
+    double temp,temp2,cPi,cBeta,cH,cRho,bval,nu,alpha,prBeta,prPi,kappa,
+      thres2=0.5*piMinThres,mH,mRho,cA,cC,hatA,hatC,prA,prC;
     const int* vjInd;
     const double* bP;
-    double* betaP,*piP,*cBetaP,*cPiP,*mBetaP,*mPiP,*mprBetaP,*mprPiP;
-    double inp[2],ret[2];
+    double* betaP,*piP,*cBetaP,*cPiP,*mBetaP,*mPiP,*mprBetaP,*mprPiP,*aP,*cP;
+    double inp[4],ret[4];
+    bool hasBVPrec=(epReprPrec!=0);
     char debMsg[200]; // DEBUG!
 
+    MYASS((!hasBVPrec && epPots->getPot(j).getArgumentGroup()==
+	   EPScalarPotential::atypeUnivariate) ||
+	  (hasBVPrec && epPots->getPot(j).getArgumentGroup()==
+	   EPScalarPotential::atypeBivarPrec));
     if (dampFact<0.0 || dampFact>=1.0)
       throw InvalidParameterException(EXCEPT_MSG(""));
     // Access to data for j. Temporary arrays
     //printMsgStdout("epRepr->accessRow");
     epRepr->accessRow(j,vjSz,vjInd,bP,betaP,piP);
     //printMsgStdout("OK");
+    if (hasBVPrec)
+      k=epReprPrec->accessTauRow(j,aP,cP); // k=k(j)
     mBetaP=margBeta.p(); mPiP=margPi.p();
     if (buffVec.size()<4*vjSz) {
       //sprintf(debMsg,"buffVec.changeRep: %d",4*vjSz);
@@ -314,16 +321,34 @@
       mRho+=bval*temp;
       mH+=temp*mBetaP[i];
     }
+    if (hasBVPrec) {
+      if ((cA=margA[k]-(*aP))<0.5*aMinThres)
+	return updCavityInvalid; // EP update failed
+      if ((cC=margC[k]-(*cP))<0.5*cMinThres)
+	return updCavityInvalid; // EP update failed
+    }
     //sprintf(debMsg,"Cav. marg.: cH=%f,cRho=%f",cH,cRho); // DEBUG!
     //printMsgStdout(debMsg);
     // Local EP update
     inp[0]=cH; inp[1]=cRho;
+    if (hasBVPrec) {
+      inp[2]=cA; inp[3]=cC;
+    }
     if (!epPots->getPot(j).compMoments(inp,ret)) {
-      sprintf(debMsg,"UUPS: j=%d, cH=%f,cRho=%f",j,cH,cRho); // DEBUG
+      // DEBUG:
+      if (!hasBVPrec)
+	sprintf(debMsg,"UUPS: j=%d, cH=%f,cRho=%f",j,cH,cRho);
+      else
+	sprintf(debMsg,"UUPS: j=%d, cH=%f,cRho=%f,cA=%f,cC=%f",j,cH,cRho,cA,
+		cC);
       printMsgStdout(debMsg);
       return updNumericalError; // EP update failed
     }
     alpha=ret[0]; nu=ret[1];
+    if (hasBVPrec) {
+      // New marginal a, c parameters (without damping)
+      hatA=ret[2]; hatC=ret[3];
+    }
     // Compute new EP parameters without damping (to 'mprXXP'). If
     // selective damping is active, we also determine the effective damping
     // factor (overwrites 'dampFact')
@@ -351,7 +376,7 @@
 	temp=1.0/temp; // e_ji
 	prPi=temp*cPi*nu;
 	prBeta=temp*(cBeta*nu+temp2*alpha);
-     } else {
+      } else {
 	// Very small but non-zero |b_ji| (will probably never happen)
 	// 'temp' is b_ji / (pi_{-ji} - b_ji^2 nu_j)
 	if ((temp=cPi-nu*bval*bval)<1e-10)
@@ -361,10 +386,44 @@
 	prBeta=temp*(cBeta*bval*nu+cPi*alpha);
       }
       mprPiP[ii]=prPi; mprBetaP[ii]=prBeta; // Intermed. storage
+      // 'prPi' is tilde{pi}_{ji}, 'piP[ii]' is pi_{ji}
       if (!(epMaxPi==0) && prPi<piP[ii]) {
 	//printMsgStdout("sequentialUpdate: HAEH???"); // DEBUG!
 	// Selective damping to ensure that pi_{-ki} >= eps for all k,i
-	temp2=epMaxPi->getMaxValue(i); // kappa_i
+	kappa=epMaxPi->getMaxValue(i); // kappa_i
+	if (kappa<=0.0) {
+	  sprintf(debMsg,"ERROR(j=%d, i=%d): kappa_i=%f (negative)",j,i,kappa);
+	  printMsgStdout(debMsg);
+	  return updNumericalError;
+	}
+	// Value for 1-eta:
+	temp=std::min((mPiP[i]-kappa-piMinThres)/(piP[ii]-prPi),1.0);
+	if (temp<=0.02) {
+	  // EP update has to be skipped
+	  if (effDamp!=0) *effDamp=1.0;
+	  return updCavCondSkipped;
+	}
+	if (piP[ii]==kappa) {
+	  // HIER: CLEAN THIS UP, BETTER VARIABLE NAMES!!
+	  // This should not happen often. Have to ensure that new kappa_i is
+	  // positive:
+	  // Compute pi_{ji}' for 'temp', then epMaxPi->update with that. If
+	  // corr. kappa is nonpositive, decrease 'temp'. Subseq. kappa are
+	  // max. of new pi_{ji}' and prev. kappa.
+	  // EASIER: If new kappa is nonpositive, just skip the update!
+	}
+	dampFact=std::max(dampFact,1.0-temp);
+      }
+    }
+    if (hasBVPrec) {
+      // New message parameters without damping
+      // HIER!!
+      prA=hatA-cA; prC=hatC-cC;
+      // Selective damping
+      if (!(epMaxA==0) && prA<*aP) {
+	// Selective damping to ensure that a_{-jk} >= 'aMinThres' for all j,k
+	temp2=epMaxA->getMaxValue(k); // kappa_k
+	// HIER!
 	temp=std::min((mPiP[i]-std::max(temp2,0.0)-piMinThres)/(piP[ii]-prPi),
 		      1.0);
 	if (temp<=0.02) {
