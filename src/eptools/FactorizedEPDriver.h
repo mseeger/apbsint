@@ -271,8 +271,8 @@
 						  double* delta,double* effDamp)
   {
     int i,ii,vjSz,k;
-    double temp,temp2,cPi,cBeta,cH,cRho,bval,nu,alpha,prBeta,prPi,kappa,
-      thres2=0.5*piMinThres,mH,mRho,cA,cC,hatA,hatC,prA,prC;
+    double temp,temp2,cH,cRho,bval,nu,alpha,cPi,cBeta,pi,beta,tilPi,tilBeta,
+      prPi,prBeta,kappa,thres2=0.5*piMinThres,mH,mRho,cA,cC,hatA,hatC,prA,prC;
     const int* vjInd;
     const double* bP;
     double* betaP,*piP,*cBetaP,*cPiP,*mBetaP,*mPiP,*mprBetaP,*mprPiP,*aP,*cP;
@@ -356,11 +356,14 @@
     for (ii=0; ii<vjSz; ii++) {
       // Undamped EP update
       i=vjInd[ii];
-      bval=bP[ii];
-      cPi=cPiP[ii]; cBeta=cBetaP[ii];
+      bval=bP[ii]; // b_{ji}
+      pi=piP[ii]; beta=betaP[ii]; // pi_{ji}, beta_{ji}
+      cPi=cPiP[ii]; cBeta=cBetaP[ii]; // pi_{-ji}, beta_{-ji}
       //sprintf(debMsg,"ii=%d,i=%d,bval=%f,cPi=%f,cBeta=%f",ii,i,bval,cPi,
       //      cBeta); // DEBUG!
       //printMsgStdout(debMsg);
+      // 'tilPi', 'tilBeta': tilde{pi}_{ji}, tilde{beta}_{ji}, EP updates
+      // without damping
       if (fabs(bval)>1e-6) {
 	// |b_ji| large enough: Simpler equations
 	// 'temp2' is pi_{-ji}/b_ji. 'temp' is (pi_ji)'/(pi_{-ji} nu_j)
@@ -374,64 +377,123 @@
 	  return updNumericalError; // EP update failed
 	}
 	temp=1.0/temp; // e_ji
-	prPi=temp*cPi*nu;
-	prBeta=temp*(cBeta*nu+temp2*alpha);
+	tilPi=temp*cPi*nu;
+	tilBeta=temp*(cBeta*nu+temp2*alpha);
       } else {
 	// Very small but non-zero |b_ji| (will probably never happen)
 	// 'temp' is b_ji / (pi_{-ji} - b_ji^2 nu_j)
 	if ((temp=cPi-nu*bval*bval)<1e-10)
 	  return updNumericalError; // EP update failed
 	temp=bval/temp;
-	prPi=temp*bval*nu*cPi;
-	prBeta=temp*(cBeta*bval*nu+cPi*alpha);
+	tilPi=temp*bval*nu*cPi;
+	tilBeta=temp*(cBeta*bval*nu+cPi*alpha);
       }
-      mprPiP[ii]=prPi; mprBetaP[ii]=prBeta; // Intermed. storage
-      // 'prPi' is tilde{pi}_{ji}, 'piP[ii]' is pi_{ji}
-      if (!(epMaxPi==0) && prPi<piP[ii]) {
-	//printMsgStdout("sequentialUpdate: HAEH???"); // DEBUG!
+      mprPiP[ii]=tilPi; mprBetaP[ii]=tilBeta; // Intermed. storage
+      if (!(epMaxPi==0) && tilPi<pi) {
 	// Selective damping to ensure that pi_{-ki} >= eps for all k,i
 	kappa=epMaxPi->getMaxValue(i); // kappa_i
 	if (kappa<=0.0) {
-	  sprintf(debMsg,"ERROR(j=%d, i=%d): kappa_i=%f (negative)",j,i,kappa);
+	  sprintf(debMsg,"ERROR(maxPi,j=%d,i=%d): kappa_i=%f (negative)",j,i,
+		  kappa);
 	  printMsgStdout(debMsg);
 	  return updNumericalError;
 	}
-	// Value for 1-eta:
-	temp=std::min((mPiP[i]-kappa-piMinThres)/(piP[ii]-prPi),1.0);
-	if (temp<=0.02) {
+	// Value for eta:
+	eta=1.0-std::min((mPiP[i]-kappa-piMinThres)/(pi-tilPi),1.0);
+	if (eta>=0.98) {
 	  // EP update has to be skipped
 	  if (effDamp!=0) *effDamp=1.0;
 	  return updCavCondSkipped;
 	}
-	if (piP[ii]==kappa) {
-	  // HIER: CLEAN THIS UP, BETTER VARIABLE NAMES!!
+	if (kappa==pi) {
 	  // This should not happen often. Have to ensure that new kappa_i is
-	  // positive:
-	  // Compute pi_{ji}' for 'temp', then epMaxPi->update with that. If
-	  // corr. kappa is nonpositive, decrease 'temp'. Subseq. kappa are
-	  // max. of new pi_{ji}' and prev. kappa.
-	  // EASIER: If new kappa is nonpositive, just skip the update!
+	  // positive. If this is not the case, the update is skipped.
+	  // ATTENTION: If this case happens frequently, have to choose better
+	  // response, f.ex. increasing 'eta' in small steps.
+	  prPi=eta*pi+(1.0-eta)*tilPi; // pi_{ji}' for current 'eta'
+	  piP[ii]=prPi;
+	  epMaxPi->update(i,j,prPi);
+	  kappa=epMaxPi->getMaxValue(i); // kappa_i'
+	  piP[ii]=pi; // Back to old state
+	  epMaxPi->update(i,j,pi);
+	  if (kappa<=0.0) {
+	    // Assuming this case almost never happens, we just skip the update
+	    printMsgStdout("UUPS(pi selective damping; skipping update due to negative kappa)");
+	    if (effDamp!=0) *effDamp=1.0;
+	    return updCavCondSkipped;
+	  }
 	}
-	dampFact=std::max(dampFact,1.0-temp);
+	dampFact=std::max(dampFact,eta);
       }
     }
     if (hasBVPrec) {
-      // New message parameters without damping
-      // HIER!!
-      prA=hatA-cA; prC=hatC-cC;
       // Selective damping
+      prA=hatA-cA; prC=hatC-cC;
       if (!(epMaxA==0) && prA<*aP) {
 	// Selective damping to ensure that a_{-jk} >= 'aMinThres' for all j,k
-	temp2=epMaxA->getMaxValue(k); // kappa_k
-	// HIER!
-	temp=std::min((mPiP[i]-std::max(temp2,0.0)-piMinThres)/(piP[ii]-prPi),
-		      1.0);
-	if (temp<=0.02) {
+	kappa=epMaxA->getMaxValue(k); // kappa_k
+	if (kappa<=0.0) {
+	  sprintf(debMsg,"ERROR(maxA,j=%d,k=%d): kappa_k=%f (negative)",j,k,
+		  kappa);
+	  printMsgStdout(debMsg);
+	  return updNumericalError;
+	}
+	// Value for eta:
+	eta=1.0-std::min((margA[k]-kappa-aMinThres)/(*aP-prA),1.0);
+	if (eta>=0.98) {
 	  // EP update has to be skipped
 	  if (effDamp!=0) *effDamp=1.0;
 	  return updCavCondSkipped;
 	}
-	dampFact=std::max(dampFact,1.0-temp);
+	if (kappa==*aP) {
+	  // Ensure that new kappa_k is positive
+	  prA+=eta*(*aP-prA); // a_{jk}' for current 'eta'
+	  temp=*aP; *aP=prA;
+	  epMaxA->update(k,j,prA);
+	  kappa=epMaxA->getMaxValue(k); // kappa_k'
+	  *aP=temp; // Back to old state
+	  epMaxA->update(k,j,temp);
+	  if (kappa<=0.0) {
+	    // Assuming this case almost never happens, we just skip the update
+	    printMsgStdout("UUPS(a selective damping; skipping update due to negative kappa)");
+	    if (effDamp!=0) *effDamp=1.0;
+	    return updCavCondSkipped;
+	  }
+	}
+	dampFact=std::max(dampFact,eta);
+      }
+      if (!(epMaxC==0) && prC<*cP) {
+	// Selective damping to ensure that c_{-jk} >= 'cMinThres' for all j,k
+	kappa=epMaxC->getMaxValue(k); // kappa_k
+	if (kappa<=0.0) {
+	  sprintf(debMsg,"ERROR(maxC,j=%d,k=%d): kappa_k=%f (negative)",j,k,
+		  kappa);
+	  printMsgStdout(debMsg);
+	  return updNumericalError;
+	}
+	// Value for eta:
+	eta=1.0-std::min((margC[k]-kappa-cMinThres)/(*cP-prC),1.0);
+	if (eta>=0.98) {
+	  // EP update has to be skipped
+	  if (effDamp!=0) *effDamp=1.0;
+	  return updCavCondSkipped;
+	}
+	if (kappa==*cP) {
+	  // Ensure that new kappa_k is positive
+	  prC+=eta*(*cP-prC); // c_{jk}' for current 'eta'
+	  temp=*cP; *cP=prC;
+	  epMaxC->update(k,j,prC);
+	  kappa=epMaxC->getMaxValue(k); // kappa_k'
+	  *cP=temp; // Back to old state
+	  epMaxC->update(k,j,temp);
+	  if (kappa<=0.0) {
+	    // Assuming this case almost never happens, we just skip the update
+	    printMsgStdout("UUPS(c selective damping; skipping update due to negative kappa)");
+	    if (effDamp!=0) *effDamp=1.0;
+	    return updCavCondSkipped;
+	  }
+	}
+	dampFact=std::max(dampFact,eta);
       }
     }
     if (effDamp!=0) *effDamp=dampFact;
@@ -439,15 +501,15 @@
     // new marginals (to 'mprXXP'). This is done because the update can
     // still fail ('updMarginalsInvalid')
     for (ii=0; ii<vjSz; ii++) {
+      pi=piP[ii]; beta=betaP[ii]; // Current parameters
       cPi=cPiP[ii]; cBeta=cBetaP[ii]; // Cavity
       prPi=mprPiP[ii]; prBeta=mprBetaP[ii]; // Undamped update
       //sprintf(debMsg,"ii=%d,prPi=%f,prBeta=%f",ii,prPi,prBeta); // DEBUG!
       //printMsgStdout(debMsg);
       // Damping
       if (dampFact>0.0) {
-	//printMsgStdout("sequentialUpdate: HAEH2???"); // DEBUG!
-	prPi+=dampFact*(piP[ii]-prPi);
-	prBeta+=dampFact*(betaP[ii]-prBeta);
+	prPi+=dampFact*(pi-prPi);
+	prBeta+=dampFact*(beta-prBeta);
       }
       // New marginals (overwrite 'mprXXP') and EP parameters (overwrite
       // 'cXXP')
@@ -456,6 +518,7 @@
       mprBetaP[ii]=cBeta+prBeta;
       cPiP[ii]=prPi; cBetaP[ii]=prBeta; // New EP parameters
     }
+    // HIER: New EP parameters and marginals for a, c (can still fail!)
     // Update succeeded: Write back new EP parameters and marginals
     double mprH=0.0,mprRho=0.0; // For '*delta'
     for (ii=0; ii<vjSz; ii++) {
