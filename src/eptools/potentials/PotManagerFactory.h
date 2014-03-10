@@ -104,14 +104,7 @@
      * <p>
      * The flat index 'tauInd' must be given iff the PM contains potentials
      * in group 'atypeBivarPrec'. It contains the assignment j -> k and its
-     * inverse, where both j and k are 0-based. j is mapped to potential
-     * position by adding the start offset (position of first 'atypeBivarPrec'
-     * potential), see 'PotentialManager'. 'tauInd':
-     * - Index k(j) [m]
-     * - Number K of tau_k entries [1]
-     * - For each k=0:(K-1): Start offset of J_k = {j | k(j)==k} [K]
-     * - Dummy entry (start offset of J_K if it existed) [1]
-     * - J_k, k=0:(K-1), each ascending order [m]
+     * inverse, see 'FactorizedEPRepresentation'.
      *
      * @param potIDs
      * @param numPot

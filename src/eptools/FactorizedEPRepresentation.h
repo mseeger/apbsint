@@ -59,6 +59,21 @@
    * column i contains V_i (ascending), followed by J_i (index into
    * 'bmatVals'). Both have size sz_i, and 2*sz_i is given by
    * 'colInd[i+1]-colInd[i]'.
+   * <p>
+   * Bivariate precision potentials:
+   * If the model contains bivariate precision potentials (see
+   * 'EPScalarPotential', group 'atypeBivarPrec'), the representation is
+   * extended. The representation here is independent of the potential
+   * manager (see 'PotManagerFactory'). The message parameters are 'aVals',
+   * 'cVals' (Gamma parameters, see 'EPScalarPotential'). Each such potential
+   * j is associated with one precision parameter k=k(j). The flat index
+   * 'tauInd' contains the assignment j -> k and its inverse, where both j
+   * and k are 0-based. 'tauInd':
+   * - Index k(j) [m_prec]
+   * - Number K of tau_k entries [1]
+   * - For each k=0:(K-1): Start offset of J_k = {j | k(j)==k} [K]
+   * - Dummy entry (start offset of J_K if it existed) [1]
+   * - J_k, k=0:(K-1), each ascending order [m_prec]
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -73,16 +88,18 @@
     ArrayHandle<int> colInd;              // "
     ArrayHandle<double> bmatVals;
     ArrayHandle<double> betaVals,piVals;
+    ArrayHandle<double> aVals,cVals;      // Only if precision potentials
+    ArrayHandle<int> tauInd;              // "
 
   public:
     // Public methods
 
-    /**
-     * Constructor. Some simple checks are performed on the data structures,
-     * but in particular the consistency between 'rowInd' and 'colInd' is not
-     * checked here.
-     * NOTE: Arrays are not copied, but referred to. The content of EP parameter
-     * vectors is overwritten.
+    /** HIER: 2nd constructor! Common code in private method!
+     * Constructor (default: no bivariate precision potentials). Some simple
+     * checks are performed on the data structures, but in particular the
+     * consistency between 'rowInd' and 'colInd' is not checked here.
+     * NOTE: Arrays are not copied, but referred to. The content of EP
+     * parameter vectors is overwritten.
      *
      * @param pnumN     Number variables n
      * @param pnumM     Number potentials m
