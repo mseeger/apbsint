@@ -531,8 +531,8 @@ IMPLEMENTATION OF EP TOOLBOX
     - Modify C++ code:
       - eptools/potentials: [OK]
       - eptools: [HIER!]
-        Where to maintain Gamma msg parameters? FactorizedEPRepresentation:
-        could also maintain 'tauInd' in this case
+        - FactorizedEPRepresentation (tauInd and Gamma pars) [OK]
+        - FactorizedEPDriver
       - eptools/wrap
       - Cython code
     - Method to return argument group

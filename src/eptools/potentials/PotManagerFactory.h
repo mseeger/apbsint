@@ -121,6 +121,15 @@
 			    const ArrayHandle<void*>& annObj,int posoff=0,
 			    const ArrayHandle<int>& tauInd=
 			    ArrayHandleZero<int>::get());
+
+    /**
+     * Performs some checks on 'tauInd' (see 'checkRepres'), throws
+     * 'InvalidParameterException' with error message if something is wrong.
+     *
+     * @param tauInd See 'checkRepres'
+     * @param numBVPrec Number of bivar. precision potentials
+     */
+    static void checkBVPrecTauInd(const ArrayHandle<int>& tauInd,int numBVPrec);
   };
 //ENDNS
 
