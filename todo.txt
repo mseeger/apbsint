@@ -533,9 +533,16 @@ IMPLEMENTATION OF EP TOOLBOX
       - eptools:
         - FactorizedEPRepresentation (tauInd and Gamma pars) [OK]
         - FactorizedEPDriver [OK]
-      - eptools/wrap [HIER!]
+      - eptools/wrap
+        - epupdate_parallel_bvprec [OK]
+        - epupdate_single_bvprec [HIER!]
+        - potmanager_isvalid
+        - fact_sequpdates
+        New ones:
+        - fact_compmax_bvprec
+        - fact_compmarginals_bvprec (or generalize fact_compmarginals?)
+        - getpotagroup
       - Cython code
-    - Method to return argument group
   - New Python code for inference in the presence of bivariate potentials [HIER!]
   - Create simple test example, maybe even something where exact inference
     is tractable, and see what it does (f.ex.: MSR paper on grading tests!)

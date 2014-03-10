@@ -1,14 +1,25 @@
 /* -------------------------------------------------------------------
  * EPTWRAP_EPUPDATE_PARALLEL_BVPREC
  *
- * Local EP updates (in parallel) for all potentials
- * t_j(s_j,tau_{k(j)}) of potential manager.
+ * Generalization of EPTWRAP_EPUPDATE_PARALLEL to potential managers
+ * which include bivariate potentials t_j(s_j,tau_k(j)), where tau_k
+ * are precision parameters (argument group 'atypeBivarPrec').
  *
- * Same as EPTWRAP_EPUPDATE_PARALLEL, but for bivariate potentials
- * with precision parameter. Additional inputs are CA, CC (Gamma
- * parameters of cavity marginals over tau variables), additional
- * returns are HATA, HATC (Gamma parameters of updated marginals).
- * All potentials must be in the argument group 'atypeBivarPrec'.
+ * The PM may contain standard potentials t_j(s_j) as well (group
+ * 'atypeUnivariate'). The precision potentials must come last.
+ * Additional inputs are CA, CC (Gamma parameters of cavity marginals
+ * over tau variables), additional returns are HATA, HATC (Gamma
+ * parameters of updated marginals). These are flat vectors (size:
+ * number of precision potentials).
+ *
+ * ATTENTION: If UPDIND is used, it must contain all indices of
+ * precision potentials (this is not checked). Otherwise, HATA,
+ * HATC will not be correct.
+ * CMU, CRHO, RSTAT, ALPHA, NU, LOGZ follow ordering of UPDIND,
+ * but not CA, CC, HATA, HATC:
+ * if j==UPDIND(l), then alpha_j == ALPHA(l), but hat{a}_j ==
+ * HATA(j-offBV), where offBV is the position of the first precision
+ * potential.
  *
  * Input:
  * - POTIDS:  Potential manager representation [int32 array]
@@ -31,7 +42,6 @@
  * - HATC:    Vector of c_hat values
  * - LOGZ:    Vector of log Z values (optional)
  * -------------------------------------------------------------------
- * Matlab MEX Function
  * Author: Matthias Seeger
  * ------------------------------------------------------------------- */
 
@@ -50,7 +60,7 @@ void eptwrap_epupdate_parallel_bvprec(int ain,int aout,W_IARRAY(potids),
 				      W_DARRAY(hata),W_DARRAY(hatc),
 				      W_DARRAY(logz),W_ERRORARGS)
 {
-  int i,j,totsz;
+  int i,j,totsz,numBVPrec,offBV;
   double temp;
   Handle<PotentialManager> potMan;
   double inp[4],ret[4];
@@ -66,11 +76,14 @@ void eptwrap_epupdate_parallel_bvprec(int ain,int aout,W_IARRAY(potids),
 			   W_ARR(parshrd),W_ARR(annobj),potMan,W_ERRARGS);
     //cout << "Wrap: Done createPotentialManager" << endl; // DEBUG!
     totsz=ncmu;
+    if (ain<=9 && totsz!=potMan->size())
+      W_RETERROR(1,"CMU: Wrong size");
+    numBVPrec=potMan->numArgumentGroup(EPScalarPotential::atypeBivarPrec);
+    if (numBVPrec==0)
+      W_RETERROR(1,"Potential manager must contain precision parameter potentials");
     W_CHKSIZE(crho,totsz,"CRHO");
-    W_CHKSIZE(ca,totsz,"CA");
-    W_CHKSIZE(cc,totsz,"CC");
-    if (potMan->numArgumentGroup(EPScalarPotential::atypeBivarPrec)!=totsz)
-      W_RETERROR(1,"All potentials must be in group 'atypeBivarPrec'");
+    W_CHKSIZE(ca,numBVPrec,"CA");
+    W_CHKSIZE(cc,numBVPrec,"CC");
     if (ain>9) {
       if (updind==0)
 	W_RETERROR(2,"UPDIND missing");
@@ -87,20 +100,27 @@ void eptwrap_epupdate_parallel_bvprec(int ain,int aout,W_IARRAY(potids),
     W_CHKSIZE(rstat,totsz,"RSTAT");
     W_CHKSIZE(alpha,totsz,"ALPHA");
     W_CHKSIZE(nu,totsz,"NU");
-    W_CHKSIZE(hata,totsz,"HATA");
-    W_CHKSIZE(hatc,totsz,"HATC");
+    W_CHKSIZE(hata,numBVPrec,"HATA");
+    W_CHKSIZE(hatc,numBVPrec,"HATC");
     if (aout>5)
       W_CHKSIZE(logz,totsz,"LOGZ");
     else
       logz=0;
 
     /* Main loop over all potentials */
+    offBV=potMan->size()-numBVPrec;
     for (i=0; i<totsz; i++) {
       j=(updind==0)?i:updind[i];
       //cout << "i=" << i << endl;
-      inp[0]=cmu[i]; inp[1]=crho[i]; inp[2]=ca[i]; inp[3]=cc[i];
+      inp[0]=cmu[i]; inp[1]=crho[i];
+      if (j>=offBV) {
+	inp[2]=ca[j-offBV]; inp[3]=cc[j-offBV];
+      }
       rstat[i] = potMan->getPot(j).compMoments(inp,ret,&temp);
-      alpha[i]=ret[0]; nu[i]=ret[1]; hata[i]=ret[2]; hatc[i]=ret[3];
+      alpha[i]=ret[0]; nu[i]=ret[1];
+      if (j>=offBV) {
+	hata[j-offBV]=ret[2]; hatc[j-offBV]=ret[3];
+      }
       if (rstat[i] && aout>5)
 	logz[i]=temp;
     }
