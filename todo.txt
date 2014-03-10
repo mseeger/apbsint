@@ -530,10 +530,10 @@ IMPLEMENTATION OF EP TOOLBOX
       is one [OK]
     - Modify C++ code:
       - eptools/potentials: [OK]
-      - eptools: [HIER!]
+      - eptools:
         - FactorizedEPRepresentation (tauInd and Gamma pars) [OK]
-        - FactorizedEPDriver
-      - eptools/wrap
+        - FactorizedEPDriver [OK]
+      - eptools/wrap [HIER!]
       - Cython code
     - Method to return argument group
   - New Python code for inference in the presence of bivariate potentials [HIER!]
