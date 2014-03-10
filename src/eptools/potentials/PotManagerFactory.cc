@@ -16,8 +16,7 @@
 					      const ArrayHandle<int>& numPot,
 					      const ArrayHandle<double>& parVec,
 					      const ArrayHandle<int>& parShrd,
-					      const ArrayHandle<void*>& annObj,
-					      bool checkPure)
+					      const ArrayHandle<void*>& annObj)
   {
     int i,j,k,numk=potIDs.size(),atype;
     ArrayHandle<Handle<PotentialManager> > parr;
@@ -25,6 +24,7 @@
     ArrayHandle<int> shrdMsk;
     double* pvecP=parVec.p();
     int* shrdP=parShrd.p();
+    bool hasBVPrec=false;
 
     if (numPot.size()!=numk || annObj.size()!=numk)
       throw InvalidParameterException(EXCEPT_MSG(""));
@@ -67,12 +67,10 @@
 	// Potential has no parameters
 	shrdMsk.changeRep(0); pvecMsk.changeRep(0);
       }
-      if (checkPure) {
-	if (k==0)
-	  atype=epPot->getArgumentGroup();
-	else if (atype!=epPot->getArgumentGroup())
-	  throw InvalidParameterException(EXCEPT_MSG(""));
-      }
+      atype=epPot->getArgumentGroup();
+      if (hasBVPrec && atype!=EPScalarPotential::atypeBivarPrec)
+	throw InvalidParameterException(EXCEPT_MSG(""));
+      hasBVPrec=(atype==EPScalarPotential::atypeBivarPrec);
       // ATTENTION: 'shrdMsk', 'pvecMsk' do not own their buffers, and
       // they do not copy 'parShrd', 'parVec' content!
       PotentialManager* pmanP=
@@ -92,9 +90,10 @@
 				      const ArrayHandle<double>& parVec,
 				      const ArrayHandle<int>& parShrd,
 				      const ArrayHandle<void*>& annObj,
-				      int posoff,bool checkPure)
+				      int posoff,
+				      const ArrayHandle<int>& tauInd)
   {
-    int k,numk=potIDs.size(),atype;
+    int k,numk=potIDs.size(),atype,numPVPrec=0;
     ArrayHandle<double> pvecMsk,tmpVec;
     ArrayHandle<int> shrdMsk,parOff;
     double* pvecP=parVec.p();
@@ -181,16 +180,50 @@
 	  }
 	}
       }
-      if (checkPure) {
-	if (k==0)
-	  atype=epPot->getArgumentGroup();
-	else if (atype!=epPot->getArgumentGroup())
-	  throw InvalidParameterException("All potentials must be in the same argument group");
-      }
+      atype=epPot->getArgumentGroup();
+      if (atype==EPScalarPotential::atypeBivarPrec)
+	numPVPrec+=npot;
+      else if (numPVPrec>0)
+	throw InvalidParameterException("Potentials of group 'atypeBivarPrec' must come last");
     }
     if (parShrd.p()+parShrd.size()>shrdP)
       throw InvalidParameterException("PARSHRD too long");
     if (parVec.p()+parVec.size()>pvecP)
       throw InvalidParameterException("PARVEC too long");
+    // Check 'tauInd' (if given)
+    if (numPVPrec==0) {
+      if (!(tauInd==0))
+	throw InvalidParameterException("TAUIND only together with 'atypeBivarPrec' potentials");
+    } else {
+      if (tauInd==0)
+	throw InvalidParameterException("TAUIND must be given");
+      int dimK=tauInd[numPVPrec],i,j,sz;
+      if (dimK<=0 || tauInd.size()!=2*numPVPrec+dimK+2)
+	throw InvalidParameterException("TAUIND wrong size");
+      ArrayHandle<bool> karr(dimK);
+      for (k=0; k<dimK; k++) karr[k]=false;
+      for (j=sz=0; j<numPVPrec; j++) {
+	k=tauInd[j];
+	if (k<0 || k>=dimK)
+	  throw InvalidParameterException("TAUIND wrong");
+	if (!karr[k]) {
+	  karr[k]=true; sz++;
+	}
+      }
+      if (sz<dimK)
+	throw InvalidParameterException("TAUIND: Every k value must occur at least once");
+      for (k=0; k<dimK; k++) {
+	j=tauInd[k+numPVPrec+1];
+	sz=tauInd[k+numPVPrec+2]-j;
+	if (sz<1 || j<numPVPrec+dimK+2 || j+sz>tauInd.size())
+	  throw InvalidParameterException("TAUIND wrong");
+	if (!Range::isIncreasing(tauInd.p()+j,sz) ||
+	    tauInd[j]<0 || tauInd[j+sz-1]>=numPVPrec)
+	  throw InvalidParameterException("TAUIND wrong");
+	for (i=0; i<sz; i++)
+	  if (tauInd[tauInd[i+j]]!=k)
+	    throw InvalidParameterException("TAUIND wrong: Forward and inverse different");
+      }
+    }
   }
 //ENDNS

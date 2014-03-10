@@ -39,13 +39,21 @@
      * @param parr Array of child objects
      */
     ContainerPotManager(const ArrayHandle<Handle<PotentialManager> >& parr) {
-      int num=parr.size();
+      int num=parr.size(),i,off,sz,nprec;
+      bool havePrec=false;
 
       if (num==0) throw InvalidParameterException(EXCEPT_MSG(""));
       startPos.changeRep(num);
-      for (int i=0,off=0; i<num; i++) {
-	startPos[i]=off;
-	off+=parr[i]->size();
+      // Also have to check that potentials of group 'atypeBivarPrec' come
+      // last (if at all). 'havePrec' is false until such potentials are
+      // detected.
+      for (i=off=0; i<num; i++) {
+	startPos[i]=off; sz=parr[i]->size();
+	off+=sz;
+	nprec=pmArr[i]->numArgumentGroup(EPScalarPotential::atypeBivarPrec);
+	if (havePrec && nprec<sz)
+	  throw InvalidParameterException(EXCEPT_MSG("'atypeBivarPrec' potentials must form suffix"));
+	havePrec=(nprec>0);
       }
       pmArr.copy(parr);
     }

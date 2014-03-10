@@ -65,8 +65,8 @@
      * content of 'parVec' can be invalid (except for construction parameters,
      * s.a.).
      * Call 'checkRepres' for a representation before using it with 'create'.
-     * If 'checkPure'==true, all potentials must be in the same argument
-     * group (see 'EPScalarPotential').
+     * Potentials can be in different argument groups, but if there are some
+     * in group 'atypeBivarPrec', they must come last.
      * <p>
      * ATTENTION: Implementation unsafe, does not copy content or handles
      * of 'parVec', 'parShrd', just uses pointers. If content is changed
@@ -79,15 +79,13 @@
      * @param parVec
      * @param parShrd
      * @param annObj
-     * @param checkPure S.a. Def.: false
      * @return          New potential manager
      */
     static PotentialManager* create(const ArrayHandle<int>& potIDs,
 				    const ArrayHandle<int>& numPot,
 				    const ArrayHandle<double>& parVec,
 				    const ArrayHandle<int>& parShrd,
-				    const ArrayHandle<void*>& annObj,
-				    bool checkPure=false);
+				    const ArrayHandle<void*>& annObj);
 
     /**
      * Check representation (as passed to 'create') for validity. If an
@@ -104,23 +102,32 @@
      * construction parameters, they must form the prefix of the corr.
      * 'parVec' part, and the corr. 'parShrd' entries must all be 1.
      * <p>
-     * If 'checkPure'==true, all potentials must be in the same argument
-     * group (see 'EPScalarPotential') for the representation to be valid.
+     * The flat index 'tauInd' must be given iff the PM contains potentials
+     * in group 'atypeBivarPrec'. It contains the assignment j -> k and its
+     * inverse, where both j and k are 0-based. j is mapped to potential
+     * position by adding the start offset (position of first 'atypeBivarPrec'
+     * potential), see 'PotentialManager'. 'tauInd':
+     * - Index k(j) [m]
+     * - Number K of tau_k entries [1]
+     * - For each k=0:(K-1): Start offset of J_k = {j | k(j)==k} [K]
+     * - Dummy entry (start offset of J_K if it existed) [1]
+     * - J_k, k=0:(K-1), each ascending order [m]
      *
      * @param potIDs
      * @param numPot
      * @param parVec
      * @param parShrd
      * @param annObj
-     * @param posoff    S.a. Def.: 0
-     * @param checkPure S.a. Def.: false
+     * @param posoff   S.a. Def.: 0
+     * @param tauInd   S.a. Optional
      */
     static void checkRepres(const ArrayHandle<int>& potIDs,
 			    const ArrayHandle<int>& numPot,
 			    const ArrayHandle<double>& parVec,
 			    const ArrayHandle<int>& parShrd,
 			    const ArrayHandle<void*>& annObj,int posoff=0,
-			    bool checkPure=false);
+			    const ArrayHandle<int>& tauInd=
+			    ArrayHandleZero<int>::get());
   };
 //ENDNS
 

@@ -518,7 +518,24 @@
       mprBetaP[ii]=cBeta+prBeta;
       cPiP[ii]=prPi; cBetaP[ii]=prBeta; // New EP parameters
     }
-    // HIER: New EP parameters and marginals for a, c (can still fail!)
+    // New EP parameters and marginals for Gamma parameters: Write back
+    if (hasBVPrec) {
+      prA=hatA-cA; prC=hatC-cC;
+      if (dampFact>0.0) {
+	prA+=dampFact*(*aP-prA);
+	prC+=dampFact*(*cP-prC);
+      }
+      if (cA+prA<0.5*aMinThres || cC+prC<0.5*cMinThres)
+	return updMarginalsInvalid; // EP update failed
+      *aP=prA; *cP=prC;
+      margA[k]=cA+prA; margC[k]=cC+prC;
+      if (!(epMaxA==0))
+	epMaxA->update(k,j,prA);
+      if (!(epMaxC==0))
+	epMaxC->update(k,j,prC);
+      // HIER: '*delta'!!
+      // Need mean and stddev. of Gamma!
+    }
     // Update succeeded: Write back new EP parameters and marginals
     double mprH=0.0,mprRho=0.0; // For '*delta'
     for (ii=0; ii<vjSz; ii++) {

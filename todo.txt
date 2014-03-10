@@ -493,7 +493,7 @@ IMPLEMENTATION OF EP TOOLBOX
   Simplest:
   - Two different .pyx files. Common code in .pxi files
   - setup.py picks correct one
-  OK: This seems to work. Re-run test codes! [HIER!]
+  OK: This seems to work. Re-run test codes! [OK]
 
 - Integrating out precision hyperparameters:
   - Work out how to deal with variance hyperparameter in Gaussian potential:
@@ -521,8 +521,22 @@ IMPLEMENTATION OF EP TOOLBOX
     using code for pi
     - Generalize FactEPMaximumPiValues [OK]
     - Extension of FactorizedEPRepresentation [OK]
-    - Extend FactorizedEPDriver [HIER!]
-  - New Python code for inference in the presence of bivariate potentials
+    - Extend FactorizedEPDriver [OK]
+      Still have to change '*delta' comput.!
+  - Change of design:
+    Not useful to have >1 B factor and potential manager! Allow mixed PMs, and
+    integrate k(j) index into PM
+    - New PM internal representation, which includes k(j) index if there
+      is one [OK]
+    - Modify C++ code:
+      - eptools/potentials: [OK]
+      - eptools: [HIER!]
+        Where to maintain Gamma msg parameters? FactorizedEPRepresentation:
+        could also maintain 'tauInd' in this case
+      - eptools/wrap
+      - Cython code
+    - Method to return argument group
+  - New Python code for inference in the presence of bivariate potentials [HIER!]
   - Create simple test example, maybe even something where exact inference
     is tractable, and see what it does (f.ex.: MSR paper on grading tests!)
 

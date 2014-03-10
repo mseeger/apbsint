@@ -27,6 +27,14 @@
    * 'getPot' returns a reference to 'EPScalarPotential'. This object must
    * not be used once 'getPot' is called again.
    * TODO: Thread-safe variant.
+   * <p>
+   * A PM may contain potentials of different argument groups (see
+   * 'EPScalarPotential'). If it contains bivariate precision potentials
+   * ('EPScalarPotential::atypeBivarPrec'), these must form a contiguous
+   * suffix. The index of the first such potential is determined as
+   *   'size() - numArgumentGroup(EPScalarPotential::atypeBivarPrec)'.
+   * ATTENTION: Implementations have to ensure that this constaint holds
+   * true.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
