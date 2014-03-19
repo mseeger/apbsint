@@ -17,7 +17,8 @@ extern "C" {
   void eptwrap_potmanager_isvalid(int ain,int aout,W_IARRAY(potids),
 				  W_IARRAY(numpot),W_DARRAY(parvec),
 				  W_IARRAY(parshrd),W_ARRAY(annobj,void*),
-				  int posoff,char** retstr,W_ERRORARGS);
+				  int posoff,W_IARRAY(tauind),char** retstr,
+				  W_ERRORARGS);
 
 #ifdef __cplusplus
 }

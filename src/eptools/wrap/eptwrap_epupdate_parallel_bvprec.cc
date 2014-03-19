@@ -12,14 +12,19 @@
  * parameters of updated marginals). These are flat vectors (size:
  * number of precision potentials).
  *
- * ATTENTION: If UPDIND is used, it must contain all indices of
- * precision potentials (this is not checked). Otherwise, HATA,
- * HATC will not be correct.
- * CMU, CRHO, RSTAT, ALPHA, NU, LOGZ follow ordering of UPDIND,
- * but not CA, CC, HATA, HATC:
- * if j==UPDIND(l), then alpha_j == ALPHA(l), but hat{a}_j ==
- * HATA(j-offBV), where offBV is the position of the first precision
- * potential.
+ * UPDIND (optional) plays the same role as in
+ * EPTWRAP_EPUPDATE_PARALLEL. It must only select standard
+ * potentials (group 'atypeUnivariate'): we always update on all
+ * precision potentials. In fact, if there are m_st standard, then
+ * m_prec precision potentials (so m = m_st + m_prec), we use the
+ * effective subselection index
+ *   [UPDIND; m_st:(m-1)] (size sz(UPDIND) + m_prec).
+ * If UPDIND is not given, substitute 0:(m_st-1).
+ * The variables CMU, CRHO, RSTAT, ALPHA, NU, LOGZ follow this
+ * ordering (if j is l-th entry in effective index, then
+ * alpha_j == ALPHA(l), etc.).
+ * The variables CA, CC, HATA, HATC are of size m_prec (so that
+ * hat{a}_j == HATA(j - m_st), etc.).
  *
  * Input:
  * - POTIDS:  Potential manager representation [int32 array]
@@ -60,7 +65,7 @@ void eptwrap_epupdate_parallel_bvprec(int ain,int aout,W_IARRAY(potids),
 				      W_DARRAY(hata),W_DARRAY(hatc),
 				      W_DARRAY(logz),W_ERRORARGS)
 {
-  int i,j,totsz,numBVPrec,offBV;
+  int i,j,totsz,numBVPrec,numSt,thresSt;
   double temp;
   Handle<PotentialManager> potMan;
   double inp[4],ret[4];
@@ -81,21 +86,21 @@ void eptwrap_epupdate_parallel_bvprec(int ain,int aout,W_IARRAY(potids),
     numBVPrec=potMan->numArgumentGroup(EPScalarPotential::atypeBivarPrec);
     if (numBVPrec==0)
       W_RETERROR(1,"Potential manager must contain precision parameter potentials");
+    numSt=potMan->numArgumentGroup(EPScalarPotential::atypeUnivariate);
+    if (numSt+numBVPrec!=potMan->size())
+      W_RETERROR(1,"Potentials of unsupported argument group are present");
     W_CHKSIZE(crho,totsz,"CRHO");
     W_CHKSIZE(ca,numBVPrec,"CA");
     W_CHKSIZE(cc,numBVPrec,"CC");
     if (ain>9) {
       if (updind==0)
 	W_RETERROR(2,"UPDIND missing");
-      W_CHKSIZE(updind,totsz,"UPDIND");
+      W_CHKSIZE(updind,totsz-numBVPrec,"UPDIND");
       Interval<int> ivM(0,potMan->size()-1,IntVal::ivClosed,IntVal::ivClosed);
-      if (ivM.check(updind,nupdind)!=0)
+      if (ivM.check(updind,numSt)!=0)
 	W_RETERROR(1,"UPDIND: Entries out of range");
-    } else {
+    } else
       updind=0;
-      if (potMan->size()!=totsz)
-	W_RETERROR(1,"CMU, potential manager: Different sizes");
-    }
     /* Return arguments */
     W_CHKSIZE(rstat,totsz,"RSTAT");
     W_CHKSIZE(alpha,totsz,"ALPHA");
@@ -108,18 +113,21 @@ void eptwrap_epupdate_parallel_bvprec(int ain,int aout,W_IARRAY(potids),
       logz=0;
 
     /* Main loop over all potentials */
-    offBV=potMan->size()-numBVPrec;
+    thresSt=(updind==0)?numSt:nupdind; // Number standard pots to upd. on
     for (i=0; i<totsz; i++) {
-      j=(updind==0)?i:updind[i];
-      //cout << "i=" << i << endl;
       inp[0]=cmu[i]; inp[1]=crho[i];
-      if (j>=offBV) {
-	inp[2]=ca[j-offBV]; inp[3]=cc[j-offBV];
+      if (i<thresSt)
+	j=(updind==0)?i:updind[i];
+      else {
+	// Precision potential: 'updind' does not apply
+	j=i-thresSt;
+	inp[2]=ca[j]; inp[3]=cc[j];
+	j+=numSt;
       }
       rstat[i] = potMan->getPot(j).compMoments(inp,ret,&temp);
       alpha[i]=ret[0]; nu[i]=ret[1];
-      if (j>=offBV) {
-	hata[j-offBV]=ret[2]; hatc[j-offBV]=ret[3];
+      if (i>=thresSt) {
+	hata[j-numSt]=ret[2]; hatc[j-numSt]=ret[3];
       }
       if (rstat[i] && aout>5)
 	logz[i]=temp;

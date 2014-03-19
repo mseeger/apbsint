@@ -170,33 +170,7 @@
 			     const ArrayHandle<int>& pcolInd,
 			     const ArrayHandle<double>& pbmatVals,
 			     const ArrayHandle<double>& pbetaVals,
-			     const ArrayHandle<double>& ppiVals) {
-      int j,sz,off,nnz=pbmatVals.size();
-
-      if (pnumN==0 || pnumM==0 || pbetaVals.size()!=nnz ||
-	  ppiVals.size()!=nnz || prowInd.size()<=pnumM+1 ||
-	  pcolInd.size()<=pnumN+1)
-	throw InvalidParameterException(EXCEPT_MSG(""));
-      // Run some basic checks
-      if (prowInd[pnumM]!=nnz || prowInd[0]!=0)
-	throw InvalidParameterException(EXCEPT_MSG(""));
-      for (j=0; j<pnumM; j++) {
-	off=prowInd[j]; sz=prowInd[j+1]-off;
-	// NOTE: Zero rows are not allowed!
-	if (sz<=0 || sz>pnumN)
-	  throw InvalidParameterException(EXCEPT_MSG(""));
-      }
-      if (pcolInd[pnumN]!=2*nnz+pnumN+1 || pcolInd[0]!=pnumN+1)
-	for (j=0; j<pnumN; j++) {
-	  off=pcolInd[j]; sz=pcolInd[j+1]-off;
-	  if (sz%2==1)
-	    throw InvalidParameterException(EXCEPT_MSG(""));
-	  sz/=2;
-	  // NOTE: Zero columns are allowed
-	  if (sz<0 || sz>pnumM)
-	    throw InvalidParameterException(EXCEPT_MSG(""));
-	}
-    }
+			     const ArrayHandle<double>& ppiVals);
   public:
 
     virtual ~FactorizedEPRepresentation() {}
@@ -273,16 +247,7 @@
      * @param cP Address for c_jk
      * @return   k==k(j)
      */
-    virtual int accessTauRow(int j,double*& aP,double*& cP) {
-      if (numK==0) throw WrongStatusException(EXCEPT_MSG(""));
-      int startPos=numM-aVals.size();
-      if (j<startPos || j>=numM)
-	throw InvalidParameterException(EXCEPT_MSG(""));
-      j-=startPos;
-      aP=aVals.p()+j; cP=cVals.p()+j;
-
-      return tauInd[j];
-    }
+    virtual int accessTauRow(int j,double*& aP,double*& cP);
 
     /**
      * Access to precision parameter data for variable tau_k. 'jInd'
@@ -297,17 +262,7 @@
      * @return     Size |J_k|
      */
     virtual int accessTauCol(int k,const int*& jInd,const double*& aP,
-			     const double*& cP) {
-      if (numK==0) throw WrongStatusException(EXCEPT_MSG(""));
-      if (k<0 || k>=numK) throw InvalidParameterException(EXCEPT_MSG(""));
-      int numBVPrec=aVals.size(); // m_prec
-      int off=tauInd[k+numBVPrec+1];
-      int sz=tauInd[k+numBVPrec+2]-off;
-      jInd=tauInd.p()+off;
-      aP=aVals.p(); cP=cVals.p();
-
-      return sz;
-    }
+			     const double*& cP);
 
     /**
      * Compute parameters of Gamma marginals on [tau_k] from message
@@ -324,6 +279,36 @@
   };
 
   // Inline methods
+
+  inline  void
+  FactorizedEPRepresentation::checkInternalRepres(int pnumN,int pnumM,const ArrayHandle<int>& prowInd,const ArrayHandle<int>& pcolInd,const ArrayHandle<double>& pbmatVals,const ArrayHandle<double>& pbetaVals,const ArrayHandle<double>& ppiVals)
+  {
+    int j,sz,off,nnz=pbmatVals.size();
+
+    if (pnumN==0 || pnumM==0 || pbetaVals.size()!=nnz ||
+	ppiVals.size()!=nnz || prowInd.size()<=pnumM+1 ||
+	pcolInd.size()<=pnumN+1)
+      throw InvalidParameterException(EXCEPT_MSG(""));
+    // Run some basic checks
+    if (prowInd[pnumM]!=nnz || prowInd[0]!=0)
+      throw InvalidParameterException(EXCEPT_MSG(""));
+    for (j=0; j<pnumM; j++) {
+      off=prowInd[j]; sz=prowInd[j+1]-off;
+      // NOTE: Zero rows are not allowed!
+      if (sz<=0 || sz>pnumN)
+	throw InvalidParameterException(EXCEPT_MSG(""));
+    }
+    if (pcolInd[pnumN]!=2*nnz+pnumN+1 || pcolInd[0]!=pnumN+1)
+      for (j=0; j<pnumN; j++) {
+	off=pcolInd[j]; sz=pcolInd[j+1]-off;
+	if (sz%2==1)
+	  throw InvalidParameterException(EXCEPT_MSG(""));
+	sz/=2;
+	// NOTE: Zero columns are allowed
+	if (sz<0 || sz>pnumM)
+	  throw InvalidParameterException(EXCEPT_MSG(""));
+      }
+  }
 
   inline int
   FactorizedEPRepresentation::accessRow(int j,int& vjSz,const int*& vjInd,
@@ -381,6 +366,34 @@
 	margPi[i]+=mPi; margBeta[i]+=mBeta;
       }
     }
+  }
+
+  inline int
+  FactorizedEPRepresentation::accessTauRow(int j,double*& aP,double*& cP)
+  {
+    if (numK==0) throw WrongStatusException(EXCEPT_MSG(""));
+    int startPos=numM-aVals.size();
+    if (j<startPos || j>=numM)
+      throw InvalidParameterException(EXCEPT_MSG(""));
+    j-=startPos;
+    aP=aVals.p()+j; cP=cVals.p()+j;
+
+    return tauInd[j];
+  }
+
+  inline int
+  FactorizedEPRepresentation::accessTauCol(int k,const int*& jInd,
+					   const double*& aP,const double*& cP)
+  {
+    if (numK==0) throw WrongStatusException(EXCEPT_MSG(""));
+    if (k<0 || k>=numK) throw InvalidParameterException(EXCEPT_MSG(""));
+    int numBVPrec=aVals.size(); // m_prec
+    int off=tauInd[k+numBVPrec+1];
+    int sz=tauInd[k+numBVPrec+2]-off;
+    jInd=tauInd.p()+off;
+    aP=aVals.p(); cP=cVals.p();
+
+    return sz;
   }
 
   inline void

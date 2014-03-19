@@ -535,15 +535,15 @@ IMPLEMENTATION OF EP TOOLBOX
         - FactorizedEPDriver [OK]
       - eptools/wrap
         - epupdate_parallel_bvprec [OK]
-        - epupdate_single_bvprec [HIER!]
-        - potmanager_isvalid
-        - fact_sequpdates
+        - epupdate_single_bvprec [OK]
+        - potmanager_isvalid [OK]
+        - fact_sequpdates [HIER!]
         New ones:
-        - fact_compmax_bvprec
+        - fact_compmax_bvprec (for a, c parameters)
         - fact_compmarginals_bvprec (or generalize fact_compmarginals?)
         - getpotagroup
       - Cython code
-  - New Python code for inference in the presence of bivariate potentials [HIER!]
+  - New Python code for inference in the presence of bivariate potentials
   - Create simple test example, maybe even something where exact inference
     is tractable, and see what it does (f.ex.: MSR paper on grading tests!)
 

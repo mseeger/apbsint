@@ -193,7 +193,7 @@
       return epRepr->numPotentials();
     }
 
-    virtual int numPrecVariables) const {
+    virtual int numPrecVariables() const {
       int numK=epRepr->numPrecVariables();
       if (numK==0)
 	throw WrongStatusException(EXCEPT_MSG(""));
