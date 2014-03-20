@@ -37,6 +37,15 @@ cdef void** make_voidptr_array(np.ndarray[np.uint64_t,ndim=1] arr):
         ret[i] = <void*>arr[i]
     return ret
 
+cdef check_contiguous_array(np.ndarray a,bytes nma):
+    if not a.flags.c_contiguous:
+        raise TypeError('%s must be contiguous array' % nma.upper())
+
+cdef check_contiguous_array_size(np.ndarray a,bytes nma,int sz):
+    if not (a.flags.c_contiguous and a.shape[0]==sz):
+        raise TypeError('%s must be contiguous array of size %d' %
+                        (nma.upper(),sz))
+
 # Cython functions
 
 # rstat, alpha, nu, logz (optional) are return arguments (contiguous vectors
@@ -63,14 +72,11 @@ def epupdate_parallel(np.ndarray[int,ndim=1] potids not None,
     cdef int* updind_p
     # Ensure that input/output arguments are contiguous
     rsz = cmu.shape[0]
-    if not (rstat.flags.c_contiguous and rstat.shape[0]==rsz):
-        raise TypeError('RSTAT must be contiguous array of size of CMU')
-    if not (alpha.flags.c_contiguous and alpha.shape[0]==rsz):
-        raise TypeError('ALPHA must be contiguous array of size of CMU')
-    if not (nu.flags.c_contiguous and nu.shape[0]==rsz):
-        raise TypeError('NU must be contiguous array of size of CMU')
-    if not (logz is None or (logz.flags.c_contiguous and logz.shape[0]==rsz)):
-        raise TypeError('LOGZ must be contiguous array of size of CMU')
+    check_contiguous_array_size(rstat,'RSTAT',rsz)
+    check_contiguous_array_size(alpha,'ALPHA',rsz)
+    check_contiguous_array_size(nu,'NU',rsz)
+    if logz is not None:
+        check_contiguous_array_size(logz,'LOGZ',rsz)
     potids = np.ascontiguousarray(potids)
     numpot = np.ascontiguousarray(numpot)
     parvec = np.ascontiguousarray(parvec)
@@ -141,19 +147,14 @@ def epupdate_parallel_bvprec(np.ndarray[int,ndim=1] potids not None,
     cdef int* updind_p
     # Ensure that input/output arguments are contiguous
     rsz = cmu.shape[0]
-    if not (rstat.flags.c_contiguous and rstat.shape[0]==rsz):
-        raise TypeError('RSTAT must be contiguous array of size of CMU')
-    if not (alpha.flags.c_contiguous and alpha.shape[0]==rsz):
-        raise TypeError('ALPHA must be contiguous array of size of CMU')
-    if not (nu.flags.c_contiguous and nu.shape[0]==rsz):
-        raise TypeError('NU must be contiguous array of size of CMU')
-    if not (logz is None or (logz.flags.c_contiguous and logz.shape[0]==rsz)):
-        raise TypeError('LOGZ must be contiguous array of size of CMU')
+    check_contiguous_array_size(rstat,'RSTAT',rsz)
+    check_contiguous_array_size(alpha,'ALPHA',rsz)
+    check_contiguous_array_size(nu,'NU',rsz)
+    if logz is not None:
+        check_contiguous_array_size(logz,'LOGZ',rsz)
     rsz = ca.shape[0]
-    if not (hata.flags.c_contiguous and hata.shape[0]==rsz):
-        raise TypeError('HATA must be contiguous array of size of CA')
-    if not (hatc.flags.c_contiguous and hatc.shape[0]==rsz):
-        raise TypeError('HATC must be contiguous array of size of CA')
+    check_contiguous_array_size(hata,'HATA',rsz)
+    check_contiguous_array_size(hatc,'HATC',rsz)
     potids = np.ascontiguousarray(potids)
     numpot = np.ascontiguousarray(numpot)
     parvec = np.ascontiguousarray(parvec)
@@ -240,10 +241,8 @@ def fact_compmarginals(int n,int m,np.ndarray[int,ndim=1] rp_rowind not None,
     cdef int errcode
     cdef char errstr[512]
     # Ensure that input/output arguments are contiguous
-    if not margpi.flags.c_contiguous:
-        raise TypeError('MARGPI must be contiguous array')
-    if not margbeta.flags.c_contiguous:
-        raise TypeError('MARGBETA must be contiguous array')
+    check_contiguous_array(margpi,'MARGPI')
+    check_contiguous_array(margbeta,'MARGBETA')
     rp_rowind = np.ascontiguousarray(rp_rowind)
     rp_colind = np.ascontiguousarray(rp_colind)
     rp_bvals = np.ascontiguousarray(rp_bvals)
@@ -278,14 +277,10 @@ def fact_compmarginals_bvprec(int n,int m,
     cdef int errcode
     cdef char errstr[512]
     # Ensure that input/output arguments are contiguous
-    if not margpi.flags.c_contiguous:
-        raise TypeError('MARGPI must be contiguous array')
-    if not margbeta.flags.c_contiguous:
-        raise TypeError('MARGBETA must be contiguous array')
-    if not marga.flags.c_contiguous:
-        raise TypeError('MARGA must be contiguous array')
-    if not margc.flags.c_contiguous:
-        raise TypeError('MARGC must be contiguous array')
+    check_contiguous_array(margpi,'MARGPI')
+    check_contiguous_array(margbeta,'MARGBETA')
+    check_contiguous_array(marga,'MARGA')
+    check_contiguous_array(margc,'MARGC')
     rp_rowind = np.ascontiguousarray(rp_rowind)
     rp_colind = np.ascontiguousarray(rp_colind)
     rp_bvals = np.ascontiguousarray(rp_bvals)
@@ -466,27 +461,20 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
     rp_rowind = np.ascontiguousarray(rp_rowind)
     rp_colind = np.ascontiguousarray(rp_colind)
     rp_bvals = np.ascontiguousarray(rp_bvals)
-    if not rp_pi.flags.c_contiguous:
-        raise TypeError('RP_PI must be contiguous array')
-    if not rp_beta.flags.c_contiguous:
-        raise TypeError('RP_BETA must be contiguous array')
-    if not margpi.flags.c_contiguous:
-        raise TypeError('MARGPI must be contiguous array')
-    if not margbeta.flags.c_contiguous:
-        raise TypeError('MARGBETA must be contiguous array')
-    if not (rstat is None or rstat.flags.c_contiguous):
-        raise TypeError('RSTAT must be contiguous array')
-    if not (delta is None or delta.flags.c_contiguous):
-        raise TypeError('DELTA must be contiguous array')
+    check_contiguous_array(rp_pi,'RP_PI')
+    check_contiguous_array(rp_beta,'RP_BETA')
+    check_contiguous_array(margpi,'MARGPI')
+    check_contiguous_array(margbeta,'MARGBETA')
+    check_contiguous_array(rstat,'RSTAT')
+    check_contiguous_array(delta,'DELTA')
     if sd_numvalid is not None:
-        if not sd_numvalid.flags.c_contiguous:
-            raise TypeError('SD_NUMVALID must be contiguous array')
-        if sd_topind is None or not sd_topind.flags.c_contiguous:
-            raise TypeError('SD_TOPIND must be contiguous array')
-        if sd_topval is None or not sd_topval.flags.c_contiguous:
-            raise TypeError('SD_TOPVAL must be contiguous array')
-        if not (sd_dampfact is None or sd_dampfact.flags.c_contiguous):
-            raise TypeError('SD_DAMPFACT must be contiguous array')
+        check_contiguous_array(sd_numvalid,'SD_NUMVALID')
+        if sd_topind is None or sd_topval is None:
+            raise ValueError('SD_TOPIND, SD_TOPVAL must be given')
+        check_contiguous_array(sd_topind,'SD_TOPIND')
+        check_contiguous_array(sd_topval,'SD_TOPVAL')
+        if sd_dampfact is not None:
+            check_contiguous_array(sd_dampfact,'SD_DAMPFACT')
     # Call C function
     rsz = updjind.shape[0]
     if rsz<1:
@@ -548,6 +536,209 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
                             topval_n,subind_p,subind_n,sd_subexcl,rstat_p,
                             rstat_n,delta_p,delta_n,dampfact_p,dampfact_n,
                             &sd_nupd,&sd_nrec,&errcode,errstr)
+    PyMem_Free(annobj_p)  # Free temp. void* array
+    # Check for error, raise exception
+    if errcode != 0:
+        raise exc.ApBsWrapError(<bytes>errstr)
+    if aout>2:
+        return (sd_nupd,sd_nrec)
+
+# NOTE: sd_nupd, sd_nrec are returned only if rstat, delta, sd_dampfact and
+# sd_numvalid are all given
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def fact_sequpdates_bvprec(int n,int m,np.ndarray[int,ndim=1] updjind not None,
+                           np.ndarray[int,ndim=1] pm_potids not None,
+                           np.ndarray[int,ndim=1] pm_numpot not None,
+                           np.ndarray[np.double_t,ndim=1] pm_parvec not None,
+                           np.ndarray[int,ndim=1] pm_parshrd not None,
+                           np.ndarray[np.uint64_t,ndim=1] pm_annobj not None,
+                           np.ndarray[int,ndim=1] rp_rowind not None,
+                           np.ndarray[int,ndim=1] rp_colind not None,
+                           np.ndarray[np.double_t,ndim=1] rp_bvals not None,
+                           np.ndarray[np.double_t,ndim=1] rp_pi not None,
+                           np.ndarray[np.double_t,ndim=1] rp_beta not None,
+                           np.ndarray[int,ndim=1] rp_tauind not None,
+                           np.ndarray[np.double_t,ndim=1] rp_a not None,
+                           np.ndarray[np.double_t,ndim=1] rp_c not None,
+                           np.ndarray[np.double_t,ndim=1] margpi not None,
+                           np.ndarray[np.double_t,ndim=1] margbeta not None,
+                           np.ndarray[np.double_t,ndim=1] marga not None,
+                           np.ndarray[np.double_t,ndim=1] margc not None,
+                           double piminthres,double aminthres,double cminthres,
+                           double dampfact = 0.,
+                           np.ndarray[int,ndim=1] rstat = None,
+                           np.ndarray[np.double_t,ndim=1] delta = None,
+                           np.ndarray[int,ndim=1] sd_numvalid = None,
+                           np.ndarray[int,ndim=1] sd_topind = None,
+                           np.ndarray[np.double_t,ndim=1] sd_topval = None,
+                           np.ndarray[int,ndim=1] sda_numvalid = None,
+                           np.ndarray[int,ndim=1] sda_topind = None,
+                           np.ndarray[np.double_t,ndim=1] sda_topval = None,
+                           np.ndarray[int,ndim=1] sdc_numvalid = None,
+                           np.ndarray[int,ndim=1] sdc_topind = None,
+                           np.ndarray[np.double_t,ndim=1] sdc_topval = None,
+                           np.ndarray[int,ndim=1] sd_subind = None,
+                           int sd_subexcl = 0,
+                           np.ndarray[np.double_t,ndim=1] sd_dampfact = None):
+    cdef int errcode, rsz, sd_nupd, sd_nrec, aout, ain
+    cdef char errstr[512]
+    cdef void** annobj_p
+    cdef int rstat_n, delta_n, numvalid_n, topind_n, topval_n, subind_n
+    cdef int dampfact_n, anumvalid_n, atopind_n, atopval_n, cnumvalid_n
+    cdef int ctopind_n, ctopval_n
+    cdef int* rstat_p
+    cdef double* delta_p
+    cdef int* numvalid_p
+    cdef int* topind_p
+    cdef double* topval_p
+    cdef int* anumvalid_p
+    cdef int* atopind_p
+    cdef double* atopval_p
+    cdef int* cnumvalid_p
+    cdef int* ctopind_p
+    cdef double* ctopval_p
+    cdef int* subind_p
+    cdef double* dampfact_p
+    # Ensure that input/output arguments are contiguous
+    updjind = np.ascontiguousarray(updjind)
+    pm_potids = np.ascontiguousarray(pm_potids)
+    pm_numpot = np.ascontiguousarray(pm_numpot)
+    pm_parvec = np.ascontiguousarray(pm_parvec)
+    pm_parshrd = np.ascontiguousarray(pm_parshrd)
+    rp_rowind = np.ascontiguousarray(rp_rowind)
+    rp_colind = np.ascontiguousarray(rp_colind)
+    rp_bvals = np.ascontiguousarray(rp_bvals)
+    rp_tauind = np.ascontiguousarray(rp_tauind)
+    check_contiguous_array(rp_pi,'RP_PI')
+    check_contiguous_array(rp_beta,'RP_BETA')
+    check_contiguous_array(rp_a,'RP_A')
+    check_contiguous_array(rp_c,'RP_C')
+    check_contiguous_array(margpi,'MARGPI')
+    check_contiguous_array(margbeta,'MARGBETA')
+    check_contiguous_array(margpi,'MARGA')
+    check_contiguous_array(margpi,'MARGC')
+    check_contiguous_array(rstat,'RSTAT')
+    check_contiguous_array(delta,'DELTA')
+    if sd_numvalid is not None:
+        check_contiguous_array(sd_numvalid,'SD_NUMVALID')
+        if sd_topind is None or sd_topval is None:
+            raise ValueError('SD_TOPIND, SD_TOPVAL must be given')
+        check_contiguous_array(sd_topind,'SD_TOPIND')
+        check_contiguous_array(sd_topval,'SD_TOPVAL')
+        if sd_dampfact is not None:
+            check_contiguous_array(sd_dampfact,'SD_DAMPFACT')
+        if sda_numvalid is not None:
+            check_contiguous_array(sda_numvalid,'SDA_NUMVALID')
+            if sda_topind is None or sda_topval is None:
+                raise ValueError('SDA_TOPIND, SDA_TOPVAL must be given')
+            check_contiguous_array(sda_topind,'SDA_TOPIND')
+            check_contiguous_array(sda_topval,'SDA_TOPVAL')
+        if sdc_numvalid is not None:
+            check_contiguous_array(sdc_numvalid,'SDC_NUMVALID')
+            if sdc_topind is None or sdc_topval is None:
+                raise ValueError('SDC_TOPIND, SDC_TOPVAL must be given')
+            check_contiguous_array(sdc_topind,'SDC_TOPIND')
+            check_contiguous_array(sdc_topval,'SDC_TOPVAL')
+    # Call C function
+    rsz = updjind.shape[0]
+    if rsz<1:
+        raise ValueError('UPDJIND must not be empty')
+    aout = 0
+    ain = 24
+    rstat_n = 0
+    rstat_p = NULL
+    delta_n = 0
+    delta_p = NULL
+    numvalid_n = 0
+    numvalid_p = NULL
+    topind_n = 0
+    topind_p = NULL
+    topval_n = 0
+    topval_p = NULL
+    anumvalid_n = 0
+    anumvalid_p = NULL
+    atopind_n = 0
+    atopind_p = NULL
+    atopval_n = 0
+    atopval_p = NULL
+    cnumvalid_n = 0
+    cnumvalid_p = NULL
+    ctopind_n = 0
+    ctopind_p = NULL
+    ctopval_n = 0
+    ctopval_p = NULL
+    subind_n = 0
+    subind_p = NULL
+    dampfact_n = 0
+    dampfact_p = NULL
+    if rstat is not None:
+        rstat_n = rstat.shape[0]
+        rstat_p = &rstat[0]
+        aout += 1
+        if delta is not None:
+            delta_n = delta.shape[0]
+            delta_p = &delta[0]
+            aout += 1
+    if sd_numvalid is not None:
+        numvalid_n = sd_numvalid.shape[0]
+        numvalid_p = &sd_numvalid[0]
+        topind_n = sd_topind.shape[0]
+        topind_p = &sd_topind[0]
+        topval_n = sd_topval.shape[0]
+        topval_p = &sd_topval[0]
+        ain += 3
+        if sda_numvalid is not None:
+            anumvalid_n = sda_numvalid.shape[0]
+            anumvalid_p = &sda_numvalid[0]
+            atopind_n = sda_topind.shape[0]
+            atopind_p = &sda_topind[0]
+            atopval_n = sda_topval.shape[0]
+            atopval_p = &sda_topval[0]
+            ain += 3
+        if sdc_numvalid is not None:
+            cnumvalid_n = sdc_numvalid.shape[0]
+            cnumvalid_p = &sdc_numvalid[0]
+            ctopind_n = sdc_topind.shape[0]
+            ctopind_p = &sdc_topind[0]
+            ctopval_n = sdc_topval.shape[0]
+            ctopval_p = &sdc_topval[0]
+            ain += 3
+        if sd_subind is not None:
+            sd_subind = np.ascontiguousarray(sd_subind)
+            subind_n = sd_subind.shape[0]
+            subind_p = &sd_subind[0]
+            ain += 2
+        if sd_dampfact is not None:
+            dampfact_n = sd_dampfact.shape[0]
+            dampfact_p = &sd_dampfact[0]
+            if aout==2:
+                aout = 5
+    annobj_p = make_voidptr_array(pm_annobj)  # Convert to void* array
+    eptwrap_fact_sequpdates_bvprec(ain,aout,n,m,&updjind[0],updjind.shape[0],
+                                   &pm_potids[0],pm_potids.shape[0],
+                                   &pm_numpot[0],pm_numpot.shape[0],
+                                   &pm_parvec[0],pm_parvec.shape[0],
+                                   &pm_parshrd[0],pm_parshrd.shape[0],
+                                   annobj_p,pm_annobj.shape[0],&rp_rowind[0],
+                                   rp_rowind.shape[0],&rp_colind[0],
+                                   rp_colind.shape[0],&rp_bvals[0],
+                                   rp_bvals.shape[0],&rp_pi[0],rp_pi.shape[0],
+                                   &rp_beta[0],rp_beta.shape[0],&rp_tauind[0],
+                                   rp_tauind.shape[0],&rp_a[0],rp_a.shape[0],
+                                   &rp_c[0],rp_c.shape[0],&margpi[0],
+                                   margpi.shape[0],&margbeta[0],
+                                   margbeta.shape[0],&marga[0],marga.shape[0],
+                                   &margc[0],margc.shape[0],piminthres,
+                                   aminthres,cminthres,dampfact,numvalid_p,
+                                   numvalid_n,topind_p,topind_n,topval_p,
+                                   topval_n,anumvalid_p,anumvalid_n,atopind_p,
+                                   atopind_n,atopval_p,atopval_n,cnumvalid_p,
+                                   cnumvalid_n,ctopind_p,ctopind_n,ctopval_p,
+                                   ctopval_n,subind_p,subind_n,sd_subexcl,
+                                   rstat_p,rstat_n,delta_p,delta_n,dampfact_p,
+                                   dampfact_n,&sd_nupd,&sd_nrec,&errcode,
+                                   errstr)
     PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
