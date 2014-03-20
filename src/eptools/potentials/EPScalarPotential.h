@@ -60,6 +60,7 @@
    * 'compMoments' receives an input vector 'inp' and returns a return vector
    * 'ret'. Structure and semantics of these vectors depends on the argument
    * group.
+   *
    * Currently supported argument groups:
    * - atypeUnivariate: Standard univariate t(s), s scalar.
    * - atypeBivarPrec: Bivariate t(s,tau), s scalar, tau>0 precision parameter
@@ -84,11 +85,15 @@
       return false; // not supp. by def.
     }
 
+    static int getArgumentGroup_static() {
+      return atypeUnivariate; // Default
+    }
+
     /**
      * @return Potential argument group
      */
     virtual int getArgumentGroup() const {
-      return atypeUnivariate; // Default
+      return getArgumentGroup_static();
     }
 
     /**

@@ -28,6 +28,47 @@
 #include "src/eptools/potentials/EPPotentialFactory_workaround.cc"
 #endif
 
+  /*
+   * We call the static method 'getArgumentGroup_static'.
+  */
+  int EPPotentialFactory::getArgumentGroup(int pid)
+  {
+    int ret=0;
+
+    if (!isValidID(pid))
+      throw InvalidParameterException(EXCEPT_MSG(""));
+    switch (pid) {
+    case potGaussian:
+      ret = EPPotGaussian::getArgumentGroup_static();
+      break;
+    case potLaplace:
+      ret = EPPotLaplace::getArgumentGroup_static();
+      break;
+    case potProbit:
+    case potHeaviside:
+      ret = EPPotProbit::getArgumentGroup_static();
+      break;
+    case potExponential:
+      throw NotImplemException(EXCEPT_MSG(""));
+      break;
+    case potQuantRegress:
+      ret = EPPotQuantileRegress::getArgumentGroup_static();
+      break;
+    case potGaussMixture:
+      ret = EPPotGaussMixture::getArgumentGroup_static();
+      break;
+    case potSpikeSlab:
+      ret = EPPotSpikeSlab::getArgumentGroup_static();
+      break;
+#ifdef HAVE_WORKAROUND
+    default:
+      ret = getArgumentGroup_workaround(pid);
+#endif
+    }
+
+    return ret;
+  }
+
   EPScalarPotential* EPPotentialFactory::create(int pid,const double* pv,
 						void* annot)
   {

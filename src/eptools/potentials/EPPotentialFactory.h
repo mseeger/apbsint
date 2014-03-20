@@ -27,6 +27,13 @@
    *   Name (string) -> ID (nonneg. int)
    * Here, Name is exposed towards interface and must not change,
    * while IDs may change internally.
+   * <p>
+   * NOTE: Can this be done better? The implementation has to modified
+   * for every new 'EPScalarPotential' subclass, and each static method
+   * here has to be modified.
+   * Would be better if subclasses registered themselves here, passing
+   * information and function pointers (would not work for constructors).
+   * ==> ???
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -60,6 +67,14 @@
 					  pid<=potLast_workaround);
 #endif
     }
+
+    /**
+     * See 'EPScalarPotential' comments.
+     *
+     * @param pid Potential ID
+     * @return    Argument group ID ('EPScalarPotential::atypeXXX')
+     */
+    static int getArgumentGroup(int pid);
 
     /**
      * Creates 'EPScalarPotential' object of correct type, given ID.
@@ -101,6 +116,8 @@
 
 #ifdef HAVE_WORKAROUND
   protected:
+    static int getArgumentGroup_workaround(int pid);
+
     static EPScalarPotential* create_workaround(int pid,const double* pv,
 						void* annot);
 

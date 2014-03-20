@@ -143,8 +143,12 @@
       return false;
     }
 
-    int getArgumentGroup() const {
+    static int getArgumentGroup_static() {
       return atypeBivarPrec;
+    }
+
+    int getArgumentGroup() const {
+      return EPPotGaussianPrecision::getArgumentGroup_static();
     }
 
     /**

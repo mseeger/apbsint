@@ -148,7 +148,10 @@
 			       const ArrayHandle<int>& pcolInd,
 			       const ArrayHandle<double>& pbmatVals,
 			       const ArrayHandle<double>& pbetaVals,
-			       const ArrayHandle<double>& ppiVals) :
+			       const ArrayHandle<double>& ppiVals,
+			       const ArrayHandle<double>& paVals,
+			       const ArrayHandle<double>& pcVals,
+			       const ArrayHandle<int>& ptauInd) :
       numN(pnumN),numM(pnumM),rowInd(prowInd),colInd(pcolInd),
       bmatVals(pbmatVals),betaVals(pbetaVals),piVals(ppiVals),aVals(paVals),
       cVals(pcVals),tauInd(ptauInd)
@@ -397,8 +400,8 @@
   }
 
   inline void
-  FactEPRepresBivarPrec::compTauMarginals(double* margA,double* margC,
-					  bool increm)
+  FactorizedEPRepresentation::compTauMarginals(double* margA,double* margC,
+					       bool increm)
   {
     int k,j,jj,sz;
     double mA,mC;

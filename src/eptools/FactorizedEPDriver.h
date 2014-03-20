@@ -181,6 +181,10 @@
 	  pepPots->numArgumentGroup(EPScalarPotential::atypeBivarPrec) ||
 	  pepRepr->numBVPrecPotentials()==0)
 	throw InvalidParameterException(EXCEPT_MSG("Some potentials must be in group 'atypeBivarPrec'"));
+      if (pepPots->numArgumentGroup(EPScalarPotential::atypeUnivariate)+
+	  pepPots->numArgumentGroup(EPScalarPotential::atypeBivarPrec)!=
+	  pepRepr->numPotentials())
+	throw InvalidParameterException(EXCEPT_MSG("Only support 'atypeUnivariate' and 'atypeBivarPrec' potentials"));
     }
 
     virtual ~FactorizedEPDriver() {}
