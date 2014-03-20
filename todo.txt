@@ -543,6 +543,7 @@ IMPLEMENTATION OF EP TOOLBOX
         - fact_compmarginals_bvprec (or generalize fact_compmarginals?) [OK]
         - getpotagroup [OK]
       - Cython wrapper code [HIER!]
+        Got until fact_sequpdates
     - Code watching (maybe update documentation)!
       Insert test code!
   - New Python code for inference in the presence of bivariate potentials
