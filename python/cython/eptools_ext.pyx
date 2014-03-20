@@ -448,6 +448,15 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
     cdef int errcode, rsz, sd_nupd, sd_nrec, aout, ain
     cdef char errstr[512]
     cdef void** annobj_p
+    cdef int rstat_n, delta_n, numvalid_n, topind_n, topval_n, subind_n
+    cdef int dampfact_n
+    cdef int* rstat_p
+    cdef double* delta_p
+    cdef int* numvalid_p
+    cdef int* topind_p
+    cdef double* topval_p
+    cdef int* subind_p
+    cdef double* dampfact_p
     # Ensure that input/output arguments are contiguous
     updjind = np.ascontiguousarray(updjind)
     pm_potids = np.ascontiguousarray(pm_potids)
@@ -465,6 +474,10 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
         raise TypeError('MARGPI must be contiguous array')
     if not margbeta.flags.c_contiguous:
         raise TypeError('MARGBETA must be contiguous array')
+    if not (rstat is None or rstat.flags.c_contiguous):
+        raise TypeError('RSTAT must be contiguous array')
+    if not (delta is None or delta.flags.c_contiguous):
+        raise TypeError('DELTA must be contiguous array')
     if sd_numvalid is not None:
         if not sd_numvalid.flags.c_contiguous:
             raise TypeError('SD_NUMVALID must be contiguous array')
@@ -472,76 +485,69 @@ def fact_sequpdates(int n,int m,np.ndarray[int,ndim=1] updjind not None,
             raise TypeError('SD_TOPIND must be contiguous array')
         if sd_topval is None or not sd_topval.flags.c_contiguous:
             raise TypeError('SD_TOPVAL must be contiguous array')
-    # Return arguments
+        if not (sd_dampfact is None or sd_dampfact.flags.c_contiguous):
+            raise TypeError('SD_DAMPFACT must be contiguous array')
+    # Call C function
     rsz = updjind.shape[0]
     if rsz<1:
         raise ValueError('UPDJIND must not be empty')
-    if not (rstat is None or rstat.flags.c_contiguous):
-        raise TypeError('RSTAT must be contiguous array')
-    if not (delta is None or delta.flags.c_contiguous):
-        raise TypeError('DELTA must be contiguous array')
-    if not (sd_numvalid is None or sd_dampfact is None or
-            sd_dampfact.flags.c_contiguous):
-        raise TypeError('SD_NUMVALID must be contiguous array')
     aout = 0
+    ain = 17
+    rstat_n = 0
+    rstat_p = NULL
+    delta_n = 0
+    delta_p = NULL
+    numvalid_n = 0
+    numvalid_p = NULL
+    topind_n = 0
+    topind_p = NULL
+    topval_n = 0
+    topval_p = NULL
+    subind_n = 0
+    subind_p = NULL
+    dampfact_n = 0
+    dampfact_p = NULL
     if rstat is not None:
-        aout = 1
+        rstat_n = rstat.shape[0]
+        rstat_p = &rstat[0]
+        aout += 1
         if delta is not None:
-            aout = 2
-            if not (sd_numvalid is None or sd_dampfact is None):
+            delta_n = delta.shape[0]
+            delta_p = &delta[0]
+            aout += 1
+    if sd_numvalid is not None:
+        numvalid_n = sd_numvalid.shape[0]
+        numvalid_p = &sd_numvalid[0]
+        topind_n = sd_topind.shape[0]
+        topind_p = &sd_topind[0]
+        topval_n = sd_topval.shape[0]
+        topval_p = &sd_topval[0]
+        ain += 3
+        if sd_subind is not None:
+            sd_subind = np.ascontiguousarray(sd_subind)
+            subind_n = sd_subind.shape[0]
+            subind_p = &sd_subind[0]
+            ain += 2
+        if sd_dampfact is not None:
+            dampfact_n = sd_dampfact.shape[0]
+            dampfact_p = &sd_dampfact[0]
+            if aout==2:
                 aout = 5
     annobj_p = make_voidptr_array(pm_annobj)  # Convert to void* array
-    # Call C function
-    if sd_numvalid is None:
-        eptwrap_fact_sequpdates(17,aout,n,m,&updjind[0],updjind.shape[0],
-                                &pm_potids[0],pm_potids.shape[0],&pm_numpot[0],
-                                pm_numpot.shape[0],&pm_parvec[0],
-                                pm_parvec.shape[0],&pm_parshrd[0],
-                                pm_parshrd.shape[0],annobj_p,
-                                pm_annobj.shape[0],&rp_rowind[0],
-                                rp_rowind.shape[0],&rp_colind[0],
-                                rp_colind.shape[0],&rp_bvals[0],
-                                rp_bvals.shape[0],&rp_pi[0],rp_pi.shape[0],
-                                &rp_beta[0],rp_beta.shape[0],&margpi[0],
-                                margpi.shape[0],&margbeta[0],margbeta.shape[0],
-                                piminthres,dampfact,NULL,0,NULL,0,NULL,0,NULL,
-                                0,0,&rstat[0] if aout>0 else NULL,
-                                rstat.shape[0] if aout>0 else 0,
-                                &delta[0] if aout>1 else NULL,
-                                delta.shape[0] if aout>1 else 0,NULL,0,NULL,
-                                NULL,&errcode,errstr)
-    else:
-        # With selective damping
-        if sd_subind is None:
-            ain = 20
-        else:
-            sd_subind = np.ascontiguousarray(sd_subind)
-            ain = 22
-        eptwrap_fact_sequpdates(ain,aout,n,m,&updjind[0],updjind.shape[0],
-                                &pm_potids[0],pm_potids.shape[0],&pm_numpot[0],
-                                pm_numpot.shape[0],&pm_parvec[0],
-                                pm_parvec.shape[0],&pm_parshrd[0],
-                                pm_parshrd.shape[0],annobj_p,
-                                pm_annobj.shape[0],&rp_rowind[0],
-                                rp_rowind.shape[0],&rp_colind[0],
-                                rp_colind.shape[0],&rp_bvals[0],
-                                rp_bvals.shape[0],&rp_pi[0],rp_pi.shape[0],
-                                &rp_beta[0],rp_beta.shape[0],&margpi[0],
-                                margpi.shape[0],&margbeta[0],margbeta.shape[0],
-                                piminthres,dampfact,&sd_numvalid[0],
-                                sd_numvalid.shape[0],&sd_topind[0],
-                                sd_topind.shape[0],&sd_topval[0],
-                                sd_topval.shape[0],
-                                &sd_subind[0] if ain>20 else NULL,
-                                sd_subind.shape[0] if ain>20 else 0,
-                                sd_subexcl if ain>21 else 0,
-                                &rstat[0] if aout>0 else NULL,
-                                rstat.shape[0] if aout>0 else 0,
-                                &delta[0] if aout>1 else NULL,
-                                delta.shape[0] if aout>1 else 0,
-                                &sd_dampfact[0] if aout>2 else NULL,
-                                sd_dampfact.shape[0] if aout>2 else 0,&sd_nupd,
-                                &sd_nrec,&errcode,errstr)
+    eptwrap_fact_sequpdates(ain,aout,n,m,&updjind[0],updjind.shape[0],
+                            &pm_potids[0],pm_potids.shape[0],&pm_numpot[0],
+                            pm_numpot.shape[0],&pm_parvec[0],
+                            pm_parvec.shape[0],&pm_parshrd[0],
+                            pm_parshrd.shape[0],annobj_p,pm_annobj.shape[0],
+                            &rp_rowind[0],rp_rowind.shape[0],&rp_colind[0],
+                            rp_colind.shape[0],&rp_bvals[0],rp_bvals.shape[0],
+                            &rp_pi[0],rp_pi.shape[0],&rp_beta[0],
+                            rp_beta.shape[0],&margpi[0],margpi.shape[0],
+                            &margbeta[0],margbeta.shape[0],piminthres,dampfact,
+                            numvalid_p,numvalid_n,topind_p,topind_n,topval_p,
+                            topval_n,subind_p,subind_n,sd_subexcl,rstat_p,
+                            rstat_n,delta_p,delta_n,dampfact_p,dampfact_n,
+                            &sd_nupd,&sd_nrec,&errcode,errstr)
     PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
