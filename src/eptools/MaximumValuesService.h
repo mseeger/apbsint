@@ -21,22 +21,23 @@
    * bipartite graph. Used to drive the selective damping mechanism in
    * factorized EP.
    * <p>
-   * Let n variables be indexed by i, m factors indexed by k. The
+   * Let n variables be indexed by i, m factors indexed by j. The
    * structure is a bipartite factor graph (variable and factor nodes).
-   * Each factor k is linked to >=1 variable, each variable is linked
-   * to >=1 factor (factor nodes can be restricted, see 'subInd').
+   * Each factor j is linked to >=1 variable, each variable is linked
+   * to >=1 factor.
    * For variable i, denote by V_i the set of factors connected to i.
-   * Each link (k,i) is associated a variable x_ki, these values change
+   * Each link (j,i) is associated a variable x_ji, these values change
    * all the time (the graph structure is fixed).
-   * The object tracks max_k x_ki for each variable i.
+   * The object tracks max_j x_ji for each variable i. Here, max_j can
+   * run over a subset (see 'subInd').
    *
-   * For K=='maxSize', we keep up to K entries (x_ki,k) for each i. The
+   * For K=='maxSize', we keep up to K entries (x_ji,j) for each i. The
    * valid entries (between 1 and K) correspond to the maximum ones, sorted
-   * in descending order. When a new (x_ki,k) comes in, this list is
+   * in descending order. When a new (x_ji,j) comes in, this list is
    * updated, whereby it can shrink by one entry. If it becomes empty, it
    * is recomputed (for i only).
    *
-   * Read access to graph structure and values (V_i, {x_ki}) is via pure
+   * Read access to graph structure and values (V_i, {x_ji}) is via pure
    * virtual methods 'numVariables', 'numFactors', 'getFactorValues'. These
    * must be implemented by subclasses (f.ex., 'FactEPMaximumPiValues').
    * <p>
@@ -44,12 +45,12 @@
    * each, entries for i start at i*(K+1), first 'numValid[i]' are valid.
    * The last entry is a dummy entry.
    * NOTE: 'numValid[i]' must not be 0 for any i. This means that every
-   * variable i must be touched by at least one factor k not excluded
+   * variable i must be touched by at least one factor j not excluded
    * by 'subInd'.
    * <p>
    * Maximum over subset of factors:
-   * If 'subInd' is given, max_k x_ki does not run over all k. If
-   * 'subExcl'==false, max_k runs over 'subInd'. If 'subExcl'==true, max_k
+   * If 'subInd' is given, max_j x_ji does not run over all j. If
+   * 'subExcl'==false, max_j runs over 'subInd'. If 'subExcl'==true, max_j
    * runs over the complement of 'subInd'. 'subInd' must be sorted in
    * ascending order.
    * NOTE: Involves binary search over 'subInd' for every 'update' and
@@ -132,9 +133,9 @@
 
     /**
      * Has to be implemented by subclasses.
-     * For variable index i, V_i contains factors k which connect to i, V_i
+     * For variable index i, V_i contains factors j which connect to i, V_i
      * is sorted in increasing order. J_i is an index into the flat vector
-     * 'xarr': if k==V_i[l], then x_ki is in 'xarr[J_i[l]]'. The size of
+     * 'xarr': if j==V_i[l], then x_ji is in 'xarr[J_i[l]]'. The size of
      * V_i, J_i is returned.
      *
      * @param i    Variable index
@@ -163,7 +164,7 @@
 
     /**
      * @param i Variable index
-     * @return  max_k x_ki
+     * @return  max_j x_ji
      */
     virtual double getMaxValue(int i) const {
       return topVal[i*(maxSize+1)];

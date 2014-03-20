@@ -1,11 +1,6 @@
 /* -------------------------------------------------------------------
  * EPTWRAP_FACT_SEQUPDATES
  *
- * ATTENTION: We use the undocumented fact that the content of
- * matrices passed as arguments to a MEX function can be overwritten
- * like in a proper call-by-reference. This is not officially
- * supported and may not work in future Matlab versions!
- *
  * EP with factorized Gaussian backbone. Run a number of updates on
  * potentials, one of the after (sequential updating).
  * Operates on ([I]: Input, [I/O]: Input/output, some vectors are
@@ -93,7 +88,6 @@
  * - SD_NUPD:     " [int32]
  * - SD_NREC:     " [int32]
  * -------------------------------------------------------------------
- * Matlab MEX Function
  * Author: Matthias Seeger
  * ------------------------------------------------------------------- */
 

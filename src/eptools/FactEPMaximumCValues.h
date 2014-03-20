@@ -14,13 +14,16 @@
 #endif
 
 #include "src/eptools/MaximumValuesService.h"
-#include "src/eptools/FactEPRepresBivarPrec.h"
+#include "src/eptools/FactorizedEPRepresentation.h"
 
 //BEGINNS(eptools)
   /**
    * Specialization of 'MaximumValuesService' to max_j c_jk, where the
    * structure j -> k and the c values (Gamma parameters) are maintained
-   * by a 'FactEPRepresBivarPrec' object.
+   * by a 'FactorizedEPRepresentation' object.
+   * <p>
+   * NOTE: The index j over potentials is 0-based, it runs over bivariate
+   * precision potentials only.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -30,13 +33,14 @@
   protected:
     // Additional members
 
-    Handle<FactEPRepresBivarPrec> epRepr;
+    Handle<FactorizedEPRepresentation> epRepr;
 
   public:
     // Public methods
 
     /**
      * Constructor. Consistency of 'ptopVal' with 'pepRepr' is not checked.
+     * 'pepRepr' must contain precision potentials.
      *
      * @param pepRepr   EP representation (bivariate precision potentials)
      * @param pmaxSize  K
@@ -46,27 +50,30 @@
      * @param psubInd   Optional
      * @param psubExcl  Def.: false
      */
-    FactEPMaximumCValues(const Handle<FactEPRepresBivarPrec>& pepRepr,
+    FactEPMaximumCValues(const Handle<FactorizedEPRepresentation>& pepRepr,
 			 int pmaxSize,const ArrayHandle<int>& pnumValid,
 			 const ArrayHandle<int>& ptopInd,
 			 const ArrayHandle<double>& ptopVal,
 			 const ArrayHandle<int>& psubInd=
 			 ArrayHandleZero<int>::get(),bool psubExcl=false) :
-      MaximumValuesService(pepRepr->numPrecVars(),pepRepr->numPotentials(),
-			   pmaxSize,pnumValid,ptopInd,ptopVal,psubInd,psubExcl),
-      epRepr(pepRepr) {}
+      MaximumValuesService(pepRepr->numPrecVariables(),
+			   pepRepr->numBVPrecPotentials(),pmaxSize,pnumValid,
+			   ptopInd,ptopVal,psubInd,psubExcl),epRepr(pepRepr) {
+      if (pepRepr->numPrecVariables()==0)
+	throw WrongStatusException(EXCEPT_MSG(""));
+    }
 
     int numVariables() const {
-      return epRepr->numPrecVars();
+      return epRepr->numPrecVariables();
     }
 
     int numFactors() const {
-      return epRepr->numPotentials();
+      return epRepr->numBVPrecPotentials();
     }
 
     int getFactorValues(int i,const int*& vind,const int*& jind,
 			const double*& xarr) const {
-      // Maps directly to 'FactEPRepresBivarPrec::accessTauCol'
+      // Maps directly to 'FactorizedEPRepresentation::accessTauCol'
       const double* aP;
       int sz=epRepr->accessTauCol(i,vind,aP,xarr);
       jind=vind;
