@@ -255,7 +255,7 @@ void eptwrap_fact_sequpdates_bvprec(int ain,int aout,int n,int m,
     }
     if (sdc_k>0) {
       try {
-	epMaxC.changeRep(new FactEPMaximumAValues(epRepr,sdc_k,sdc_numvalidA,
+	epMaxC.changeRep(new FactEPMaximumCValues(epRepr,sdc_k,sdc_numvalidA,
 						  sdc_topindA,sdc_topvalA));
       } catch (StandardException ex) {
 	W_RETERROR_ARGS(1,"Cannot create FactEPMaximumCValues (selective damping):\n%s",ex.msg());

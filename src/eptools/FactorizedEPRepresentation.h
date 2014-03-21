@@ -409,7 +409,7 @@
     const int* jInd;
 
     for (k=0; k<numK; k++) {
-      sz=accessTauCol(k,viInd,jInd,aP,cP);
+      sz=accessTauCol(k,jInd,aP,cP);
       for (j=0,mA=mC=0.0; j<sz; j++) {
 	jj=jInd[j];
 	mA+=aP[jj]; mC+=cP[jj];

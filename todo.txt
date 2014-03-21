@@ -542,14 +542,27 @@ IMPLEMENTATION OF EP TOOLBOX
         - fact_compmaxac (for a, c parameters) [OK]
         - fact_compmarginals_bvprec (or generalize fact_compmarginals?) [OK]
         - getpotagroup [OK]
-      - Cython wrapper code [HIER!]
-        Got until potmanager_isvalid
-      - Get to compile
+      - Cython wrapper code [OK]
+      - Get to compile [OK]
     - Code watching (maybe update documentation)!
+      - Go through derivations [OK]
+      - potentials/quad/EPPotGaussianPrecision [HIER!]
+      - potentials/PotentialManager
+      - potentials/DefaultPotManager
+      - potentials/ContainerPotManager
+      - potentials/PotManagerFactory
+      - MaximumValuesService and subclasses
+      - FactorizedEPRepresentation
+      - FactorizedEPDriver
+      - Most complicated wrappers
       Insert test code!
   - New Python code for inference in the presence of bivariate potentials
-  - Create simple test example, maybe even something where exact inference
-    is tractable, and see what it does (f.ex.: MSR paper on grading tests!)
+  - Simple test example, where exact solution can be obtained by brute
+    force: Mean and precision of Gaussian. Can plot exact marginal posteriors
+    up to normalization. Normalization and marginal moments by brute force
+    evaluation (grid)
+    ==> Could also use STAN to sample from this model!
+  - More complex example, f.ex. MSR paper on grading tests
 
 - Documentation of source code:
   - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto

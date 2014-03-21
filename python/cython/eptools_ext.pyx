@@ -37,11 +37,11 @@ cdef void** make_voidptr_array(np.ndarray[np.uint64_t,ndim=1] arr):
         ret[i] = <void*>arr[i]
     return ret
 
-cdef check_contiguous_array(np.ndarray a,bytes nma):
+cdef check_contiguous_array(np.ndarray a,str nma):
     if not a.flags.c_contiguous:
         raise TypeError('%s must be contiguous array' % nma.upper())
 
-cdef check_contiguous_array_size(np.ndarray a,bytes nma,int sz):
+cdef check_contiguous_array_size(np.ndarray a,str nma,int sz):
     if not (a.flags.c_contiguous and a.shape[0]==sz):
         raise TypeError('%s must be contiguous array of size %d' %
                         (nma.upper(),sz))
@@ -746,6 +746,8 @@ def fact_sequpdates_bvprec(int n,int m,np.ndarray[int,ndim=1] updjind not None,
     if aout>2:
         return (sd_nupd,sd_nrec)
 
+# tauind must be passed iff the potential manager contains bivariate precision
+# potentials.
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def potmanager_isvalid(np.ndarray[int,ndim=1] potids not None,
@@ -753,22 +755,34 @@ def potmanager_isvalid(np.ndarray[int,ndim=1] potids not None,
                        np.ndarray[np.double_t,ndim=1] parvec not None,
                        np.ndarray[int,ndim=1] parshrd not None,
                        np.ndarray[np.uint64_t,ndim=1] annobj not None,
-                       int posoff = 0):
-    cdef int errcode
+                       int posoff = 0,
+                       np.ndarray[int,ndim=1] tauind = None):
+    cdef int errcode, tauind_n, ain
     cdef char errstr[512]
     cdef char* retstr
     cdef void** annobj_p
+    cdef int* tauind_p
     # Ensure that input arguments are contiguous
     potids = np.ascontiguousarray(potids)
     numpot = np.ascontiguousarray(numpot)
     parvec = np.ascontiguousarray(parvec)
     parshrd = np.ascontiguousarray(parshrd)
+    if tauind is not None:
+        tauind = np.ascontiguousarray(tauind)
+        tauind_p = &tauind[0]
+        tauind_n = tauind.shape[0]
+        ain = 7
+    else:
+        tauind_p = NULL
+        tauind_n = 0
+        ain = 6
     annobj_p = make_voidptr_array(annobj)  # Convert to void* array
     # Call C function
-    eptwrap_potmanager_isvalid(6,1,&potids[0],potids.shape[0],&numpot[0],
+    eptwrap_potmanager_isvalid(ain,1,&potids[0],potids.shape[0],&numpot[0],
                                numpot.shape[0],&parvec[0],parvec.shape[0],
                                &parshrd[0],parshrd.shape[0],annobj_p,
-                               annobj.shape[0],posoff,&retstr,&errcode,errstr)
+                               annobj.shape[0],posoff,tauind_p,tauind_n,
+                               &retstr,&errcode,errstr)
     PyMem_Free(annobj_p)  # Free temp. void* array
     # Check for error, raise exception
     if errcode != 0:
@@ -795,6 +809,30 @@ def epupdate_single(pid,np.ndarray[np.double_t,ndim=1] pars not None,
     if errcode != 0:
         raise exc.ApBsWrapError(<bytes>errstr)
     return (rstat,alpha,nu,logz)
+
+def epupdate_single_bvprec(pid,np.ndarray[np.double_t,ndim=1] pars not None,
+                           np.uint64_t annobj,double cmu,double crho,
+                           double ca,double cc):
+    cdef int errcode, rstat
+    cdef char errstr[512]
+    cdef double alpha, nu, hata, hatc, logz
+    # Ensure that input arguments are contiguous
+    pars = np.ascontiguousarray(pars)
+    # Call C function
+    if isinstance(pid,str):
+        eptwrap_epupdate_single_bvprec2(7,6,<char*>pid,&pars[0],pars.shape[0],
+                                        <void*>annobj,cmu,crho,ca,cc,&rstat,
+                                        &alpha,&nu,&hata,&hatc,&logz,&errcode,
+                                        errstr)
+    else:
+        eptwrap_epupdate_single_bvprec1(7,6,<int>pid,&pars[0],pars.shape[0],
+                                        <void*>annobj,cmu,crho,ca,cc,&rstat,
+                                        &alpha,&nu,&hata,&hatc,&logz,&errcode,
+                                        errstr)
+    # Check for error, raise exception
+    if errcode != 0:
+        raise exc.ApBsWrapError(<bytes>errstr)
+    return (rstat,alpha,nu,hata,hatc,logz)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -825,6 +863,38 @@ def epupdate_single_pman(np.ndarray[int,ndim=1] potids not None,
     if errcode != 0:
         raise exc.ApBsWrapError(<bytes>errstr)
     return (rstat,alpha,nu,logz)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def epupdate_single_pman_bvprec(np.ndarray[int,ndim=1] potids not None,
+                                np.ndarray[int,ndim=1] numpot not None,
+                                np.ndarray[np.double_t,ndim=1] parvec not None,
+                                np.ndarray[int,ndim=1] parshrd not None,
+                                np.ndarray[np.uint64_t,ndim=1] annobj not None,
+                                int pind,double cmu,double crho,double ca,
+                                double cc):
+    cdef int errcode, rstat
+    cdef char errstr[512]
+    cdef void** annobj_p
+    cdef double alpha, nu, hata, hatc, logz
+    # Ensure that input arguments are contiguous
+    potids = np.ascontiguousarray(potids)
+    numpot = np.ascontiguousarray(numpot)
+    parvec = np.ascontiguousarray(parvec)
+    parshrd = np.ascontiguousarray(parshrd)
+    annobj_p = make_voidptr_array(annobj)  # Convert to void* array
+    # Call C function
+    eptwrap_epupdate_single_bvprec3(10,6,&potids[0],potids.shape[0],&numpot[0],
+                                    numpot.shape[0],&parvec[0],parvec.shape[0],
+                                    &parshrd[0],parshrd.shape[0],annobj_p,
+                                    annobj.shape[0],pind,cmu,crho,ca,cc,
+                                    &rstat,&alpha,&nu,&hata,&hatc,&logz,
+                                    &errcode,errstr)
+    PyMem_Free(annobj_p)  # Free temp. void* array
+    # Check for error, raise exception
+    if errcode != 0:
+        raise exc.ApBsWrapError(<bytes>errstr)
+    return (rstat,alpha,nu,hata,hatc,logz)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

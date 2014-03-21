@@ -21,7 +21,9 @@
   /**
    * Represents integrand function g(x) and its parameters:
    *   g(x) = exp( off - h_l(v_* + sigma*x) ),
-   * where h_l(v) depends on a, c/rho, xi and l.
+   * where h_l(v) depends on a, c/rho, xi and l:
+   *   h_l(v) = -log f_l(kappa,xi) - log G(v|a,c/rho),
+   *   kappa = v/(1+v)
    */
   class EPPotGaussianPrecision_intFuncParams
   {
@@ -152,12 +154,14 @@
     }
 
     /**
+     * - inp: [cmu,crho,ca,cc]
+     * - ret: [alpha,nu,ahat,chat]
      * Integration over tau requires numerical quadrature over [0,infty).
      * If 'ca'>1/2, we apply a Laplace approximation to transform and
      * normalize the integrand (see 'EPPotQuadLaplaceApprox'). Mode finding
      * is analytically tractable (requires roots of cubic equation).
-     * If 'ca'<=1/2, the integrand's mode is at 0 (left boundary), of
-     * infinite value if 'ca'<1/2. In this case, we do not apply a
+     * If 'ca'<=1/2, the integrand's mode is at 0 (left boundary), a
+     * singularity if 'ca'<1/2. In this case, we do not apply a
      * transformation.
      */
     bool compMoments(const double* inp,double* ret,double* logz=0,

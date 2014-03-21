@@ -94,15 +94,15 @@ void eptwrap_fact_compmaxac(int ain,int aout,int n,int m,W_IARRAY(rp_rowind),
     for (i=0; i<numk; i++)
       sda_numvalid[i]=sdc_numvalid[i]=1;
     try {
-      epMaxA.changeRep(new FactEPMaximumPiValues(epRepr,sda_k,sda_numvalidA,
-						 sda_topindA,sda_topvalA));
+      epMaxA.changeRep(new FactEPMaximumAValues(epRepr,sda_k,sda_numvalidA,
+						sda_topindA,sda_topvalA));
       epMaxA->recompute(); // Recompute from scratch
     } catch (StandardException ex) {
       W_RETERROR_ARGS(1,"Cannot create FactEPMaximumAValues (selective damping):\n%s",ex.msg());
     }
     try {
-      epMaxC.changeRep(new FactEPMaximumPiValues(epRepr,sdc_k,sdc_numvalidA,
-						 sdc_topindA,sdc_topvalA));
+      epMaxC.changeRep(new FactEPMaximumCValues(epRepr,sdc_k,sdc_numvalidA,
+						sdc_topindA,sdc_topvalA));
       epMaxC->recompute(); // Recompute from scratch
     } catch (StandardException ex) {
       W_RETERROR_ARGS(1,"Cannot create FactEPMaximumCValues (selective damping):\n%s",ex.msg());

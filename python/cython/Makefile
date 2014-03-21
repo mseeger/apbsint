@@ -1,5 +1,5 @@
 all:
-	python setup.py build_ext --inplace
+	python setup.py build_ext --inplace 
 	mv eptools_ext.so ../apbsint/.
 	mv apbtest_ext.so ../apbsint/.
 	mv ptannotate_ext.so ../apbsint/.

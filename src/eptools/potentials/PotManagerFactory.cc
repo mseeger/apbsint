@@ -206,7 +206,7 @@
       throw InvalidParameterException("No bivariate precision potentials");
     if (tauInd==0)
       throw InvalidParameterException("TAUIND must be given");
-    int dimK=tauInd[numBVPrec],i,j,sz;
+    int dimK=tauInd[numBVPrec],i,j,k,sz;
     if (dimK<=0 || tauInd.size()!=2*numBVPrec+dimK+2)
       throw InvalidParameterException("TAUIND wrong size");
     ArrayHandle<bool> karr(dimK);

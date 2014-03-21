@@ -36,7 +36,7 @@ extern "C" {
 				      W_DARRAY(sdc_topval),W_IARRAY(sd_subind),
 				      int sd_subexcl,W_IARRAY(rstat),
 				      W_DARRAY(delta),W_DARRAY(sd_dampfact),
-				      int* sd_nupd,int* sd_nrec,W_ERRORARGS)
+				      int* sd_nupd,int* sd_nrec,W_ERRORARGS);
 
 #ifdef __cplusplus
 }

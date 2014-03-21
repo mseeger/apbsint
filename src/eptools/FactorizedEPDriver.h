@@ -99,8 +99,8 @@
     ArrayHandle<double> margBeta,margPi;
     double piMinThres;
     Handle<FactEPMaximumPiValues> epMaxPi; // Selective damping (optional)
-    ArrayHandle<double> margA,margC;       // Only for bivar. prec. pots.
     double aMinThres,cMinThres;
+    ArrayHandle<double> margA,margC;       // Only for bivar. prec. pots.
     Handle<FactEPMaximumAValues> epMaxA;
     Handle<FactEPMaximumCValues> epMaxC;
     ArrayHandle<double> buffVec;
@@ -125,9 +125,8 @@
 		       const ArrayHandle<double>& pmargPi,double ppiMinThres,
 		       const Handle<FactEPMaximumPiValues>& pepMaxPi=
 		       HandleZero<FactEPMaximumPiValues>::get()) :
-      epPots(pepPots),epRepr(pepRepr),epReprPrec(0),margBeta(pmargBeta),
-      margPi(pmargPi),piMinThres(ppiMinThres),epMaxPi(pepMaxPi),aMinThres(0.0),
-      cMinThres(0.0) {
+      epPots(pepPots),epRepr(pepRepr),margBeta(pmargBeta),margPi(pmargPi),
+      piMinThres(ppiMinThres),epMaxPi(pepMaxPi),aMinThres(0.0),cMinThres(0.0) {
       int numN=pepRepr->numVariables();
 
       if (ppiMinThres<=0.0 || pmargBeta.size()!=numN || pmargPi.size()!=numN)
@@ -168,9 +167,9 @@
 		       const Handle<FactEPMaximumCValues>& pepMaxC=
 		       HandleZero<FactEPMaximumCValues>::get()) :
       epPots(pepPots),epRepr(pepRepr),margBeta(pmargBeta),margPi(pmargPi),
-      margA(pmargA),margC(pmargC),piMinThres(ppiMinThres),
-      aMinThres(paMinThres),cMinThres(pcMinThres),epMaxPi(pepMaxPi),
-      epMaxA(pepMaxA),epMaxC(pepMaxC) {
+      piMinThres(ppiMinThres),epMaxPi(pepMaxPi),aMinThres(paMinThres),
+      cMinThres(pcMinThres),margA(pmargA),margC(pmargC),epMaxA(pepMaxA),
+      epMaxC(pepMaxC) {
       int numN=pepRepr->numVariables(),numK=pepRepr->numPrecVariables();
 
       if (ppiMinThres<=0.0 || numK<=0 || pmargBeta.size()!=numN ||
@@ -263,10 +262,10 @@
   inline int FactorizedEPDriver::sequentialUpdate(int j,double dampFact,
 						  double* delta,double* effDamp)
   {
-    int i,ii,vjSz,k;
+    int i,ii,vjSz,k=0;
     double temp,temp2,cH,cRho,bval,nu,alpha,cPi,cBeta,pi,beta,tilPi,tilBeta,
-      prPi,prBeta,kappa,thres2=0.5*piMinThres,mH,mRho,cA,cC,hatA,hatC,prA,prC,
-      mnTau,stdTau;
+      prPi,prBeta,kappa,thres2=0.5*piMinThres,mH,mRho,cA=0.0,cC=0.0,hatA,hatC,
+      prA,prC,mnTau=0.0,stdTau=0.0,eta;
     const int* vjInd;
     const double* bP;
     double* betaP,*piP,*cBetaP,*cPiP,*mBetaP,*mPiP,*mprBetaP,*mprPiP,*aP,*cP;
@@ -280,7 +279,10 @@
     // Access to data for j. Temporary arrays
     epRepr->accessRow(j,vjSz,vjInd,bP,betaP,piP);
     if (isBVPrec) {
-      k=epRepr->accessTauRow(j,aP,cP); // k=k(j)
+      // 'k' is k(j). 'aP', 'cP' point to message parameters
+      // a_{j k}, c_{j k} (read and write access). Note that different to x,
+      // the update only effects the marginal on a single tau_k
+      k=epRepr->accessTauRow(j,aP,cP);
       mnTau=margA[k]/margC[k]; // For '*delta' below
       stdTau=sqrt(margA[k])/margC[k];
     }
