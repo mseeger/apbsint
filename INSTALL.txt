@@ -67,7 +67,7 @@ present.
 On the other hand, the implemented techniques are well documented, and great
 care is taken to ensure numerically robust behaviour. Unit test code is
 supplied on a case-by-case basis. Contributions on all levels are highly
-welcome.
+encouraged.
 
 Prerequisites
 =============
@@ -81,9 +81,10 @@ Python (Matlab) code works only together with its successfully built C++ API
 
    The C++ code is written under Linux, it compiles with GNU gcc/g++ 4.7.2.
    It may compile with other gcc versions as well. At present, the code does
-   not compile under Windows or Mac. Having said that, the code is basic,
-   porting it should not be difficult (please contribute a port if you did
-   one).
+   not compile under Windows or Mac. Having said that, the code is basic and
+   has essentially no dependencies, porting it should not be difficult
+   (please contribute a port if you did one, even better if you could pledge
+   to maintain it).
 
 2) Prerequisites for Python code and Python API to C++ code
 
@@ -233,3 +234,20 @@ right now. Look into [ROOT]/doc.
 Apart from that, example and test code for the Matlab API are in
 [ROOT]/matlab/test/, for the Python API in [ROOT]/python/test/. Also,
 the code is well documented.
+
+What is the "Workaround"?
+=========================
+
+You may note a certain incompleteness of the system (for example, some
+methods in src/src/eptools/potentials/SpecfunServices throw a
+NotImplemException) and come across the term "workaround" (for example, in
+python/cython/setup.py). Trying to build the system in "workaround mode" does
+not work.
+
+These problems are due to licensing issues. While we will always ensure that
+a core part of the system builds properly, we have to exclude some more recent
+extensions, as they employ code which is copy-left licensed.
+
+Our working solution is to explore new directions based on software under any
+license. Once an extension proves worthwile, we may spend the effort to purge
+the viral links. This process could be sped up by more contributors.

@@ -546,14 +546,14 @@ IMPLEMENTATION OF EP TOOLBOX
       - Get to compile [OK]
     - Code watching (maybe update documentation)!
       - Go through derivations [OK]
-      - potentials/quad/EPPotGaussianPrecision [HIER!]
-      - potentials/PotentialManager
+      - potentials/PotentialManager [HIER!]
       - potentials/DefaultPotManager
       - potentials/ContainerPotManager
       - potentials/PotManagerFactory
       - MaximumValuesService and subclasses
       - FactorizedEPRepresentation
       - FactorizedEPDriver
+      - potentials/quad/EPPotGaussianPrecision
       - Most complicated wrappers
       Insert test code!
   - New Python code for inference in the presence of bivariate potentials
@@ -564,6 +564,11 @@ IMPLEMENTATION OF EP TOOLBOX
     ==> Could also use STAN to sample from this model!
   - More complex example, f.ex. MSR paper on grading tests
 
+- Create stable master branch, then do new developments in another branch
+  (say: dev) [HIER!]
+  - Enough to "roll back" setup.py, eptools_ext.pyx, ceptools_ext.pxd
+  - Create stable master and development branch
+  - Build (using INSTALL) and re-run all test cases
 - Documentation of source code:
   - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto
     standard
