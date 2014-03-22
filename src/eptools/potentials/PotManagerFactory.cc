@@ -25,6 +25,7 @@
     double* pvecP=parVec.p();
     int* shrdP=parShrd.p();
     bool hasBVPrec=false;
+    //char debStr[128]; // DEBUG
 
     if (numPot.size()!=numk || annObj.size()!=numk)
       throw InvalidParameterException(EXCEPT_MSG(""));
@@ -33,6 +34,7 @@
 	throw InvalidParameterException(EXCEPT_MSG(""));
     if (numk>1)
       parr.changeRep(numk);
+    //printMsgStdout("A");
     for (k=0; k<numk; k++) {
       // Create 'DefaultPotManager' object
       //sprintf(debStr,"k=%d",k); printMsgStdout(debStr); // DEBUG!
@@ -41,13 +43,13 @@
       // NOTE: We can pass 'pvecP' for construction parameters (if any),
       // without having to prepare a parameter vector or even knowing the
       // size. These parameters must form the prefix
-      //cout << "ManFactory: k=" << k << endl; // DEBUG!
       Handle<EPScalarPotential> epPot;
       try {
 	epPot.changeRep(EPPotentialFactory::createDefault(pid,pvecP,annObj[k]));
       } catch (StandardException ex) {
 	throw InvalidParameterException(EXCEPT_MSG("Cannot create potential object"));
       }
+      //sprintf(debStr,"B: epPot=%d",epPot.p()); printMsgStdout(debStr);
       int numConstPars=epPot->numConstPars();
       int npar=epPot->numPars(); // Could be 0
       if (numConstPars>0) {
@@ -67,6 +69,8 @@
 	// Potential has no parameters
 	shrdMsk.changeRep(0); pvecMsk.changeRep(0);
       }
+      // Ensure that if there are potentials of group 'atypeBivarPrec', they
+      // form the suffix
       atype=epPot->getArgumentGroup();
       if (hasBVPrec && atype!=EPScalarPotential::atypeBivarPrec)
 	throw InvalidParameterException(EXCEPT_MSG(""));
@@ -75,12 +79,14 @@
       // they do not copy 'parShrd', 'parVec' content!
       PotentialManager* pmanP=
 	new DefaultPotManager(epPot,npot,pvecMsk,shrdMsk,false);
+      //printMsgStdout("C");
       if (numk==1)
 	return pmanP; // Single 'DefaultPotManager'
       else
 	parr[k].changeRep(pmanP);
     }
     MYASS(numk>1);
+    //printMsgStdout("D");
 
     return new ContainerPotManager(parr);
   }
