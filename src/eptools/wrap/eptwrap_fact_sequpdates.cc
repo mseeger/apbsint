@@ -124,7 +124,7 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     Interval<int> ivM(0,m-1,IntVal::ivClosed,IntVal::ivClosed);
     if (ivM.check(updjind,nupdjind)!=0)
       W_RETERROR(1,"UPDJIND: Entries of out range");
-    //printMsgStdout("Point 1");
+    printMsgStdout("Point 1");
     /* Potential manager */
     Handle<PotentialManager> potMan;
     createPotentialManager(W_ARR(pm_potids),W_ARR(pm_numpot),W_ARR(pm_parvec),
@@ -132,13 +132,13 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     if (potMan->size()!=m)
       W_RETERROR(1,"PM_*: Potential manager has wrong size");
     /* Representation of B */
-    //printMsgStdout("Point 2");
+    printMsgStdout("Point 2");
     Handle<FactorizedEPRepresentation> epRepr;
     createFactEPRepres(n,m,W_ARR(rp_rowind),W_ARR(rp_colind),W_ARR(rp_bvals),
 		       W_ARR(rp_pi),W_ARR(rp_beta),epRepr,W_ERRARGS);
     /* Variable marginals */
     ArrayHandle<double> margpiA,margbetaA;
-    //printMsgStdout("Point 3");
+    printMsgStdout("Point 3");
     W_CHKSIZE(margpi,n,"MARGPI");
     W_CHKSIZE(margpi,n,"MARGBETA");
     W_MASKARRAY(margpi);
@@ -153,7 +153,7 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
 	W_RETERROR(1,"DAMPFACT: Out of range");
       if (ain>17) {
 	// Selective damping
-	//printMsgStdout("Point 4");
+	printMsgStdout("Point 4");
 	if (ain<20)
 	  W_RETERROR(1,"Need all SD_XXX or none");
 	W_CHKSIZE(sd_numvalid,n,"SD_NUMVALID");
@@ -164,7 +164,7 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
 	W_MASKARRAY(sd_topind);
 	W_CHKSIZE(sd_topval,nsd_topind,"SD_TOPVAL");
 	W_MASKARRAY(sd_topval);
-	//printMsgStdout("Point 5");
+	printMsgStdout("Point 5");
 	if (ain>20) {
 	  if (nsd_subind==0 || nsd_subind>m)
 	    W_RETERROR(1,"SD_SUBIND: Wrong size");
@@ -203,12 +203,12 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     }
     /* Create max_pi data structure (only if selective damping) */
     Handle<FactEPMaximumPiValues> epMaxPi;
-    //printMsgStdout("Point 6");
+    printMsgStdout("Point 6");
     if (sd_k>0) {
       try {
-	//sprintf(errMsg,"MEX: n=%d,K=%d,numvalid=%d,topind=%d,topval=%d",numN,
-	//      sd_k,sd_numvalid.size(),sd_topind.size(),sd_topval.size());
-	//printMsgStdout(errMsg);
+	sprintf(W_ERRSTR,"MEX: n=%d,K=%d,numvalid=%d,topind=%d,topval=%d",n,
+		sd_k,sd_numvalidA.size(),sd_topindA.size(),sd_topvalA.size());
+	printMsgStdout(W_ERRSTR);
 	epMaxPi.changeRep(new FactEPMaximumPiValues(epRepr,sd_k,
 						    sd_numvalidA,sd_topindA,
 						    sd_topvalA,sd_subindA,
@@ -221,7 +221,7 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     }
     /* Create EP driver */
     Handle<FactorizedEPDriver> epDriver;
-    //printMsgStdout("Point 7");
+    printMsgStdout("Point 7");
     try {
       epDriver.changeRep(new FactorizedEPDriver(potMan,epRepr,margbetaA,
 						margpiA,piminthres,epMaxPi));
@@ -234,8 +234,8 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     /* Main loop over updates */
     for (int i=0; i<nupdjind; i++) {
       int j=updjind[i];
-      //sprintf(errstr,"i=%d, j=%d",i,j);
-      //printMsgStdout(errstr);
+      sprintf(W_ERRSTR,"i=%d, j=%d",i,j);
+      printMsgStdout(W_ERRSTR);
       int irstat=epDriver->sequentialUpdate(j,dampfact,(delta!=0)?(delta+i):0,
 					    (sd_dampfact!=0)?(sd_dampfact+i):0);
       if (rstat!=0) rstat[i]=irstat;
@@ -244,13 +244,13 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
       if (irstat!=FactorizedEPDriver::updSuccess && sd_dampfact!=0)
 	sd_dampfact[i]=1.0;
     }
-    //printMsgStdout("Point 9");
+    printMsgStdout("Point 9");
     if (sd_nupd!=0) {
       int inrec;
       epMaxPi->getStats(*sd_nupd,inrec);
       if (sd_nrec!=0) *sd_nrec=inrec;
     }
-    //printMsgStdout("Point 10");
+    printMsgStdout("Point 10");
     W_RETOK;
   } catch (StandardException ex) {
     W_RETERROR_ARGS(1,"Caught LHOTSE exception: %s", ex.msg());
