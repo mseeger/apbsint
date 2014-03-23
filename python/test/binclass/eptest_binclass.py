@@ -261,3 +261,110 @@ acc = 100.*float((np.sign(h_q)==targ_all[:num_test]).sum())/num_test
 loglh = logz.sum()/num_test
 print ('\nFinal predictions:\nAccuracy: %4.2f%%\n'
        'Test set log likelihood: %.6f') % (acc, loglh)
+
+# Baseline results (23/3/2014, commit 8fd5e9d3c9c60bbaee0c4cad050a66ec656e7f10)
+#
+#--- [Factorized, Laplace (tau=2/5), sel. damp] ---
+#Time(inference): 2.925671s
+#
+#Done MAXIT iterations.
+#Number sweeps:   100
+#Final delta:     0.005832
+#Skip histogram:   [267879      0      0      0    101]
+#Select. damps:   112
+#
+#Final predictions:
+#Accuracy: 83.92%
+#Test set log likelihood: -0.346497
+#---
+#--- [Factorized, Laplace (tau=2/5), no sel. damp] ---
+#Time(inference): 2.690239s
+#
+#Done MAXIT iterations.
+#Number sweeps:   100
+#Final delta:     0.004497
+#Skip histogram:   [267980      0      0      0      0]
+#
+#Final predictions:
+#Accuracy: 83.91%
+#Test set log likelihood: -0.346438
+#---
+#--- [Factorized, Gaussian (ssq=25/4), sel. damp] ---
+#Time(inference): 2.900740s
+#
+#Done MAXIT iterations.
+#Number sweeps:   100
+#Final delta:     0.009161
+#Skip histogram:   [256100      0      0      0      0]
+#Select. damps:   0
+#
+#Final predictions:
+#Accuracy: 83.89%
+#Test set log likelihood: -0.348321
+#---
+#--- [Factorized, Gaussian (ssq=25/4), no sel. damp] ---
+#Time(inference): 2.652864s
+#
+#Done MAXIT iterations.
+#Number sweeps:   100
+#Final delta:     0.008146
+#Skip histogram:   [256100      0      0      0      0]
+#
+#Final predictions:
+#Accuracy: 83.87%
+#Test set log likelihood: -0.347889
+#---
+#--- [CoupParallel, Laplace (tau=2/5)] ---
+#Time(inference): 6.966938s
+#
+#Done MAXIT iterations.
+#Number sweeps:   20
+#Final delta:     0.001795
+#Number of skips: 0
+#
+#Final predictions:
+#Accuracy: 83.91%
+#Test set log likelihood: -0.346969
+#---
+#--- [CoupParallel, Gaussian (ssq=25/4)] ---
+#Time(inference): 7.035166s
+#
+#Done MAXIT iterations.
+#Number sweeps:   20
+#Final delta:     0.026932
+#Number of skips: 0
+#
+#Final predictions:
+#Accuracy: 83.87%
+#Test set log likelihood: -0.347569
+#---
+#==> Final delta much larger than for Laplace (same above). Why?
+#    After 40 sweeps: delta=0.001204, 83.87%, llh=-0.347581
+#==> This means that Laplace prior helps convergence of parallel updating
+#--- [CoupSequential, Laplace (tau=2/5)] ---
+#Time(inference): 44.869315s
+#
+#Done MAXIT iterations.
+#Number sweeps:   15
+#Final delta:     0.000117
+#Skip histogram:  [40215     0     0     0]
+#
+#Final predictions:
+#Accuracy: 83.91%
+#Test set log likelihood: -0.346968
+#---
+#==> delta=0.002392 at iter. 10
+#    Converges to high accuracy, but much slower than CoupParallel
+#--- [CoupSequential, Gaussian (ssq=25/4)] ---
+#Time(inference): 23.707730s
+#
+#Converged to DELTAEPS accuracy.
+#Number sweeps:   7
+#Final delta:     0.000080
+#Skip histogram:  [17927     0     0     0]
+#
+#Final predictions:
+#Accuracy: 83.87%
+#Test set log likelihood: -0.347582
+#---
+#==> delta=0.001889 at iter. 5
