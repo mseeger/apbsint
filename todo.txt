@@ -553,8 +553,8 @@ IMPLEMENTATION OF EP TOOLBOX
       - MaximumValuesService and subclasses
       - FactorizedEPRepresentation
       - FactorizedEPDriver
-      - potentials/quad/EPPotGaussianPrecision
       - Most complicated wrappers
+      - potentials/quad/EPPotGaussianPrecision
       Insert test code!
   - New Python code for inference in the presence of bivariate potentials
   - Simple test example, where exact solution can be obtained by brute
@@ -565,10 +565,13 @@ IMPLEMENTATION OF EP TOOLBOX
   - More complex example, f.ex. MSR paper on grading tests
 
 - Create stable master branch, then do new developments in another branch
-  (say: dev) [HIER!]
-  - Enough to "roll back" setup.py, eptools_ext.pyx, ceptools_ext.pxd
-  - Create stable master and development branch
-  - Build (using INSTALL) and re-run all test cases
+  (say: dev)
+  - Enough to "roll back" setup.py, eptools_ext.pyx, ceptools_ext.pxd [OK]
+  - Create stable master and development branch [OK]
+  - Build (using INSTALL) and re-run all test cases [HIER!]
+    ==> Some issues!
+    OK: Fix these bugs first in master, then start dev from there!
+
 - Documentation of source code:
   - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto
     standard

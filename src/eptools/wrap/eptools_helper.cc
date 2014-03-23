@@ -27,6 +27,11 @@ void createPotentialManager(W_IARRAY(potids),W_IARRAY(numpot),W_DARRAY(parvec),
   W_MASKARRAY(parvec);
   W_MASKARRAY(parshrd);
   W_MASKARRAY(annobj);
+  // DEBUG:
+  //sprintf(W_ERRSTR,"potids=%d,numpot=%d,parvec=%d,parshrd=%d,annobj=%d",
+  //  potidsA.size(),numpotA.size(),parvecA.size(),parshrdA.size(),
+  //  annobjA.size());
+  //printMsgStdout(W_ERRSTR);
   try {
     potMan.changeRep(PotManagerFactory::create(potidsA,numpotA,parvecA,
 					       parshrdA,annobjA));

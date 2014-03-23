@@ -63,7 +63,8 @@ void eptwrap_epupdate_parallel(int ain,int aout,W_IARRAY(potids),
     //cout << "Wrap: Done createPotentialManager" << endl; // DEBUG!
     totsz=ncmu;
     W_CHKSIZE(crho,totsz,"CRHO");
-    if (potMan->numArgumentGroup(EPScalarPotential::atypeUnivariate)!=totsz)
+    if (potMan->numArgumentGroup(EPScalarPotential::atypeUnivariate)!=
+	potMan->size())
       W_RETERROR(1,"All potentials must be in group 'atypeUnivariate'");
     if (ain>7) {
       if (updind==0)

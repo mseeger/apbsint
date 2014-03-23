@@ -128,7 +128,9 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     /* Potential manager */
     Handle<PotentialManager> potMan;
     createPotentialManager(W_ARR(pm_potids),W_ARR(pm_numpot),W_ARR(pm_parvec),
-			   W_ARR(pm_parshrd),W_ARR(pm_annobj),potMan,W_ERRARGS);
+			   W_ARR(pm_parshrd),W_ARR(pm_annobj),potMan,
+			   W_ERRARGS);
+    //sprintf(W_ERRSTR,"potMan=%d",potMan.p()); printMsgStdout(W_ERRSTR);
     if (potMan->size()!=m)
       W_RETERROR(1,"PM_*: Potential manager has wrong size");
     /* Representation of B */
@@ -206,9 +208,9 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     //printMsgStdout("Point 6");
     if (sd_k>0) {
       try {
-	//sprintf(errMsg,"MEX: n=%d,K=%d,numvalid=%d,topind=%d,topval=%d",numN,
-	//      sd_k,sd_numvalid.size(),sd_topind.size(),sd_topval.size());
-	//printMsgStdout(errMsg);
+	//sprintf(W_ERRSTR,"MEX: n=%d,K=%d,numvalid=%d,topind=%d,topval=%d",n,
+	//	sd_k,sd_numvalidA.size(),sd_topindA.size(),sd_topvalA.size());
+	//printMsgStdout(W_ERRSTR);
 	epMaxPi.changeRep(new FactEPMaximumPiValues(epRepr,sd_k,
 						    sd_numvalidA,sd_topindA,
 						    sd_topvalA,sd_subindA,
@@ -234,8 +236,8 @@ void eptwrap_fact_sequpdates(int ain,int aout,int n,int m,W_IARRAY(updjind),
     /* Main loop over updates */
     for (int i=0; i<nupdjind; i++) {
       int j=updjind[i];
-      //sprintf(errstr,"i=%d, j=%d",i,j);
-      //printMsgStdout(errstr);
+      //sprintf(W_ERRSTR,"i=%d, j=%d",i,j);
+      //printMsgStdout(W_ERRSTR);
       int irstat=epDriver->sequentialUpdate(j,dampfact,(delta!=0)?(delta+i):0,
 					    (sd_dampfact!=0)?(sd_dampfact+i):0);
       if (rstat!=0) rstat[i]=irstat;

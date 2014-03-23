@@ -50,7 +50,7 @@
       for (i=off=0; i<num; i++) {
 	startPos[i]=off; sz=parr[i]->size();
 	off+=sz;
-	nprec=pmArr[i]->numArgumentGroup(EPScalarPotential::atypeBivarPrec);
+	nprec=parr[i]->numArgumentGroup(EPScalarPotential::atypeBivarPrec);
 	if (havePrec && nprec<sz)
 	  throw InvalidParameterException(EXCEPT_MSG("'atypeBivarPrec' potentials must form suffix"));
 	havePrec=(nprec>0);
