@@ -173,6 +173,7 @@ if imode == 'CoupParallel':
     opts = abt.helpers.Struct()
     opts.imode = imode
     opts.maxit = 20       # Max. number sweeps
+    #opts.maxit = 40       # Max. number sweeps
     opts.deltaeps = 1e-4  # Convergence threshold
     opts.damp = 0.        # No damping
     opts.caveps = 1e-5
