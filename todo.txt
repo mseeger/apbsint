@@ -551,8 +551,8 @@ IMPLEMENTATION OF EP TOOLBOX
         - getpotagroup [OK]
       - Cython wrapper code [OK]
       - Get to compile [OK]
-    - Code watching (maybe update documentation)!
-      - Go through derivations [OK]
+    - Code watching (maybe update documentation)! [OK]
+      - Go through derivations
       - potentials/PotentialManager
       - potentials/DefaultPotManager
       - potentials/ContainerPotManager
@@ -561,9 +561,14 @@ IMPLEMENTATION OF EP TOOLBOX
       - FactorizedEPRepresentation
       - FactorizedEPDriver
       - Most complicated wrappers
-      - potentials/quad/EPPotGaussianPrecision [HIER!]
+      - potentials/quad/EPPotGaussianPrecision
       Insert test code!
   - New Python code for inference in the presence of bivariate potentials
+    - ElemPotManager, PotManager: Have to check agroup. Should contain
+      number of prec. pots as member (or method) [OK]
+    - Model: tauind should be computed and maintained here [HIER!]
+    - Representation: Extra message params, services
+    - InfDriver
   - Simple test example, where exact solution can be obtained by brute
     force: Mean and precision of Gaussian. Can plot exact marginal posteriors
     up to normalization. Normalization and marginal moments by brute force

@@ -96,6 +96,13 @@ class PotManager:
     objects, which are stacked. It also maintains an internal representation.
     Call 'check_internal' before accessing the internal representation: it is
     recomputed whenever any of the ElemPotManager objects has changed.
+
+    The potential type for each ElemPotManager belongs to an argument group.
+    Right now:
+    - 0: Univariate t(s)
+    - 1: Bivariate precision t(s,tau)
+    If group 1 is present, these potentials must come last. This is checked
+    in 'check_internal'.
     """
     def __init__(self,elem):
         if isinstance(elem,list):
@@ -120,6 +127,10 @@ class PotManager:
     # details.
     # Also, we compute 'updind' as index of all non-Gaussian potentials
     # (type other than 'Gaussian').
+    #
+    # We also count the number of bivariate precision potentials (argument
+    # group 1), stored in 'num_bvprec'. If present, they must form the
+    # suffix: this is checked.
     def check_internal(self):
         elem = self.elem
         do_recomp = False
@@ -138,6 +149,7 @@ class PotManager:
             updind = []
             pid_gauss = epx.getpotid('Gaussian')
             off = 0
+            self.num_bvprec = 0
             for k in xrange(nb):
                 pid = epx.getpotid(elem[k].name)
                 if pid == -1:
@@ -145,6 +157,11 @@ class PotManager:
                 self.potids[k] = pid
                 numk = elem[k].size
                 self.numpot[k] = numk
+                agid = epx.getpotagroup(pid)
+                if self.num_bvprec>0 and agid!=1:
+                    raise ValueError('Block {0}: Bivariate precision potentials must come last'.format(k))
+                if agid==1:
+                    self.num_bvprec += numk
                 if elem[k].annobj is not None:
                     self.annobj[k] = elem[k].annobj.getptr()
                 pars = elem[k].pars

@@ -96,12 +96,14 @@
     if (logz!=0)
       *logz = lztil-0.5*(log(crho)+SpecfunServices::m_ln2pi);
     intFuncPars.off=-lztil; // New offset is -log Z_til
+    // E[kappa] -> 'ex1'
     intFuncPars.l=1;
     if (quadServ->quad(intFunc,limA,false,limA,true,ex1,true)!=0) {
       if (verbose>0)
 	cout << "  Quad(ex1, l=1) fails" << endl;
       return false; // Quadrature failure
     }
+    // E[kappa^2] -> 'ex2'
     intFuncPars.l=2;
     if (quadServ->quad(intFunc,limA,false,limA,true,ex2,true)!=0) {
       if (verbose>0)
@@ -120,13 +122,13 @@
 	cout << "  Quad(ex_tau1) fails" << endl;
       return false; // Quadrature failure
     }
-    ex1*=(ca/cc);
+    ex1*=(ca/cc); // x_1 = E[tau]
     if (ex1<(1e-12)) {
       if (verbose>0)
 	cout << "  E[tau] too small (" << ex1 << ")" << endl;
       return false;
     }
-    intFuncPars.off=-log(ex1);
+    intFuncPars.off=-log(ex1); // Normalize by E[tau] instead of Z_til
     intFuncPars.a=ca+2.0;
     intFuncPars.init();
     if (quadServ->quad(intFunc,limA,false,limA,true,ex2,true)!=0) {
@@ -134,7 +136,7 @@
 	cout << "  Quad(ex_tau2) fails" << endl;
       return false; // Quadrature failure
     }
-    ex2*=((ca+1.0)/cc);
+    ex2*=((ca+1.0)/cc); // x_2 = E[tau^2] / E[tau]
     if (ex2-ex1<(1e-12)) {
       if (verbose>0)
 	cout << "  x2-x1 too small (" << ex2-ex1 << ")" << endl;
