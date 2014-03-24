@@ -31,9 +31,7 @@
    * either 1 (shared; 'parShrd[k]' true) or N (individual;
    * 'parShrd[k]' false).
    * <p>
-   * ATTENTION: This implementation is not thread-safe. 'epPot' is
-   * used by all 'getPot' calls, and the object is reconfigured
-   * accordingly.
+   * ATTENTION: This implementation is not thread-safe (see 'getPot').
    * <p>
    * TODO: Currently, parameter values are fixed upon construction.
    * Should allow them to be modified later on.
@@ -75,11 +73,12 @@
     }
 
     int numArgumentGroup(int atype) const {
-      return (epPot->getArgumentGroup()==atype)?num:0;
+      return (epPot->getArgumentGroup()==atype)?size():0;
     }
 
     const EPScalarPotential& getPot(int j) const {
-      if (j<0 || j>=size()) throw OutOfRangeException(EXCEPT_MSG(""));
+      if (j<0 || j>=size())
+	throw OutOfRangeException(EXCEPT_MSG(""));
       if (parOff.size()>0) {
 	getPotPars(j,tmpVec.p());
 	epPot->setPars(tmpVec.p());

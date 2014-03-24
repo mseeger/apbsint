@@ -553,7 +553,7 @@ IMPLEMENTATION OF EP TOOLBOX
       - Get to compile [OK]
     - Code watching (maybe update documentation)!
       - Go through derivations [OK]
-      - potentials/PotentialManager [HIER!]
+      - potentials/PotentialManager
       - potentials/DefaultPotManager
       - potentials/ContainerPotManager
       - potentials/PotManagerFactory
@@ -561,7 +561,7 @@ IMPLEMENTATION OF EP TOOLBOX
       - FactorizedEPRepresentation
       - FactorizedEPDriver
       - Most complicated wrappers
-      - potentials/quad/EPPotGaussianPrecision
+      - potentials/quad/EPPotGaussianPrecision [HIER!]
       Insert test code!
   - New Python code for inference in the presence of bivariate potentials
   - Simple test example, where exact solution can be obtained by brute

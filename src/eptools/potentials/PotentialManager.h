@@ -23,11 +23,6 @@
    * A typical implementation has to serve 'getPot' being called by
    * a sequential loop over all or a subset of potentials.
    * <p>
-   * ATTENTION: At present, implementations are typically not thread-safe.
-   * 'getPot' returns a reference to 'EPScalarPotential'. This object must
-   * not be used once 'getPot' is called again.
-   * TODO: Thread-safe variant.
-   * <p>
    * A PM may contain potentials of different argument groups (see
    * 'EPScalarPotential'). If it contains bivariate precision potentials
    * ('EPScalarPotential::atypeBivarPrec'), these must form a contiguous
@@ -35,6 +30,12 @@
    *   'size() - numArgumentGroup(EPScalarPotential::atypeBivarPrec)'.
    * ATTENTION: Implementations have to ensure that this constaint holds
    * true.
+   * <p>
+   * ATTENTION: Typical implementations are not thread-safe, in that calls
+   * to 'getPot' re-use the same 'EPScalarPotential' object, instead of
+   * creating a new one.
+   * If a thread-safe variant is required, the return type must be changed
+   * from 'const EPScalarPotential&' to 'Handle<EPScalarPotential>'.
    *
    * @author  Matthias Seeger
    * @version %I% %G%
@@ -63,6 +64,7 @@
      * NOTE: The returned object should be read-accessed only. In particular,
      * 'setPars' must not be used: the object returned is typically a temp.
      * copy anyway.
+     * ATTENTION: Not thread-safe.
      *
      * @param j Potential index
      * @return  Potential object t_j(.)

@@ -391,7 +391,7 @@
 	  // ATTENTION: If this case happens frequently, have to choose better
 	  // response, f.ex. increasing 'eta' in small steps.
 	  prPi=eta*pi+(1.0-eta)*tilPi; // pi_{ji}' for current 'eta'
-	  piP[ii]=prPi;
+	  piP[ii]=prPi; // Temporary change
 	  epMaxPi->update(i,j,prPi);
 	  kappa=epMaxPi->getMaxValue(i); // kappa_i'
 	  piP[ii]=pi; // Back to old state
@@ -428,7 +428,7 @@
 	if (kappa==*aP) {
 	  // Ensure that new kappa_k is positive
 	  prA+=eta*(*aP-prA); // a_{jk}' for current 'eta'
-	  temp=*aP; *aP=prA;
+	  temp=*aP; *aP=prA; // Temporary change
 	  epMaxA->update(k,j,prA);
 	  kappa=epMaxA->getMaxValue(k); // kappa_k'
 	  *aP=temp; // Back to old state
@@ -461,7 +461,7 @@
 	if (kappa==*cP) {
 	  // Ensure that new kappa_k is positive
 	  prC+=eta*(*cP-prC); // c_{jk}' for current 'eta'
-	  temp=*cP; *cP=prC;
+	  temp=*cP; *cP=prC; // Temporary change
 	  epMaxC->update(k,j,prC);
 	  kappa=epMaxC->getMaxValue(k); // kappa_k'
 	  *cP=temp; // Back to old state

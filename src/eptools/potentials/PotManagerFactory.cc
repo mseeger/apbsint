@@ -10,6 +10,7 @@
 #include "src/eptools/potentials/DefaultPotManager.h"
 #include "src/eptools/potentials/ContainerPotManager.h"
 #include "src/eptools/potentials/EPPotentialFactory.h"
+#include <algorithm>
 
 //BEGINNS(eptools)
   PotentialManager* PotManagerFactory::create(const ArrayHandle<int>& potIDs,
@@ -210,17 +211,17 @@
   {
     if (numBVPrec<=0)
       throw InvalidParameterException("No bivariate precision potentials");
-    if (tauInd==0)
+    if (tauInd==0 || tauInd.size()<numBVPrec+1)
       throw InvalidParameterException("TAUIND must be given");
     int dimK=tauInd[numBVPrec],i,j,k,sz;
     if (dimK<=0 || tauInd.size()!=2*numBVPrec+dimK+2)
       throw InvalidParameterException("TAUIND wrong size");
     ArrayHandle<bool> karr(dimK);
-    for (k=0; k<dimK; k++) karr[k]=false;
+    std::fill(karr.p(),karr.p()+dimK,false);
     for (j=sz=0; j<numBVPrec; j++) {
       k=tauInd[j];
       if (k<0 || k>=dimK)
-	throw InvalidParameterException("TAUIND wrong");
+	throw InvalidParameterException("TAUIND: Mapping j-> k wrong");
       if (!karr[k]) {
 	karr[k]=true; sz++;
       }
@@ -228,8 +229,8 @@
     if (sz<dimK)
       throw InvalidParameterException("TAUIND: Every k value must occur at least once");
     for (k=0; k<dimK; k++) {
-      j=tauInd[k+numBVPrec+1];
-      sz=tauInd[k+numBVPrec+2]-j;
+      j=tauInd[k+numBVPrec+1]; // Start offset J_k
+      sz=tauInd[k+numBVPrec+2]-j; // Size J_k
       if (sz<1 || j<numBVPrec+dimK+2 || j+sz>tauInd.size())
 	throw InvalidParameterException("TAUIND wrong");
       if (!Range::isIncreasing(tauInd.p()+j,sz) ||
@@ -237,7 +238,7 @@
 	throw InvalidParameterException("TAUIND wrong");
       for (i=0; i<sz; i++)
 	if (tauInd[tauInd[i+j]]!=k)
-	  throw InvalidParameterException("TAUIND wrong: Forward and inverse different");
+	  throw InvalidParameterException("TAUIND: Forward and inverse different");
     }
   }
 //ENDNS

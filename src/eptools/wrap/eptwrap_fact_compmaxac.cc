@@ -90,6 +90,9 @@ void eptwrap_fact_compmaxac(int ain,int aout,int n,int m,W_IARRAY(rp_rowind),
     i=numk*(sdc_k+1);
     W_CHKSIZE(sdc_topind,i,"SDC_TOPIND");
     W_CHKSIZE(sdc_topval,i,"SDC_TOPVAL");
+    W_MASKARRAY(sdc_numvalid);
+    W_MASKARRAY(sdc_topind);
+    W_MASKARRAY(sdc_topval);
     /* Create max data structures */
     for (i=0; i<numk; i++)
       sda_numvalid[i]=sdc_numvalid[i]=1;

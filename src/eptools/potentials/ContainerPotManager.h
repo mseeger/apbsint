@@ -93,8 +93,7 @@
     int getRelPos(int j,int& ic) const {
       int num=pmArr.size();
 
-      MYASS(j>=0 && j<size());
-      for (ic=0; ic<num; ic++)
+      for (ic=1; ic<num; ic++)
 	if (j<startPos[ic]) break;
 
       return j-startPos[--ic];

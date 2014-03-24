@@ -96,8 +96,8 @@ void eptwrap_epupdate_parallel_bvprec(int ain,int aout,W_IARRAY(potids),
       if (updind==0)
 	W_RETERROR(2,"UPDIND missing");
       W_CHKSIZE(updind,totsz-numBVPrec,"UPDIND");
-      Interval<int> ivM(0,potMan->size()-1,IntVal::ivClosed,IntVal::ivClosed);
-      if (ivM.check(updind,numSt)!=0)
+      Interval<int> ivM(0,numSt-1,IntVal::ivClosed,IntVal::ivClosed);
+      if (ivM.check(updind,nupdind)!=0)
 	W_RETERROR(1,"UPDIND: Entries out of range");
     } else
       updind=0;

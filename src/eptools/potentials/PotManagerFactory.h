@@ -126,7 +126,7 @@
      * Performs some checks on 'tauInd' (see 'checkRepres'), throws
      * 'InvalidParameterException' with error message if something is wrong.
      *
-     * @param tauInd See 'checkRepres'
+     * @param tauInd    See 'checkRepres'
      * @param numBVPrec Number of bivar. precision potentials
      */
     static void checkBVPrecTauInd(const ArrayHandle<int>& tauInd,int numBVPrec);

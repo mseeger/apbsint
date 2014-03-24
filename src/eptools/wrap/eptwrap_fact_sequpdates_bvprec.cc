@@ -165,7 +165,7 @@ void eptwrap_fact_sequpdates_bvprec(int ain,int aout,int n,int m,
 	W_MASKARRAY(sd_topval);
 	if (ain>27) {
 	  if (ain<30)
-	    W_RETERROR(1,"Need all SDA_xxx");
+	    W_RETERROR(1,"Need all SDA_TOPxxx");
 	  W_CHKSIZE(sda_numvalid,numk,"SDA_NUMVALID");
 	  W_MASKARRAY(sda_numvalid);
 	  sda_k = (nsda_topind/numk)-1;
@@ -176,7 +176,7 @@ void eptwrap_fact_sequpdates_bvprec(int ain,int aout,int n,int m,
 	  W_MASKARRAY(sda_topval);
 	  if (ain>30) {
 	    if (ain<33)
-	      W_RETERROR(1,"Need all SDC_xxx");
+	      W_RETERROR(1,"Need all SDC_TOPxxx");
 	    W_CHKSIZE(sdc_numvalid,numk,"SDC_NUMVALID");
 	    W_MASKARRAY(sdc_numvalid);
 	    sdc_k = (nsdc_topind/numk)-1;

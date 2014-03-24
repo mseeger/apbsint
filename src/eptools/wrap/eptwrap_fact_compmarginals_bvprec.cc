@@ -43,8 +43,8 @@ void eptwrap_fact_compmarginals_bvprec(int ain,int aout,int n,int m,
 
   try {
     /* Read arguments */
-    if (ain!=15)
-      W_RETERROR(2,"Need 15 input arguments");
+    if (ain!=14)
+      W_RETERROR(2,"Need 14 input arguments");
     if (aout!=0)
       W_RETERROR(2,"No return arguments");
     W_CHKSIZE(margpi,n,"MARGPI");
