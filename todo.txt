@@ -565,10 +565,13 @@ IMPLEMENTATION OF EP TOOLBOX
       Insert test code!
   - New Python code for inference in the presence of bivariate potentials
     - ElemPotManager, PotManager: Have to check agroup. Should contain
-      number of prec. pots as member (or method) [OK]
-    - Model: tauind should be computed and maintained here [HIER!]
+      number of prec. pots as member (or method).
+      Also, maintains tauind if there are prec. pots. tauind is maintained
+      here, rather than in Model, to keep it simple: potmanager_isvalid is
+      called here and checks tauind for validity as well. [k(j)] index
+      is kept locally in each ElemPotManager for a BVPrec pot. [HIER!]
     - Representation: Extra message params, services
-    - InfDriver
+    - InfDriver: First for coupled modes!
   - Simple test example, where exact solution can be obtained by brute
     force: Mean and precision of Gaussian. Can plot exact marginal posteriors
     up to normalization. Normalization and marginal moments by brute force

@@ -40,12 +40,18 @@ class ElemPotManager:
     recomputed in PotManager. Otherwise, attributes are not controlled
     here, but only in PotManager.
 
+    The potential type belongs to an argument group. Right now:
+    - 0: Univariate t_j(s_j)
+    - 1: Bivariate precision t_j(s_j,tau_k(j))
+    For group 1, the index vector [k(j)] must be given as 'kind'. The
+    validity of the index is checked in 'PotManager.check_internal'.
     """
-    def __init__(self,name,size,pars,annobj=None):
+    def __init__(self,name,size,pars,annobj=None,kind=None):
         self.setname(name,False)
         self.setsize(size,False)
         self.setpars(pars,False)
         self.setannobj(annobj,False)
+        self.setkind(kind,False)
         self.up_date = False
 
     def setname(self,name,chk=True):
@@ -82,6 +88,17 @@ class ElemPotManager:
             self.up_date = self.up_date and (annobj == self.annobj)
         self.annobj = annobj
 
+    def setkind(self,kind,chk=True):
+        if kind is not None:
+            # 'kind' must be array of type np.int32. Neither length nor content
+            # is checked here
+            if not (isinstance(kind,np.ndarray) and kind.ndim == 1 and
+                    kind.dtype == np.int32):
+                raise TypeError('KIND must np.ndarray (type np.int32)')
+        if chk:
+            self.up_date = self.up_date and (kind == self.kind)
+        self.kind = kind
+
 # Mechanism to check whether internal representation has to be recomputed:
 # - Recompute (in 'check_internal') if the up_date field of any ElemPotManager
 #   object is False
@@ -97,12 +114,12 @@ class PotManager:
     Call 'check_internal' before accessing the internal representation: it is
     recomputed whenever any of the ElemPotManager objects has changed.
 
-    The potential type for each ElemPotManager belongs to an argument group.
-    Right now:
-    - 0: Univariate t(s)
-    - 1: Bivariate precision t(s,tau)
-    If group 1 is present, these potentials must come last. This is checked
-    in 'check_internal'.
+    If there are bivariate precision potentials (see 'ElemPotManager'), they
+    must come last. This is checked in 'check_internal'. In this case, the
+    'kind' indexes are joined to form a single flat [k(j)]. An internal
+    representation of j <-> k is maintained in 'tauind'. 'num_bvprec' is the
+    number of precision potentials, 'num_tau' the size of the tau vector.
+    Internal consistency is checked in 'check_internal'.
     """
     def __init__(self,elem):
         if isinstance(elem,list):
@@ -127,11 +144,8 @@ class PotManager:
     # details.
     # Also, we compute 'updind' as index of all non-Gaussian potentials
     # (type other than 'Gaussian').
-    #
-    # We also count the number of bivariate precision potentials (argument
-    # group 1), stored in 'num_bvprec'. If present, they must form the
-    # suffix: this is checked.
     def check_internal(self):
+        # HIER: bvprec stuff!
         elem = self.elem
         do_recomp = False
         for el in elem:
@@ -225,7 +239,6 @@ class Model:
     =====
 
     Collects B coupling factor and potential manager (type apbsint.PotManager).
-
     """
     def __init__(self,bfact,potman):
         if not isinstance(potman,PotManager):
@@ -239,7 +252,6 @@ class ModelCoupled(Model):
     ============
 
     Model for coupled mode. The B factor must be of type apbsint.Mat.
-
     """
     def __init__(self,bfact,potman):
         if not isinstance(bfact,cf.Mat):
@@ -257,7 +269,6 @@ class ModelFactorized(Model):
 
     Model for factorized mode. The B factor must be of type
     apbsint.MatFactorizedInf.
-
     """
     def __init__(self,bfact,potman):
         if not isinstance(bfact,cf.MatFactorizedInf):
@@ -275,7 +286,6 @@ class Representation:
 
     Base class for EP posterior representations. The EP (message)
     parameters are also maintained here.
-
     """
     def __init__(self,bfact,ep_pi=None,ep_beta=None):
         self.ep_pi = None
