@@ -145,7 +145,6 @@ class PotManager:
     # Also, we compute 'updind' as index of all non-Gaussian potentials
     # (type other than 'Gaussian').
     def check_internal(self):
-        # HIER: bvprec stuff!
         elem = self.elem
         do_recomp = False
         for el in elem:
@@ -153,7 +152,9 @@ class PotManager:
                 do_recomp = True
                 break
         if do_recomp:
-            # Loop 1: Everything except PARVEC, determine size
+            # Loop 1: Everything except PARVEC, determine size.
+            # If there are precision potentials, 'num_bvprec' and 'num_tau'
+            # are determined.
             nb = len(elem)
             self.potids = np.empty(nb,dtype=np.int32)
             self.numpot = np.empty(nb,dtype=np.int32)
@@ -164,6 +165,7 @@ class PotManager:
             pid_gauss = epx.getpotid('Gaussian')
             off = 0
             self.num_bvprec = 0
+            self.num_tau = 0
             for k in xrange(nb):
                 pid = epx.getpotid(elem[k].name)
                 if pid == -1:
@@ -176,6 +178,12 @@ class PotManager:
                     raise ValueError('Block {0}: Bivariate precision potentials must come last'.format(k))
                 if agid==1:
                     self.num_bvprec += numk
+                    kind = elem[k].kind
+                    if kind is None:
+                        raise ValueError('Block {0}: KIND attribute missing'.format(k))
+                    if kind.shape[0] != numk or np.min(kind)<0:
+                        raise ValueError('Block {0}: KIND has wrong size or content'.format(k))
+                    self.num_tau = np.maximum(self.num_tau,np.max(kind)+1)
                 if elem[k].annobj is not None:
                     self.annobj[k] = elem[k].annobj.getptr()
                 pars = elem[k].pars
@@ -198,9 +206,15 @@ class PotManager:
                 off += numk
             self.parshrd = np.array(parshrd,dtype=np.int32)
             self.updind = np.array(updind,dtype=np.int32)
-            # Loop 2: Assemble PARVEC
+            # Loop 2: Assemble PARVEC.
+            # If there are precision potentials, we also assemble [k(j)] over
+            # all elements as prefix of 'tauind'
             self.parvec = np.empty(pvsz,dtype=np.float64)
             off = 0
+            if self.num_bvprec>0:
+                self.tauind = np.empty(2*(self.num_bvprec+1) + self.num_tau,
+                                       dtype=np.int32)
+                ti_off = 0
             for k in xrange(nb):
                 pars = elem[k].pars
                 nump = len(pars)
@@ -208,9 +222,28 @@ class PotManager:
                     sz = 1 if isinstance(pars[p],float) else len(pars[p])
                     self.parvec[off:off+sz] = pars[p]
                     off += sz
+                agid = epx.getpotagroup(self.potids[k])
+                if agid == 1:
+                    numk = self.numpot[k]
+                    self.tauind[ti_off:ti_off+numk] = elem[k].kind
+                    ti_off += numk
+            if self.num_bvprec > 0:
+                # Build remaining part of 'tauind'
+                nbvp = self.num_bvprec
+                ntau = self.num_tau
+                self.tauind[nbvp] = ntau
+                # Sparse 0/1 matrix of shape nbvp-by-ntau, one 1 per row.
+                # The J_k indices are read off from the transpose.
+                tmpm = ssp.csr_matrix(np.ones(nbvp),self.tauind[0:nbvp],
+                                      np.arange(nbvp),shape=(nbvp,ntau),
+                                      dtype=np.int32)
+                tmpm = tmpm.T.tocsr()  # Transpose
+                tmpm.sort_indices()
+                # HIER!!
             # Test whether all parameter values are valid
+            tauind = self.tauind if self.num_bvprec>0 else None
             msg = epx.potmanager_isvalid(self.potids,self.numpot,self.parvec,
-                                         self.parshrd,self.annobj)
+                                         self.parshrd,self.annobj,0,tauind)
             if len(msg)>0:
                 raise ValueError(msg)
             # Set all up_date flags
