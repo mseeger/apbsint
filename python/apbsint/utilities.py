@@ -234,14 +234,19 @@ class PotManager:
                 self.tauind[nbvp] = ntau
                 # Sparse 0/1 matrix of shape nbvp-by-ntau, one 1 per row.
                 # The J_k indices are read off from the transpose.
-                tmpm = ssp.csr_matrix(np.ones(nbvp),self.tauind[0:nbvp],
-                                      np.arange(nbvp),shape=(nbvp,ntau),
-                                      dtype=np.int32)
+                tmpm = ssp.csr_matrix((np.ones(nbvp,dtype=np.int32),
+                                       self.tauind[0:nbvp],np.arange(nbvp+1)),
+                                      shape=(nbvp,ntau))
                 tmpm = tmpm.T.tocsr()  # Transpose
                 tmpm.sort_indices()
-                # HIER!!
+                ti_off = nbvp+1
+                ti_off2 = nbvp+ntau+2
+                self.tauind[ti_off:ti_off+ntau+1] = tmpm.indptr + ti_off2
+                self.tauind[ti_off2:ti_off2+nbvp] = tmpm.indices
+                tauind = self.tauind
+            else:
+                tauind = None
             # Test whether all parameter values are valid
-            tauind = self.tauind if self.num_bvprec>0 else None
             msg = epx.potmanager_isvalid(self.potids,self.numpot,self.parvec,
                                          self.parshrd,self.annobj,0,tauind)
             if len(msg)>0:
