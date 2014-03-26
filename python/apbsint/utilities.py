@@ -271,6 +271,8 @@ class PotManager:
             off += numk
         return np.array(res,dtype=np.int32)
 
+# Model classes
+
 class Model:
     """
     Model
@@ -315,7 +317,7 @@ class ModelFactorized(Model):
         if bfact.shape(0) != potman.size:
             raise TypeError('BFACT, POTMAN must have same size')
 
-# Representation classes (coupled mode for now)
+# Representation classes
 
 class Representation:
     """
@@ -324,14 +326,23 @@ class Representation:
 
     Base class for EP posterior representations. The EP (message)
     parameters are also maintained here.
+
+    If the model has bivariate precision potentials, the tau message
+    a, c parameters are maintained in 'ep_taua', 'ep_tauc'.
     """
-    def __init__(self,bfact,ep_pi=None,ep_beta=None):
+    def __init__(self,bfact,ep_pi=None,ep_beta=None,ep_taua=None,ep_tauc=None):
         self.ep_pi = None
         if ep_pi is not None:
             self.setpi(ep_pi)
         self.ep_beta = None
         if ep_beta is not None:
             self.setbeta(ep_beta)
+        self.ep_taua = None
+        if ep_taua is not None:
+            self.settaua(ep_taua)
+        self.ep_tauc = None
+        if ep_tauc is not None:
+            self.settauc(ep_tauc)
         self.bfact = bfact
 
     def setpi(self,ep_pi):
@@ -349,6 +360,30 @@ class Representation:
         if self.ep_beta is None:
             self.ep_beta = np.empty(sz)
         self.ep_beta[:] = ep_beta
+
+    def settaua(self,ep_taua):
+        if not helpers.check_vecsize(ep_taua):
+            raise TypeError('EP_TAUA must be vector')
+        sz = ep_taua.shape[0]
+        if (sz > self.size_pars() or
+            (self.ep_taua is not None and self.ep_taua.shape[0] != sz) or
+            (self.ep_tauc is not None and self.ep_tauc.shape[0] != sz)):
+            raise TypeError('EP_TAUA has wrong size')
+        if self.ep_taua is None:
+            self.ep_taua = np.empty(sz)
+        self.ep_taua[:] = ep_taua
+
+    def settauc(self,ep_tauc):
+        if not helpers.check_vecsize(ep_tauc):
+            raise TypeError('EP_TAUC must be vector')
+        sz = ep_tauc.shape[0]
+        if (sz > self.size_pars() or
+            (self.ep_tauc is not None and self.ep_tauc.shape[0] != sz) or
+            (self.ep_tauc is not None and self.ep_tauc.shape[0] != sz)):
+            raise TypeError('EP_TAUC has wrong size')
+        if self.ep_tauc is None:
+            self.ep_tauc = np.empty(sz)
+        self.ep_tauc[:] = ep_tauc
 
     # Internal methods
 
@@ -369,11 +404,13 @@ class RepresentationCoupled(Representation):
       c = L^-1 B^T beta,
     B the factor given in 'bfact' (must be type 'Mat'). If 'keep_margs'
     is True, we also keep marginal moments in 'marg_means', 'marg_vars'.
+    HIER: Bivar. prec. potentials!
     """
-    def __init__(self,bfact,ep_pi=None,ep_beta=None,keep_margs=False):
+    def __init__(self,bfact,ep_pi=None,ep_beta=None,keep_margs=False,
+                 ep_taua=None,ep_tauc=None):
         if not isinstance(bfact,cf.Mat):
             raise TypeError('BFACT must be instance of apbsint.Mat')
-        Representation.__init__(self,bfact,ep_pi,ep_beta)
+        Representation.__init__(self,bfact,ep_pi,ep_beta,ep_taua,ep_tauc)
         self.keep_margs = keep_margs
 
     def size_pars(self):
