@@ -113,6 +113,7 @@ class PotManager:
     objects, which are stacked. It also maintains an internal representation.
     Call 'check_internal' before accessing the internal representation: it is
     recomputed whenever any of the ElemPotManager objects has changed.
+    NOTE: 'check_internal' is called by the constructor as well.
 
     If there are bivariate precision potentials (see 'ElemPotManager'), they
     must come last. This is checked in 'check_internal'. In this case, the
@@ -134,6 +135,9 @@ class PotManager:
             el.up_date = False
             self.size += el.size
         self.elem = elem
+        # Compute internal representation and (optionally) members for
+        # precision potentials
+        self.check_internal()
 
     # Internal representation consists of 'potids', 'numpot', 'parvec',
     # 'parshrd', 'annobj': all contiguous 1D np.ndarray, dtype np.int32
@@ -208,7 +212,7 @@ class PotManager:
             self.updind = np.array(updind,dtype=np.int32)
             # Loop 2: Assemble PARVEC.
             # If there are precision potentials, we also assemble [k(j)] over
-            # all elements as prefix of 'tauind'
+            # all elements as prefix of 'tauind
             self.parvec = np.empty(pvsz,dtype=np.float64)
             off = 0
             if self.num_bvprec>0:
@@ -243,12 +247,12 @@ class PotManager:
                 ti_off2 = nbvp+ntau+2
                 self.tauind[ti_off:ti_off+ntau+1] = tmpm.indptr + ti_off2
                 self.tauind[ti_off2:ti_off2+nbvp] = tmpm.indices
-                tauind = self.tauind
             else:
-                tauind = None
+                self.tauind = None
             # Test whether all parameter values are valid
             msg = epx.potmanager_isvalid(self.potids,self.numpot,self.parvec,
-                                         self.parshrd,self.annobj,0,tauind)
+                                         self.parshrd,self.annobj,0,
+                                         self.tauind)
             if len(msg)>0:
                 raise ValueError(msg)
             # Set all up_date flags
@@ -328,9 +332,13 @@ class Representation:
     parameters are also maintained here.
 
     If the model has bivariate precision potentials, the tau message
-    a, c parameters are maintained in 'ep_taua', 'ep_tauc'.
+    a, c parameters are maintained in 'ep_taua', 'ep_tauc'. In this case,
+    initial values for these have to be passed to the constructor (copied),
+    as well as the potential manager. The latter is not maintained, but a
+    reference to its 'tauind' member is kept here
     """
-    def __init__(self,bfact,ep_pi=None,ep_beta=None,ep_taua=None,ep_tauc=None):
+    def __init__(self,bfact,ep_pi=None,ep_beta=None,ep_taua=None,ep_tauc=None,
+                 potman=None):
         self.ep_pi = None
         if ep_pi is not None:
             self.setpi(ep_pi)
@@ -338,11 +346,21 @@ class Representation:
         if ep_beta is not None:
             self.setbeta(ep_beta)
         self.ep_taua = None
-        if ep_taua is not None:
-            self.settaua(ep_taua)
         self.ep_tauc = None
-        if ep_tauc is not None:
-            self.settauc(ep_tauc)
+        self.tauind = None
+        self.num_bvprec = None
+        self.num_tau = None
+        if ep_taua is not None:
+            # Arguments for bivar. prec. potentials: Either all or none
+            if ep_tauc is None or potman is None:
+                raise ValueError('EP_TAUA, EP_TAUC, POTMAN: Either all or none')
+            if potman.tauind is None:
+                raise TypeError('POTMAN must have bivariate precision potentials')
+            self.settaua(ep_taua,potman.num_bvprec)
+            self.settauc(ep_tauc,potman.num_bvprec)
+            self.tauind = potman.tauind
+            self.num_bvprec = potman.num_bvprec
+            self.num_tau = potman.num_tau
         self.bfact = bfact
 
     def setpi(self,ep_pi):
@@ -361,26 +379,20 @@ class Representation:
             self.ep_beta = np.empty(sz)
         self.ep_beta[:] = ep_beta
 
-    def settaua(self,ep_taua):
-        if not helpers.check_vecsize(ep_taua):
-            raise TypeError('EP_TAUA must be vector')
-        sz = ep_taua.shape[0]
-        if (sz > self.size_pars() or
-            (self.ep_taua is not None and self.ep_taua.shape[0] != sz) or
-            (self.ep_tauc is not None and self.ep_tauc.shape[0] != sz)):
-            raise TypeError('EP_TAUA has wrong size')
+    def settaua(self,ep_taua,rsz=None):
+        if rsz is None and self.ep_taua is not None:
+            rsz = self.ep_taua.shape[0]
+        if not helpers.check_vecsize(ep_taua,rsz):
+            raise TypeError('EP_TAUA must be vector of size {0}'.format(rsz))
         if self.ep_taua is None:
             self.ep_taua = np.empty(sz)
         self.ep_taua[:] = ep_taua
 
-    def settauc(self,ep_tauc):
-        if not helpers.check_vecsize(ep_tauc):
-            raise TypeError('EP_TAUC must be vector')
-        sz = ep_tauc.shape[0]
-        if (sz > self.size_pars() or
-            (self.ep_tauc is not None and self.ep_tauc.shape[0] != sz) or
-            (self.ep_tauc is not None and self.ep_tauc.shape[0] != sz)):
-            raise TypeError('EP_TAUC has wrong size')
+    def settauc(self,ep_tauc,rsz=None):
+        if rsz is None and self.ep_tauc is not None:
+            rsz = self.ep_tauc.shape[0]
+        if not helpers.check_vecsize(ep_tauc,rsz):
+            raise TypeError('EP_TAUC must be vector of size {0}'.format(rsz))
         if self.ep_tauc is None:
             self.ep_tauc = np.empty(sz)
         self.ep_tauc[:] = ep_tauc
@@ -404,7 +416,8 @@ class RepresentationCoupled(Representation):
       c = L^-1 B^T beta,
     B the factor given in 'bfact' (must be type 'Mat'). If 'keep_margs'
     is True, we also keep marginal moments in 'marg_means', 'marg_vars'.
-    HIER: Bivar. prec. potentials!
+
+    HIER: Bivar. prec. potentials! In part.: refresh!
     """
     def __init__(self,bfact,ep_pi=None,ep_beta=None,keep_margs=False,
                  ep_taua=None,ep_tauc=None):
