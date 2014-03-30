@@ -45,7 +45,7 @@ nwa_library_dirs = df_include_dirs[:]
 if work_around:
     df_define_macros.extend([('HAVE_LIBGSL', None),
                              ('HAVE_WORKAROUND', None)])
-    df_libraries.append('gsl')
+    df_libraries.extend(['gsl','gslcblas'])
 
 # eptools_ext: Main API to C++ functions
 eptools_ext_sources = [
