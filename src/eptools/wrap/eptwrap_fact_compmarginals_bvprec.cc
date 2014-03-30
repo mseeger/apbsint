@@ -27,7 +27,7 @@
 
 #include "src/main.h"
 #include "src/eptools/wrap/eptools_helper.h"
-#include "src/eptools/wrap/eptwrap_fact_compmarginals.h"
+#include "src/eptools/wrap/eptwrap_fact_compmarginals_bvprec.h"
 #include "src/eptools/FactorizedEPRepresentation.h"
 
 void eptwrap_fact_compmarginals_bvprec(int ain,int aout,int n,int m,
