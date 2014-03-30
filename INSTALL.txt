@@ -144,6 +144,11 @@ Denote the repository root by [ROOT].
 
   $ ipython locate profile
 
+  If this does not work, chances are you have not created a default profile.
+  Do so with:
+
+  $ ipython profile create
+
   Go there and edit the file ipython_config.py. Look for sys.path, or just
   append the following to the end::
 
