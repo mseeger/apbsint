@@ -335,7 +335,9 @@ class Representation:
     a, c parameters are maintained in 'ep_taua', 'ep_tauc'. In this case,
     initial values for these have to be passed to the constructor (copied),
     as well as the potential manager. The latter is not maintained, but a
-    reference to its 'tauind' member is kept here
+    reference to its 'tauind' member is kept here.
+    Parameters of the tau marginals are kept in 'marg_taua', 'marg_tauc'
+    in this case, they are recomputed in 'refresh'.
     """
     def __init__(self,bfact,ep_pi=None,ep_beta=None,ep_taua=None,ep_tauc=None,
                  potman=None):
@@ -345,6 +347,7 @@ class Representation:
         self.ep_beta = None
         if ep_beta is not None:
             self.setbeta(ep_beta)
+        self.bfact = bfact
         self.ep_taua = None
         self.ep_tauc = None
         self.tauind = None
@@ -361,7 +364,9 @@ class Representation:
             self.tauind = potman.tauind
             self.num_bvprec = potman.num_bvprec
             self.num_tau = potman.num_tau
-        self.bfact = bfact
+            self.marg_taua = np.zeros(potman.num_tau)
+            self.marg_tauc = np.zeros(potman.num_tau)
+            self.refresh()
 
     def setpi(self,ep_pi):
         sz = self.size_pars()
@@ -397,6 +402,13 @@ class Representation:
             self.ep_tauc = np.empty(sz)
         self.ep_tauc[:] = ep_tauc
 
+    # Common code. Right now, the tau marginals are recomputed if there are
+    # bivar.prec. potentials
+    def refresh(self):
+        if self.ep_taua is not Null:
+            epx.compmarginals_bvprec(self.tauind,self.ep_taua,self.ep_tauc,
+                                     self.marg_taua,self.marg_tauc)
+
     # Internal methods
 
     def size_pars(self):
@@ -416,8 +428,6 @@ class RepresentationCoupled(Representation):
       c = L^-1 B^T beta,
     B the factor given in 'bfact' (must be type 'Mat'). If 'keep_margs'
     is True, we also keep marginal moments in 'marg_means', 'marg_vars'.
-
-    HIER: Bivar. prec. potentials! In part.: refresh!
     """
     def __init__(self,bfact,ep_pi=None,ep_beta=None,keep_margs=False,
                  ep_taua=None,ep_tauc=None):
@@ -439,6 +449,7 @@ class RepresentationCoupled(Representation):
         'refresh'. It is not kept up-2-date, and may even be overwritten
         by other methods.
         """
+        Representation.refresh(self)
         #t_start0=time.time()
         bfact = self.bfact
         m, n = bfact.shape()
@@ -702,6 +713,7 @@ class RepresentationFactorized(Representation):
         Recomputes marginals 'marg_pi', 'marg_beta' from message parameters
         'ep_pi', 'ep_beta'.
         """
+        Representation.refresh(self)
         bf = self.bfact
         m, n = bf.shape()
         if self.ep_pi is None or self.ep_beta is None:

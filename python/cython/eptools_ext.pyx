@@ -261,46 +261,24 @@ def fact_compmarginals(int n,int m,np.ndarray[int,ndim=1] rp_rowind not None,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def fact_compmarginals_bvprec(int n,int m,
-                              np.ndarray[int,ndim=1] rp_rowind not None,
-                              np.ndarray[int,ndim=1] rp_colind not None,
-                              np.ndarray[np.double_t,ndim=1] rp_bvals not None,
-                              np.ndarray[np.double_t,ndim=1] rp_pi not None,
-                              np.ndarray[np.double_t,ndim=1] rp_beta not None,
-                              np.ndarray[int,ndim=1] rp_tauind not None,
-                              np.ndarray[np.double_t,ndim=1] rp_a not None,
-                              np.ndarray[np.double_t,ndim=1] rp_c not None,
-                              np.ndarray[np.double_t,ndim=1] margpi not None,
-                              np.ndarray[np.double_t,ndim=1] margbeta not None,
-                              np.ndarray[np.double_t,ndim=1] marga not None,
-                              np.ndarray[np.double_t,ndim=1] margc not None):
+def compmarginals_bvprec(np.ndarray[int,ndim=1] rp_tauind not None,
+                         np.ndarray[np.double_t,ndim=1] rp_a not None,
+                         np.ndarray[np.double_t,ndim=1] rp_c not None,
+                         np.ndarray[np.double_t,ndim=1] marga not None,
+                         np.ndarray[np.double_t,ndim=1] margc not None):
     cdef int errcode
     cdef char errstr[512]
     # Ensure that input/output arguments are contiguous
-    check_contiguous_array(margpi,'MARGPI')
-    check_contiguous_array(margbeta,'MARGBETA')
     check_contiguous_array(marga,'MARGA')
     check_contiguous_array(margc,'MARGC')
-    rp_rowind = np.ascontiguousarray(rp_rowind)
-    rp_colind = np.ascontiguousarray(rp_colind)
-    rp_bvals = np.ascontiguousarray(rp_bvals)
-    rp_pi = np.ascontiguousarray(rp_pi)
-    rp_beta = np.ascontiguousarray(rp_beta)
     rp_tauind = np.ascontiguousarray(rp_tauind)
     rp_a = np.ascontiguousarray(rp_a)
     rp_c = np.ascontiguousarray(rp_c)
     # Call C function
-    eptwrap_fact_compmarginals_bvprec(15,0,n,m,&rp_rowind[0],rp_rowind.shape[0],
-                                      &rp_colind[0],rp_colind.shape[0],
-                                      &rp_bvals[0],rp_bvals.shape[0],&rp_pi[0],
-                                      rp_pi.shape[0],&rp_beta[0],
-                                      rp_beta.shape[0],&rp_tauind[0],
-                                      rp_tauind.shape[0],&rp_a[0],
-                                      rp_a.shape[0],&rp_c[0],rp_c.shape[0],
-                                      &margpi[0],margpi.shape[0],&margbeta[0],
-                                      margbeta.shape[0],&marga[0],
-                                      marga.shape[0],&margc[0],margc.shape[0],
-                                      &errcode,errstr)
+    eptwrap_compmarginals_bvprec(5,0,&rp_tauind[0],rp_tauind.shape[0],&rp_a[0],
+                                 rp_a.shape[0],&rp_c[0],rp_c.shape[0],
+                                 &marga[0],marga.shape[0],&margc[0],
+                                 margc.shape[0],&errcode,errstr)
     # Check for error, raise exception
     if errcode != 0:
         raise exc.ApBsWrapError(<bytes>errstr)

@@ -88,21 +88,12 @@ cdef extern from "src/eptools/wrap/eptwrap_fact_compmarginals.h":
                                     double* margbeta,int nmargbeta,
                                     int* errcode,char* errstr)
 
-cdef extern from "src/eptools/wrap/eptwrap_fact_compmarginals_bvprec.h":
-    void eptwrap_fact_compmarginals_bvprec(int ain,int aout,int n,int m,
-                                           int* rp_rowind,int nrp_rowind,
-                                           int* rp_colind,int nrp_colind,
-                                           double* rp_bvals,int nrp_bvals,
-                                           double* rp_pi,int nrp_pi,
-                                           double* rp_beta,int nrp_beta,
-                                           int* rp_tauind,int nrp_tauind,
-                                           double* rp_a,int nrp_a,
-                                           double* rp_c,int nrp_c,
-                                           double* margpi,int nmargpi,
-                                           double* margbeta,int nmargbeta,
-                                           double* marga,int nmarga,
-                                           double* margc,int nmargc,
-                                           int* errcode,char* errstr)
+cdef extern from "src/eptools/wrap/eptwrap_compmarginals_bvprec.h":
+    void eptwrap_compmarginals_bvprec(int ain,int aout,int* rp_tauind,
+                                      int nrp_tauind,double* rp_a,int nrp_a,
+                                      double* rp_c,int nrp_c,double* marga,
+                                      int nmarga,double* margc,int nmargc,
+                                      int* errcode,char* errstr)
 
 cdef extern from "src/eptools/wrap/eptwrap_fact_compmaxpi.h":
     void eptwrap_fact_compmaxpi(int ain,int aout,int n,int m,int* rp_rowind,

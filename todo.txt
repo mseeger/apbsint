@@ -570,7 +570,7 @@ IMPLEMENTATION OF EP TOOLBOX
       here, rather than in Model, to keep it simple: potmanager_isvalid is
       called here and checks tauind for validity as well. [k(j)] index
       is kept locally in each ElemPotManager for a BVPrec pot. [OK]
-    - Representation: Extra message params [HIER!]
+    - Representation: Extra message params [OK]
     - Where should 'tauind' be maintained?
       - Most natural for user to specify in ElemPotManager, then compile
         full tauind in PotManager. In part., tauind is needed by
@@ -581,7 +581,7 @@ IMPLEMENTATION OF EP TOOLBOX
         there.
       OK: tauind is maintained in PotManager and compiled there. But a ref.
       is maintained in Representation as well.
-    - InfDriver: First for coupled modes!
+    - InfDriver: First for coupled modes! [HIER!]
   - Simple test example, where exact solution can be obtained by brute
     force: Mean and precision of Gaussian. Can plot exact marginal posteriors
     up to normalization. Normalization and marginal moments by brute force
