@@ -581,7 +581,13 @@ IMPLEMENTATION OF EP TOOLBOX
         there.
       OK: tauind is maintained in PotManager and compiled there. But a ref.
       is maintained in Representation as well.
-    - InfDriver: First for coupled modes! [HIER!]
+    - inference.py:
+      - How should predictions be generalized? The pred. model must share
+        the tau vector (check that same size). Its potentials need not touch
+        all tau components
+        ==> Should not be requirement anyway, since typically a Gamma prior
+            is used, which is NOT defined as potential!
+      - CoupledInfDriver [HIER!]
   - Simple test example, where exact solution can be obtained by brute
     force: Mean and precision of Gaussian. Can plot exact marginal posteriors
     up to normalization. Normalization and marginal moments by brute force

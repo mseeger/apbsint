@@ -64,12 +64,18 @@ class InfDriver:
     def predict(self,pmodel,opts):
         raise NotImplementedError('PREDICT must be implemented')
 
-    # HIER: Adapt to bvprec pots??
-    def _predict_epcomp(self,pmodel,h_q,rho_q):
+    def _predict_epcomp(self,pmodel,h_q,rho_q,a_q=None,c_q=None):
         """
         Helper for 'predict'. Given Gaussian moments in 'h_q', 'rho_q', runs
         local EP computations and returns 'logz', 'h_p', 'rho_p'. See
         docstring of 'CoupledInfDriver.predict'.
+
+        If 'pmodel' contains bivariate precision potentials, the Gamma
+        parameters (a, c) for the corresponding marginals have to be passed
+        in 'a_q', 'c_q'. In this case, we return
+           (logz, h_p, rho_p, a_p, c_p),
+        where a_p, c_p are Gamma parameters of the predictive marginals.
+        Note that mean = a/c, variance = a/c^2 for Gamma(a,c).
         """
         pbfact = pmodel.bfact
         (pm, n) = pbfact.shape()
@@ -79,9 +85,22 @@ class InfDriver:
         alpha = np.empty(pm)
         nu = np.empty(pm)
         logz = np.empty(pm)
-        epx.epupdate_parallel(ppotman.potids,ppotman.numpot,ppotman.parvec,
-                              ppotman.parshrd,ppotman.annobj,h_q,rho_q,rstat,
-                              alpha,nu,logz)
+        has_bvp = (ppotman.num_bvprec>0)
+        if not has_bvp:
+            epx.epupdate_parallel(ppotman.potids,ppotman.numpot,ppotman.parvec,
+                                  ppotman.parshrd,ppotman.annobj,h_q,rho_q,
+                                  rstat,alpha,nu,logz)
+        else:
+            pmb = ppotman.num_bvprec
+            if not (helpers.check_vecsize(a_q,pmb) or
+                    helpers.check_vecsize(c_q,pmb)):
+                raise TypeError('Bivariate precision potentials: A_Q, C_Q must be vectors of size {0}'.format(pmb))
+            a_p = np.empty(pmb)
+            c_p = np.empty(pmb)
+            epx.epupdate_parallel_bvprec(ppotman.potids,ppotman.numpot,
+                                         ppotman.parvec,ppotman.parshrd,
+                                         ppotman.annobj,h_q,rho_q,a_q,c_q,
+                                         rstat,alpha,nu,a_p,c_p,logz)
         indok = np.nonzero(rstat)[0]
         tvec = 1. - nu[indok]*rho_q[indok]
         indok2 = np.nonzero(tvec >= 1e-9)[0]
@@ -97,7 +116,10 @@ class InfDriver:
         else:
             h_p = h_q + alpha*rho_q
             rho_p = rho_q*tvec
-        return (logz, h_p, rho_p)
+        if not has_bvp:
+            return (logz, h_p, rho_p)
+        else:
+            return (logz, h_p, rho_p, a_p, c_p)
 
     def _infer_check_commonargs(self,opts):
         """
