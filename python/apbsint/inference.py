@@ -38,6 +38,8 @@ class InfDriver:
     approximate to the true posterior. The 'predict' method computes
     predictive moments on a test Model.
 
+    If the model contains bivariate precision potentials, the Representation
+    must be associated with the PotManager (see Representation constructor).
     """
     def __init__(self,model,rep):
         if not isinstance(model,ut.Model):
@@ -46,6 +48,13 @@ class InfDriver:
             raise TypeError('REP must be instance of apbsint.Representation')
         if not model.bfact is rep.bfact:
             raise ValueError('MODEL.BFACT, REP.BFACT must be same object')
+        pman = model.potman
+        if pman.num_bvprec > 0:
+            if (rep.num_bvprec != pman.num_bvprec or
+                rep.tauind is not pman.tauind):
+                raise ValueError('Bivariate precision potentials: REP must be associated to MODEL.POTMAN')
+        elif rep.num_bvprec != 0:
+            raise ValueError('Bivariate precision potentials? REP yes, MODEL.POTMAN no')
         self.model = model
         self.rep = rep
 
@@ -55,6 +64,7 @@ class InfDriver:
     def predict(self,pmodel,opts):
         raise NotImplementedError('PREDICT must be implemented')
 
+    # HIER: Adapt to bvprec pots??
     def _predict_epcomp(self,pmodel,h_q,rho_q):
         """
         Helper for 'predict'. Given Gaussian moments in 'h_q', 'rho_q', runs

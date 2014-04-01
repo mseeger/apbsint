@@ -121,6 +121,10 @@ class PotManager:
     representation of j <-> k is maintained in 'tauind'. 'num_bvprec' is the
     number of precision potentials, 'num_tau' the size of the tau vector.
     Internal consistency is checked in 'check_internal'.
+    NOTE: 'tauind' is recomputed for each 'check_internal' call (to be safe),
+    but if the size does not change, the array content is just overwritten.
+    Important, since 'Representation' keeps reference to 'tauind', and
+    'InfDriver' checks equality of those.
     """
     def __init__(self,elem):
         if isinstance(elem,list):
@@ -216,8 +220,11 @@ class PotManager:
             self.parvec = np.empty(pvsz,dtype=np.float64)
             off = 0
             if self.num_bvprec>0:
-                self.tauind = np.empty(2*(self.num_bvprec+1) + self.num_tau,
-                                       dtype=np.int32)
+                tsz = 2*(self.num_bvprec+1) + self.num_tau
+                if self.tauind is None or self.tauind.shape[0] != tsz:
+                    self.tauind = np.empty(tsz,dtype=np.int32)
+                else:
+                    self.tauind[:] = 0
                 ti_off = 0
             for k in xrange(nb):
                 pars = elem[k].pars
@@ -336,6 +343,9 @@ class Representation:
     initial values for these have to be passed to the constructor (copied),
     as well as the potential manager. The latter is not maintained, but a
     reference to its 'tauind' member is kept here.
+    ATTENTION: 'InfDriver' checks this 'tauind' association, so the
+    underlying object must remain the same (its content can change, see
+    'PotManager.check_internal').
     Parameters of the tau marginals are kept in 'marg_taua', 'marg_tauc'
     in this case, they are recomputed in 'refresh'.
     """
@@ -351,8 +361,8 @@ class Representation:
         self.ep_taua = None
         self.ep_tauc = None
         self.tauind = None
-        self.num_bvprec = None
-        self.num_tau = None
+        self.num_bvprec = 0
+        self.num_tau = 0
         if ep_taua is not None:
             # Arguments for bivar. prec. potentials: Either all or none
             if ep_tauc is None or potman is None:
