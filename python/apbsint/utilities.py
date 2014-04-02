@@ -346,11 +346,14 @@ class Representation:
     ATTENTION: 'InfDriver' checks this 'tauind' association, so the
     underlying object must remain the same (its content can change, see
     'PotManager.check_internal').
+
     Parameters of the tau marginals are kept in 'marg_taua', 'marg_tauc'
     in this case, they are recomputed in 'refresh'.
+    The Gamma parameters of the prior p(tau) are kept in 'prior_taua',
+    'prior_tauc', they have to be passed at construction.
     """
     def __init__(self,bfact,ep_pi=None,ep_beta=None,ep_taua=None,ep_tauc=None,
-                 potman=None):
+                 prior_taua=None,prior_tauc=None,potman=None):
         self.ep_pi = None
         if ep_pi is not None:
             self.setpi(ep_pi)
@@ -361,19 +364,24 @@ class Representation:
         self.ep_taua = None
         self.ep_tauc = None
         self.tauind = None
-        self.num_bvprec = 0
-        self.num_tau = 0
         if ep_taua is not None:
             # Arguments for bivar. prec. potentials: Either all or none
             if ep_tauc is None or potman is None:
                 raise ValueError('EP_TAUA, EP_TAUC, POTMAN: Either all or none')
             if potman.tauind is None:
                 raise TypeError('POTMAN must have bivariate precision potentials')
+            nbvp = potman.num_bvprec
+            ntau = potman.num_tau
+            if not (helper.check_vecsize(prior_taua,ntau) and
+                    helper.check_vecsize(prior_tauc,ntau)):
+                raise ValueError('PRIOR_TAUA, PRIOR_TAUC must be vectors of size {0}'.format(ntau))
+            if np.any(prior_taua<1e-16) or np.any(prior_tauc<1e-16):
+                raise ValueError('PRIOR_TAUA, PRIOR_TAUC must be positive')
             self.settaua(ep_taua,potman.num_bvprec)
             self.settauc(ep_tauc,potman.num_bvprec)
             self.tauind = potman.tauind
-            self.num_bvprec = potman.num_bvprec
-            self.num_tau = potman.num_tau
+            self.prior_taua = prior_taua
+            self.prior_tauc = prior_tauc
             self.marg_taua = np.zeros(potman.num_tau)
             self.marg_tauc = np.zeros(potman.num_tau)
             self.refresh()
@@ -418,6 +426,8 @@ class Representation:
         if self.ep_taua is not Null:
             epx.compmarginals_bvprec(self.tauind,self.ep_taua,self.ep_tauc,
                                      self.marg_taua,self.marg_tauc)
+            self.marg_taua += self.prior_taua
+            self.marg_tauc += self.prior_tauc
 
     # Internal methods
 

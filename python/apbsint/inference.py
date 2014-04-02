@@ -50,10 +50,10 @@ class InfDriver:
             raise ValueError('MODEL.BFACT, REP.BFACT must be same object')
         pman = model.potman
         if pman.num_bvprec > 0:
-            if (rep.num_bvprec != pman.num_bvprec or
-                rep.tauind is not pman.tauind):
+            if not (helpers.check_vecsize(rep.ep_taua,pman.num_bvprec) and
+                    rep.tauind is pman.tauind):
                 raise ValueError('Bivariate precision potentials: REP must be associated to MODEL.POTMAN')
-        elif rep.num_bvprec != 0:
+        elif rep.ep_taua is not None:
             raise ValueError('Bivariate precision potentials? REP yes, MODEL.POTMAN no')
         self.model = model
         self.rep = rep
@@ -238,6 +238,16 @@ class CoupledInfDriver(InfDriver):
         NOTE: We assume that the posterior covariance A^-1 is in 'rep.post_cov'
         if 'opts.imode'=='CoupParallel'. In the other modes, A^-1 is
         recomputed.
+
+        If training model 'model' has bivar. precision potentials, 'pmodel'
+        may as well (but does not have to). If so, the dimensionality of tau
+        must be the same. In this case, further 'ptype' values are:
+         4: (h_q, a_q, c_q)
+         5: (h_q, rho_q, a_q, c_q)
+         6: (logz, h_p, rho_p, a_p, c_p)
+         7: (h_q, rho_q, a_q, c_q, logz, h_p, rho_p, a_p, c_p)
+        Here, (a_q, c_q) and (a_p, c_p) are Gamma parameters of q(tau) and
+        predictive p_hat(tau) respectively.
         """
         model = self.model
         rep = self.rep
@@ -251,6 +261,12 @@ class CoupledInfDriver(InfDriver):
         if not (isinstance(opts.ptype,numbers.Integral) and opts.ptype>=0 and
                 opts.ptype<=3):
             raise ValueError('opts.ptype wrong')
+        nbvp = pmodel.potman.num_bvprec
+        if nbvp>0:
+            if (model.potman.num_bvprec==0 or
+                model.potman.num_tau != pmodel.potman.num_tau):
+                raise TypeError('Bivariate precision potentials: PMODEL, MODEL not consistent')
+        # HIER!
         # Compute Gaussian moments
         h_q = np.empty(pm)
         rho_q = np.empty(pm) if opts.ptype>0 else None
