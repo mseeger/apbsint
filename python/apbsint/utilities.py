@@ -423,7 +423,7 @@ class Representation:
     # Common code. Right now, the tau marginals are recomputed if there are
     # bivar.prec. potentials
     def refresh(self):
-        if self.ep_taua is not Null:
+        if self.ep_taua is not None:
             epx.compmarginals_bvprec(self.tauind,self.ep_taua,self.ep_tauc,
                                      self.marg_taua,self.marg_tauc)
             self.marg_taua += self.prior_taua
