@@ -594,6 +594,15 @@ IMPLEMENTATION OF EP TOOLBOX
     ==> Could also use STAN to sample from this model!
   - More complex example, f.ex. MSR paper on grading tests
 
+- Poisson potential with linear rate function:
+  This can be done without any quadrature!
+  - Work out details of the update (see TR) [OK]
+  - C++ code
+  - Wrapper and Cython code
+  - Come up with unit tests!
+  This could be the basis for a nice paper, comparing Poisson with linear,
+  exponential and logistic link. Young Jun?
+
 - Documentation of source code:
   - Check out sphinx (http://sphinx-doc.org/). This seems the de-facto
     standard
